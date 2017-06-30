@@ -30,14 +30,10 @@ description = "NiBetaSeries: a template for small scientific Python projects"
 # Long description will go up on the pypi page
 long_description = """
 
-Shablona
+NiBetaSeries
 ========
-Shablona is a template project for small scientific Python projects.
+NiBetaSeries ...
 
-It contains software implementations of an analysis of some simple data, but
-more importantly, it contains infrastructure for testing, documentation,
-continuous integration and deployment, which can be easily adapted
-to use in other projects.
 
 To get started using these components in your own software, please go to the
 repository README_.
@@ -52,8 +48,7 @@ for usage, and a DISCLAIMER OF ALL WARRANTIES.
 
 All trademarks referenced herein are property of their respective holders.
 
-Copyright (c) 2015--, Ariel Rokem, The University of Washington
-eScience Institute.
+Copyright (c) 2017--, James Kent, The University of Iowa
 """
 
 NAME = "NiBetaSeries"
