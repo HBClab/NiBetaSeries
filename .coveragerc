@@ -1,7 +1,7 @@
 [run]
 branch = True
-source = shablona/*
-include = shablona/*
+source = NiBetaSeries/*
+include = NiBetaSeries/*
 omit = */setup.py
 [report]
-include = shablona/*
+include = NiBetaSeries/*
