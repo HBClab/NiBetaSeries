@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import
 import os
 from nilearn import plotting
 from nistats.first_level_model import first_level_models_from_bids
@@ -10,7 +13,7 @@ from bids.grabbids import BIDSLayout
 from niworkflows.nipype import config as ncfg
 from time import strftime
 import uuid
-from ..workflows.base import init_nibetaseries_participant_wf
+from ..version import __version__
 #BIDS
 # handle registration
 #    transform bold to atlas
@@ -109,6 +112,7 @@ def validate_bids_ds(bids_dir):
     run('bids-validator %s'%bids_dir)
 
 def main():
+    from .workflows.base import init_nibetaseries_participant_wf
     # Set up some instrumental utilities
     errno = 0
     run_uuid = strftime('%Y%m%d-%H%M%S_') + str(uuid.uuid4())
@@ -176,20 +180,20 @@ def main():
     # running participant level
     if args.analysis_level == "participant":
 
-    nibetaseries_participant_wf = init_nibetaseries_participant_wf(
-        subject_list=subject_list,
-        task_id=opts.task_id,
-        derivatives_pipeline=opts.derivatives_pipeline,
-        run_uuid=run_uuid,
-        omp_nthreads=omp_nthreads,
-        work_dir=work_dir,
-        output_dir=output_dir,
-        bids_dir=bids_dir,
-        space=opts.space,
-        variant=opts.variant,
-        res=opts.res,
-        hrf_model=opts.hrf_model,
-        slice_time_ref=opts.slice_time_ref
+        nibetaseries_participant_wf = init_nibetaseries_participant_wf(
+            subject_list=subject_list,
+            task_id=opts.task_id,
+            derivatives_pipeline=opts.derivatives_pipeline,
+            bids_dir=bids_dir,
+            output_dir=output_dir,
+            work_dir=work_dir,
+            space=opts.space,
+            variant=opts.variant,
+            res=opts.res,
+            hrf_model=opts.hrf_model,
+            slice_time_ref=opts.slice_time_ref,
+            run_uuid=run_uuid,
+            omp_nthreads=omp_nthreads   
         )   
 
     try:
@@ -200,39 +204,42 @@ def main():
         else:
             raise(e)
 
-    models, models_run_imgs, models_events, models_confounds = first_level_models_from_bids(
-            data_dir2, task_label, space_label,
-            t_r=2.0, slice_time_ref=0.5,
-            hrf_model='glover + derivative + dispersion',
-            #find a general mask?
-            mask='template',
-            signal_scaling=0, verbose=3, n_jobs=-2,
-            derivatives_folder=derivatives_folder,
-            img_filters=[('variant', 'smoothAROMAnonaggr')])
+    # models, models_run_imgs, models_events, models_confounds = first_level_models_from_bids(
+    #         data_dir2, task_label, space_label,
+    #         t_r=2.0, slice_time_ref=0.5,
+    #         hrf_model='glover + derivative + dispersion',
+    #         #find a general mask?
+    #         mask='template',
+    #         signal_scaling=0, verbose=3, n_jobs=-2,
+    #         derivatives_folder=derivatives_folder,
+    #         img_filters=[('variant', 'smoothAROMAnonaggr')])
 
-    for sub_idx,sub_model in enumerate(models):
-        for run_idx, run_events in enumerate(models_events[sub_idx]):
-            run_events.sort_values(columns=['trial_type', 'onset'],ascending=[True, True],inplace=True,axis=0)
-            run_events_temp = run_events.copy()
-            run_events_temp['trial_type'] = 'other_trials'
-            for trial in range(len(run_events)):
-                #if the condition changes (make sure to order the conditions)
-                if trial != 0 and run_events.loc[trial, 'trial_type'] != run_events.loc[trial-1, 'trial_type']:
+    # for sub_idx,sub_model in enumerate(models):
+    #     for run_idx, run_events in enumerate(models_events[sub_idx]):
+    #         run_events.sort_values(columns=['trial_type', 'onset'],ascending=[True, True],inplace=True,axis=0)
+    #         run_events_temp = run_events.copy()
+    #         run_events_temp['trial_type'] = 'other_trials'
+    #         for trial in range(len(run_events)):
+    #             #if the condition changes (make sure to order the conditions)
+    #             if trial != 0 and run_events.loc[trial, 'trial_type'] != run_events.loc[trial-1, 'trial_type']:
 
-                run_events_temp.loc[trial, 'trial_type'] = run_events.loc[trial, 'trial_type']
-                #fitmodel
-                sub_model.fit(models_run_imgs[sub_idx][run_idx],run_events_temp)
-                #compute contrast
-                img = sub_model.compute_contrast(contrast_def=run_events_temp.loc[trial, 'trial_type'], output_type='effect_size')
-                #save img
-                nib.save(img, os.path.join(data_dir2,'derivatives/nistats_betaseries/sub-GE140_2','sub-GE140'+run_events_temp.loc[trial,'trial_type']+str(trial)))
-                run_events_temp.loc[trial, 'trial_type'] = 'other_trials'
+    #             run_events_temp.loc[trial, 'trial_type'] = run_events.loc[trial, 'trial_type']
+    #             #fitmodel
+    #             sub_model.fit(models_run_imgs[sub_idx][run_idx],run_events_temp)
+    #             #compute contrast
+    #             img = sub_model.compute_contrast(contrast_def=run_events_temp.loc[trial, 'trial_type'], output_type='effect_size')
+    #             #save img
+    #             nib.save(img, os.path.join(data_dir2,'derivatives/nistats_betaseries/sub-GE140_2','sub-GE140'+run_events_temp.loc[trial,'trial_type']+str(trial)))
+    #             run_events_temp.loc[trial, 'trial_type'] = 'other_trials'
                 
-    # running group level
-    elif args.analysis_level == "group":
-        brain_sizes = []
-        for subject_label in subjects_to_analyze:
-            for brain_file in glob(os.path.join(args.output_dir, "sub-%s*.nii*"%subject_label)):
-                data = nib.load(brain_file).get_data()
-                # calcualte average mask size in voxels
-                brain_sizes.append((data != 0).sum())
+    # # running group level
+    # elif args.analysis_level == "group":
+    #     brain_sizes = []
+    #     for subject_label in subjects_to_analyze:
+    #         for brain_file in glob(os.path.join(args.output_dir, "sub-%s*.nii*"%subject_label)):
+    #             data = nib.load(brain_file).get_data()
+    #             # calcualte average mask size in voxels
+    #             brain_sizes.append((data != 0).sum())
+
+if __name__ == '__main__':
+    main()

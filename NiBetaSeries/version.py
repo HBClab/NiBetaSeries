@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function
 from os.path import join as pjoin
 
+
 # Format expected by setup.py and doc/source/conf.py: string of form "X.Y.Z"
 _version_major = 0
 _version_minor = 1
@@ -16,6 +17,7 @@ if _version_extra:
     _ver.append(_version_extra)
 
 __version__ = '.'.join(map(str, _ver))
+
 
 CLASSIFIERS = ["Development Status :: 3 - Alpha",
                "Environment :: Console",
@@ -67,4 +69,82 @@ MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
 PACKAGE_DATA = {'NiBetaSeries': [pjoin('data', '*')]}
-REQUIRES = ["numpy", "niworkflows"]
+SETUP_REQUIRES = [
+    'setuptools>=18.0',
+    'numpy',
+    'cython',
+]
+
+TESTS_REQUIRES = [
+    "mock",
+    "codecov",
+    "pytest",
+]
+
+EXTRA_REQUIRES = {
+    'doc': ['sphinx>=1.5.3', 'pydotplus', 'sphinx_rtd_theme', 'sphinx-argparse'],
+    'tests': TESTS_REQUIRES,
+    'duecredit': ['duecredit']
+}
+
+# Enable a handle to install all extra dependencies at once
+EXTRA_REQUIRES['all'] = [val for _, val in list(EXTRA_REQUIRES.items())]
+
+LINKS_REQUIRES = []
+
+REQUIRES = [ 
+'click',
+'configparser',
+'cycler',
+'decorator',
+'funcsigs',
+'functools32',
+'future',
+'grabbit',
+'isodate',
+'Jinja2',
+'lxml',
+'MarkupSafe',
+'matplotlib',
+'mock',
+'networkx',
+'nibabel',
+'nilearn',
+'nistats',
+'niworkflows',
+'numpy',
+'packaging',
+'pandas',
+'patsy',
+'pbr',
+'prov',
+'py',
+'pybids',
+'pydotplus',
+'pyparsing',
+'pytest',
+'python-dateutil',
+'pytz',
+'rdflib',
+'scikit-learn',
+'scipy',
+'simplejson',
+'six',
+'sklearn',
+'subprocess32',
+'svgutils',
+'tinycss',
+'traits'
+]
+
+CLASSIFIERS = [
+    'Development Status :: 3 - Alpha',
+    'Intended Audience :: Science/Research',
+    'Topic :: Scientific/Engineering :: Image Recognition',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+]
+
+
+
