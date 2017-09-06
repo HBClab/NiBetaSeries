@@ -54,7 +54,7 @@ def main():
             'NIBS=NiBetaSeries.cli.run:main'
         ]},
         packages=find_packages(exclude=("tests",)),
-        zip_safe=False,
+        zip_safe=False
     )
 
 
