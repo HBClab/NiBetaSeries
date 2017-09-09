@@ -61,4 +61,32 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
         omp_nthreads : int
             Maximum number of threads an individual process may use
     """
-    fmriprep_wf = pe.Workflow(name='nibetaseries_participant_wf')
+    nibetaseries_participant_wf = pe.Workflow(name='nibetaseries_participant_wf')
+    nibetaseries_participant_wf.base_dir = work_dir
+    reportlets_dir = os.path.join(work_dir, 'reportlets')
+    for subject_id in subject_list:
+        single_subject_wf = init_single_subject_wf(
+        subject_list=subject_list,
+        task_id=task_id,
+        derivatives_pipeline=derivatives_pipeline,
+        bids_dir=bids_dir,
+        output_dir=output_dir,
+        work_dir=work_dir,
+        space=space,
+        variant=variant,
+        res=res,
+        hrf_model=hrf_model,
+        slice_time_ref=slice_time_ref,
+        run_uuid=run_uuid,
+        omp_nthreads=omp_nthreads
+        )
+
+        single_subject_wf.config['execution']['crashdump_dir'] = (
+            os.path.join(output_dir, "nibetaseries", "sub-" + subject_id, 'log', run_uuid)
+        )
+
+        for node in single_subject_wf._get_all_nodes():
+            node.config = deepcopy(single_subject_wf.config)
+
+        fmriprep_wf.add_nodes([single_subject_wf])
+    return nibetaseries_participant_wf
