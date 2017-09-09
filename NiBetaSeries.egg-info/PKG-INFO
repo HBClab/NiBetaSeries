@@ -1,0 +1,59 @@
+Metadata-Version: 1.1
+Name: NiBetaSeries
+Version: 0.1.dev0
+Summary: NiBetaSeries: a template for small scientific Python projects
+Home-page: http://github.com/jdkent/NiBetaSeries
+Author: James Kent
+Author-email: james-kent@uiowa.edu
+License: MIT
+Description-Content-Type: UNKNOWN
+Description: 
+        
+        
+        
+        NiBetaSeries
+        
+        ========
+        
+        NiBetaSeries ...
+        
+        
+        
+        
+        
+        To get started using these components in your own software, please go to the
+        
+        repository README_.
+        
+        
+        
+        .. _README: https://github.com/jdkent/BetaSeries/blob/master/README.md
+        
+        
+        
+        License
+        
+        =======
+        
+        ``NiBetaSeries`` is licensed under the terms of the MIT license. See the file
+        
+        "LICENSE" for information on the history of this software, terms & conditions
+        
+        for usage, and a DISCLAIMER OF ALL WARRANTIES.
+        
+        
+        
+        All trademarks referenced herein are property of their respective holders.
+        
+        
+        
+        Copyright (c) 2017--, James Kent, The University of Iowa
+        
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Image Recognition
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6

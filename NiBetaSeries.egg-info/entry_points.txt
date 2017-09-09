@@ -1,0 +1,3 @@
+[console_scripts]
+NIBS = NiBetaSeries.cli.run:main
+
