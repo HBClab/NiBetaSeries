@@ -103,7 +103,7 @@ def get_parser():
     misc = parser.add_argument_group('misc options')
     misc.add_argument('--bids_check', help='Validates the input bids dataset, requires the installation of \'bids-validator\'',
                        action='store_true')
-    args = parser.parse_args()
+    return parser
 
 
 

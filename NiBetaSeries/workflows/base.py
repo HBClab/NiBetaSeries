@@ -90,3 +90,8 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
 
         fmriprep_wf.add_nodes([single_subject_wf])
     return nibetaseries_participant_wf
+
+def init_single_subject_wf(subject_id, task_id, derivatives_pipeline,
+                     bids_dir, output_dir, work_dir, space, variant, res,
+                     hrf_model, slice_time_ref, run_uuid, omp_nthreads):
+    
