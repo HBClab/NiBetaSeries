@@ -49,7 +49,7 @@ def main():
         extras_require=ldict['EXTRA_REQUIRES'],
         dependency_links=ldict['LINKS_REQUIRES'],
         package_data={'NiBetaSeries': ['data/*.json', 'data/*.nii.gz', 'data/*.mat',
-                                   'viz/*.tpl', 'viz/*.json']},
+                                   'viz/*.tpl', 'viz/*.json','utils/*.json']},
         entry_points={'console_scripts': [
             'NIBS=NiBetaSeries.cli.run:main'
         ]},

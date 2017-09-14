@@ -8,6 +8,7 @@ Workflow for getting subject info
 '''
 from __future__ import print_function, division, absolute_import, unicode_literals
 
+import pkg_resources as pkgr
 from bids.grabbids import BIDSLayout
 from nipype.interfaces.base import Bunch
 from nipype.interfaces.utility import IdentityInterface
@@ -17,7 +18,8 @@ import pandas as pd
 import numpy as np
 
 def get_bids_data(bids_dir):
-    return BIDSLayout(bids_dir)
+    config_file=pkgr.resource_filename('NiBetaSeries', 'utils/bids_derivatives.json')
+    return BIDSLayout(bids_dir,config=config_file)
 
 # TODO: incorporate run into analysis
 def get_bold_info(bids_data, task, subject, run=None):
@@ -243,7 +245,9 @@ def collect_participants(bids_dir, participant_label=None, strict=False):
     return found_label
 
 
-def collect_data(dataset, participant_label, task=None):
+def collect_data(bids_dir, participant_label, 
+                 task=None, run=None, space=None, variant=None):
+    import os
     """
     Uses grabbids to retrieve the input data for a given participant
     >>> bids_root, _ = collect_data('ds054', '100185')
@@ -270,22 +274,21 @@ def collect_data(dataset, participant_label, task=None):
     >>> bids_root['t2w']  # doctest: +ELLIPSIS
     []
     """
-    layout = BIDSLayout(dataset)
-    queries = {
-        'fmap': {'subject': participant_label, 'modality': 'fmap',
-                 'extensions': ['nii', 'nii.gz']},
-        'bold': {'subject': participant_label, 'modality': 'func', 'type': 'bold',
-                 'extensions': ['nii', 'nii.gz']},
-        'sbref': {'subject': participant_label, 'modality': 'func', 'type': 'sbref',
-                  'extensions': ['nii', 'nii.gz']},
-        't2w': {'subject': participant_label, 'type': 'T2w',
-                'extensions': ['nii', 'nii.gz']},
-        't1w': {'subject': participant_label, 'type': 'T1w',
-                'extensions': ['nii', 'nii.gz']},
+    config_file=pkgr.resource_filename('NiBetaSeries', 'utils/bids_derivatives.json')
+    bids_layout = BIDSLayout(bids_dir,config=config_file)
+    
+    bids_queries = {
+        'events': {'type': events, 'modality': 'func',
+                 'extensions': ['tsv']},
     }
-
     if task:
         queries['bold']['task'] = task
+
+    # pipeline
+    deriv_dir = os.path.join(bids_dir,'derivatives',pipeline)
+    deriv_layout = BIDSLayout(deriv_dir)
+
+    
 
     return {modality: [x.filename for x in layout.get(**query)]
             for modality, query in queries.items()}, layout

@@ -68,6 +68,7 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
         single_subject_wf = init_single_subject_wf(
         subject_list=subject_list,
         task_id=task_id,
+        name="single_subject_" + subject_id + "_wf",
         derivatives_pipeline=derivatives_pipeline,
         bids_dir=bids_dir,
         output_dir=output_dir,
@@ -91,7 +92,116 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
         fmriprep_wf.add_nodes([single_subject_wf])
     return nibetaseries_participant_wf
 
-def init_single_subject_wf(subject_id, task_id, derivatives_pipeline,
+def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
                      bids_dir, output_dir, work_dir, space, variant, res,
                      hrf_model, slice_time_ref, run_uuid, omp_nthreads):
+    import pkg_resources as pkgr
+    from bids.grabbids import BIDSLayout
+    # for querying derivatives structure
+    config_file = pkgr.resource_filename('NiBetaSeries', 'utils/bids_derivatives.json')
+
+    bids_data = BIDSLayout(bids_dir)
+
+    derivatives_dir = os.path.join(bids_dir,'derivatives',derivatives_pipeline)
+    derivatives_data = BIDSLayout(derivatives_dir,config=config_file)
+
+    # get events file
+    event_list = bids_data.get(subject=subject_id, 
+                               task=task_id, 
+                               type=events, 
+                               extensions='tsv', 
+                               return_type='file')
+
+    if not event_list:
+        raise Exception("No event files were found for participant {}".format(subject_id))
+    elif len(event_list) > 1:
+        raise Exception("Too many event files were found for participant {}".format(subject_id))
+    else:
+      events_file = event_list[0]
+
+    # get derivatives files
+    # preproc
+    preproc_query = {
+                     'subject': subject_id,
+                     'task': task_id,
+                     'type': 'preproc',
+                     'return_type': 'file',
+                     'extensions': ['nii', 'nii.gz']
+                     }
+    if variant:
+        preproc_query['variant'] = variant
+    if space:
+        preproc_query['space'] = space
+    if res:
+        preproc_query['res'] = res
+
+    preproc_list = derivatives_data.get(**preproc_query)
+
+    if not preproc_list:
+        raise Exception("No preproc files were found for participant {}".format(subject_id))
+    elif len(preproc_list) > 1:
+        raise Exception("Too many preproc files were found for participant {}".format(subject_id))
+    else:
+        preproc_file = preproc_list[0]
+    # confounds
+    confounds_list = derivatives_data.get(subject=subject_id, 
+                               task=task_id, 
+                               type=confounds, 
+                               extensions='tsv', 
+                               return_type='file')
+    if not confounds_list:
+        raise Exception("No confound files were found for participant {}".format(subject_id))
+    elif len(confounds_list) > 1:
+        raise Exception("Too many confound files were found for participant {}".format(subject_id))
+    else:
+        confound_file = confound_list[0]
+
+    # brainmask
+    brainmask_query = {
+                     'subject': subject_id,
+                     'task': task_id,
+                     'type': 'brainmask',
+                     'return_type': 'file',
+                     'extensions': ['nii', 'nii.gz']
+                     }
+    if space:
+        brainmask_query['space'] = space
+    if res:
+        brainmask_query['res'] = res
+
+    brainmask_list = derivatives_data.get(**brainmask_query)
+    if not brainmask_list:
+        raise Exception("No brainmask files were found for participant {}".format(subject_id))
+    elif len(brainmask_list) > 1:
+        raise Exception("Too many brainmask files were found for participant {}".format(subject_id))
+    else:
+        brainmask_file = brainmask_list[0]
+
+    workflow = pe.Workflow(name=name)
+
+    inputnode = pe.Node(niu.IdentityInterface(fields=['subjects_dir']),
+                        name='inputnode')
+
+    #bidssrc = pe.Node(BIDSDataGrabber(subject_data=subject_data, anat_only=anat_only),
+    #                  name='bidssrc')
+
+    #bids_info = pe.Node(BIDSInfo(), name='bids_info', run_without_submitting=True)
+
+    #summary = pe.Node(SubjectSummary(output_spaces=output_spaces, template=template),
+    #                  name='summary', run_without_submitting=True)
+
+    #about = pe.Node(AboutSummary(version=__version__,
+    #                             command=' '.join(sys.argv)),
+    #                name='about', run_without_submitting=True)
+    
+    #ds_summary_report = pe.Node(
+    #    DerivativesDataSink(base_directory=reportlets_dir,
+    #                        suffix='summary'),
+    #    name='ds_summary_report', run_without_submitting=True)
+    
+    #ds_about_report = pe.Node(
+    #    DerivativesDataSink(base_directory=reportlets_dir,
+    #                        suffix='about'),
+    #    name='ds_about_report', run_without_submitting=True)
+    
     
