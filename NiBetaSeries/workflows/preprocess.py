@@ -3,130 +3,175 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 '''
-Workflow for preprocessing the data
-performing basic preprocessing.
-- smoothing (fmriprep takes care of the rest)
-- highpass filter
-- prewhiten?
+Workflow for doing preprocessing
+that FMRIPREP doesn't complete, and derives standardized residuals from bold
+
+-
 '''
+
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from niworkflows.nipype.pipeline.engine as pe
-from niworkflows.nipype.interfaces.utility import IdentityInterface, Merge
-from niworkflows.nipype.interfaces.fsl.model import Level1Design, FEATModel
-from niworkflows.nipype.interfaces.fsl import ImageStats, ImageMaths, SUSAN
+import niworkflows.nipype.pipeline.engine as pe
+from niworkflows.nipype.interfaces.utility import IdentityInterface
+from niworkflows.nipype.interfaces.fsl import ImageStats, MultiImageMaths, SUSAN
 from niworkflows.nipype.interfaces.fsl.utils import FilterRegressor
-from niworkflows.nipype.interfaces.fsl.maths import TemporalFilter
-from nilearn.signal import clean as nisc
+from niworkflows.nipype.interfaces.fsl.maths import MeanImage
+from niworkflows.nipype.interfaces.utility import Function
+from nilearn.image import clean_img
 import nibabel as nib
 import pandas as pd
-import numpy as np
 
-def init_derive_residuals_wf(name='derive_residuals_wf',smooth=None,confound_names=None,regfilt=False,lp_cutoff=None,t_r=None)
-    
-    def remove_confounds(nii, confound_names, confounds):
-        img = nib.load(img)
-        confounds_pd = pd.read_csv(confounds, sep="\t")
-        if confound_names == None:
-            confound_names = [col for col in confound_pd.columns
-                                 if 'CompCor' in col or 'X' in col or 'Y' in col or 'Z' in col]
-            confound_pd_filt = confound_pd.filter(items=confound_names)
 
-            confounds = confound_pd_filt.values.swapaxes(0,1).tolist()
-
-    inputnode = pe.Node(niu.IdentityInterface(
+def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
+                             smooth=None, confound_names=None,
+                             regfilt=False, lp=None):
+    inputnode = pe.Node(IdentityInterface(
         fields=['bold_preproc', 'bold_mask', 'confounds', 'MELODICmix',
-                'AROMAnoiseICs']),name='inputnode')
+                'AROMAnoiseICs']),
+        name='inputnode')
 
-    outputnode = pe.Node(niu.IdentityInterface(
-        fields=['bold_nuisance']),
+    outputnode = pe.Node(IdentityInterface(
+        fields=['bold_resid']),
         name='outputnode')
 
-    
+    # Function to perform confound removal
+    def remove_confounds(nii, confounds, t_r=2.0, confound_names=None, lp=None):
+        import os
+        img = nib.load(nii)
+        confounds_pd = pd.read_csv(confounds, sep="\t")
+        if confound_names is None:
+            confound_names = [col for col in confounds_pd.columns
+                              if 'CompCor' in col or 'X' in col or 'Y' in col or 'Z' in col]
+        confounds_np = confounds_pd.as_matrix(columns=confound_names)
+        kwargs = {
+                  'imgs': img,
+                  'confounds': confounds_np,
+                  't_r': t_r
+                 }
+        if lp:
+            kwargs['low_pass'] = lp
+        cleaned_img = clean_img(**kwargs)
+        working_dir = os.getcwd()
+        resid_nii = os.path.join(working_dir, 'resid.nii.gz')
+        nib.save(cleaned_img, resid_nii)
+
+        return resid_nii
+
+    # Steps
+    # 1) brain mask
+    # 2) smooth (optional)
+    # 3) regfilt (optional)
+    # 4) remove residuals
+
+    # brain mask node
+    mask_bold = pe.Node(MultiImageMaths(op_string='-bin %s'), name='mask_bold')
+    # optional smoothing workflow
+    smooth_wf = init_smooth_wf(smooth=smooth)
+    # optional filtering workflow
+    filt_reg_wf = init_filt_reg_wf(regfilt=regfilt)
+    # residual node
+    calc_resid = pe.Node(name='calc_resid',
+                         interface=Function(input_names=['nii',
+                                                         'confounds',
+                                                         't_r',
+                                                         'confound_names',
+                                                         'lp'],
+                                            output_names=['nii_resid'],
+                                            function=remove_confounds))
+    # Predefined attributes
+    calc_resid.inputs.t_r = t_r
+    calc_resid.inputs.confound_names = confound_names
+    calc_resid.inputs.lp = lp
+
+    # main workflow
+    workflow = pe.Workflow(name=name)
+    workflow.connect([
+        (inputnode, mask_bold, [('bold_preproc', 'in_file'),
+                                ('bold_mask', 'operand_files')]),
+        (mask_bold, smooth_wf, [('out_file', 'inputnode.bold')]),
+        (inputnode, smooth_wf, [('bold_mask', 'inputnode.bold_mask')]),
+        (smooth_wf, filt_reg_wf, [('outputnode.bold_smooth', 'inputnode.bold')]),
+        (inputnode, filt_reg_wf, [('bold_mask', 'inputnode.bold_mask'),
+                                  ('MELODICmix', 'inputnode.MELODICmix'),
+                                  ('AROMAnoiseICs', 'inputnode.AROMAnoiseICs')]),
+        (filt_reg_wf, calc_resid, [('outputnode.bold_regfilt', 'nii')]),
+        (inputnode, calc_resid, [('confounds', 'confounds')]),
+        (calc_resid, outputnode, [('nii_resid', 'bold_resid')]),
+    ])
+
+    return workflow
+
+
+# fsl regfilt workflow
+def init_filt_reg_wf(name='filt_reg_wf', regfilt=None):
+    inputnode = pe.Node(IdentityInterface(
+        fields=['bold', 'bold_mask', 'MELODICmix', 'AROMAnoiseICs']),
+        name='inputnode')
+
+    outputnode = pe.Node(IdentityInterface(
+        fields=['bold_regfilt']),
+        name='outputnode')
+
+    workflow = pe.Workflow(name=name)
+    if regfilt:
+        filter_regressor = pe.Node(FilterRegressor(), name='filter_regressor')
+        workflow.connect([
+            (inputnode, filter_regressor, [('bold', 'in_file'),
+                                           ('bold_mask', 'mask'),
+                                           ('MELODICmix', 'design_file'),
+                                           ('AROMAnoiseICs', 'filter_columns')]),
+            (filter_regressor, outputnode, [('out_file', 'bold_regfilt')]),
+        ])
+    else:
+        workflow.connect([
+            (inputnode, outputnode, [('bold', 'bold_regfilt')]),
+        ])
+
+    return workflow
+
+
+# smoothing workflow
+def init_smooth_wf(name='smooth_wf', smooth=None):
+    workflow = pe.Workflow(name=name)
+    inputnode = pe.Node(IdentityInterface(
+        fields=['bold', 'bold_mask']),
+        name='inputnode')
+
+    outputnode = pe.Node(IdentityInterface(
+        fields=['bold_smooth']),
+        name='outputnode')
 
     if smooth:
-        smooth_wf = init_smooth_wf(smooth)
+        calc_median_val = pe.Node(ImageStats(op_string='-k %s -p 50'), name='calc_median_val')
+        calc_bold_mean = pe.Node(MeanImage(), name='calc_bold_mean')
 
-    if regfilt:
-        pe.Node(FilterRegressor(), name='filter_regressor')
+        def getusans_func(image, thresh):
+            return [tuple([image, thresh])]
 
-    # TODO: add functionality 
-    if lp_cutoff and t_r:
-    
+        def _getbtthresh(medianval):
+            return 0.75 * medianval
+        getusans = pe.Node(Function(function=getusans_func, output_names=['usans']),
+                           name='getusans', mem_gb=0.01)
 
-        pe.Node()
-    
+        smooth = pe.Node(SUSAN(fwhm=smooth), name='smooth')
 
+        workflow.connect([
+            (inputnode, calc_median_val, [('bold', 'in_file'),
+                                          ('bold_mask', 'mask_file')]),
+            (inputnode, calc_bold_mean, [('bold', 'in_file')]),
+            (calc_bold_mean, getusans, [('out_file', 'image')]),
+            (calc_median_val, getusans, [('out_stat', 'thresh')]),
+            (inputnode, smooth, [('bold', 'in_file')]),
+            (getusans, smooth, [('usans', 'usans')]),
+            (calc_median_val, smooth, [(('out_stat', _getbtthresh), 'brightness_threshold')]),
+            (smooth, outputnode, [('smoothed_file', 'bold_smooth')]),
+        ])
+    else:
+        workflow.connect([
+            (inputnode, outputnode, [('bold', 'bold_smooth')]),
+        ])
 
+    return workflow
 
-def init_smooth_wf(name='smooth_wf',smooth):
-    calc_median_val = pe.Node(fsl.ImageStats(op_string='-k %s -p 50'), name='calc_median_val')
-    calc_bold_mean = pe.Node(fsl.MeanImage(), name='calc_bold_mean')
-
-    def getusans_func(image, thresh):
-        return [tuple([image, thresh])]
-
-    def _getbtthresh(medianval):
-        return 0.75 * medianval
-    getusans = pe.Node(niu.Function(function=getusans_func, output_names=['usans']),
-                       name='getusans', mem_gb=0.01)
-
-    smooth = pe.Node(fsl.SUSAN(fwhm=smooth), name='smooth')
-
-
-# def getusans(x):
-#     return tuple([x[0], 0.75 * x[1]])]
-
-# def getbtthresh(medianvals):
-#     return 0.75 * val
-
-# def init_preprocess_wf(name='preprocess_wf'):
-
-#     # inputs
-#     input_node = pe.Node(IdentityInterface(
-#                          fields=['fmri_bold', 'fmri_bold_mask', 'fwhm', 'tr']),
-#                          name='input_node')
-
-#     # outputs
-#     output_node = pe.Node(IdentityInterface(
-#                          fields=['processed_fmri_bold']),
-#                          name='output_node')
-#     # mask the bold file
-#     mask_node = pe.Node(interface=ImageMaths(suffix='_mask'
-#                                              op_string='-mas'))
-
-#     # calculate the median value of fmri_bold
-#     median_node = pe.Node(interface=ImageStats(op_string='-k %s -p 50'),
-#                              name='median_node')
-
-#     # calculate the mean functional of fmri_bold
-#     meanfunc_node = pe.Node(interface=ImageMaths(op_string='-Tmean',
-#                                                         suffix='_mean'),
-#                                name='meanfunc_node')
-
-#     # combine the median value and mean func of fmri_bold
-#     merge_node = pe.Node(interface=Merge(2, axis='hstack'),
-#                          name='merge_node')
-
-#     # Susan smoothing
-#     smooth_node = pe.Node(interface=SUSAN(),
-#                           name='smooth_node')
-
-#     workflow = pe.Workflow(name=name)
-#     workflow.connect([
-#     # prereqs for SUSAN
-#     (input_node, mask_node, [('fmri_bold', 'in_file'),
-#                              ('fmri_bold_mask', 'in_file2')])
-#     (mask_node, meanfunc_node, [('out_file', 'in_file')]),
-#     (input_node, median_node, [('fmri_bold', 'in_file'),
-#                                ('fmri_bold_mask', 'mask_file')]),
-#     (meanfunc_node, merge, [('out_file', 'in1')]),
-#     (median_node, merge, [('out_stat', 'in2')]),
-#     # Send inputs to SUSAN
-#     (input_node, smooth, [('fwhm', 'fwhm' )]),
-#     (merge, smooth, [(('out', getusans), 'usans')]),
-#     (median_node, smooth_node, [(('out_stat', getbtthresh), 'brightness_threshold')]),
-#     (smooth_node, output_node, [('smoothed_file', 'processed_fmri_bold')])
-#     ])
-
-#     return workflow
+# import NiBetaSeries.workflows.preprocess as proc
+# test_wf = proc.init_derive_residuals_wf(smooth=6,regfilt=True,lp=0.1)

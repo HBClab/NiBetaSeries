@@ -5,11 +5,12 @@
 """
 NiBetaSeries processing workflows
 """
-
+from __future__ import print_function, division, absolute_import, unicode_literals
 import sys
 import os
 from copy import deepcopy
 
+from .preprocess import init_derive_residuals_wf
 from niworkflows.nipype.pipeline import engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline,
@@ -106,10 +107,10 @@ def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
     derivatives_data = BIDSLayout(derivatives_dir,config=config_file)
 
     # get events file
-    event_list = bids_data.get(subject=subject_id, 
-                               task=task_id, 
-                               type=events, 
-                               extensions='tsv', 
+    event_list = bids_data.get(subject=subject_id,
+                               task=task_id,
+                               type=events,
+                               extensions='tsv',
                                return_type='file')
 
     if not event_list:
@@ -144,10 +145,10 @@ def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
     else:
         preproc_file = preproc_list[0]
     # confounds
-    confounds_list = derivatives_data.get(subject=subject_id, 
-                               task=task_id, 
-                               type=confounds, 
-                               extensions='tsv', 
+    confounds_list = derivatives_data.get(subject=subject_id,
+                               task=task_id,
+                               type=confounds,
+                               extensions='tsv',
                                return_type='file')
     if not confounds_list:
         raise Exception("No confound files were found for participant {}".format(subject_id))
@@ -182,6 +183,7 @@ def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
     inputnode = pe.Node(niu.IdentityInterface(fields=['subjects_dir']),
                         name='inputnode')
 
+
     #bidssrc = pe.Node(BIDSDataGrabber(subject_data=subject_data, anat_only=anat_only),
     #                  name='bidssrc')
 
@@ -193,15 +195,13 @@ def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
     #about = pe.Node(AboutSummary(version=__version__,
     #                             command=' '.join(sys.argv)),
     #                name='about', run_without_submitting=True)
-    
+
     #ds_summary_report = pe.Node(
     #    DerivativesDataSink(base_directory=reportlets_dir,
     #                        suffix='summary'),
     #    name='ds_summary_report', run_without_submitting=True)
-    
+
     #ds_about_report = pe.Node(
     #    DerivativesDataSink(base_directory=reportlets_dir,
     #                        suffix='about'),
     #    name='ds_about_report', run_without_submitting=True)
-    
-    
