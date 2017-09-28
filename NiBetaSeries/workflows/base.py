@@ -13,9 +13,10 @@ from copy import deepcopy
 from .preprocess import init_derive_residuals_wf
 from niworkflows.nipype.pipeline import engine as pe
 from niworkflows.nipype.interfaces import utility as niu
-def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline,
-                     bids_dir, output_dir, work_dir, space, variant, res,
-                     hrf_model, slice_time_ref, run_uuid, omp_nthreads):
+def init_nibetaseries_participant_wf(bids_dir, derivatives_pipeline, exclude_variant,
+                                     hrf_model, omp_nthreads, output_dir, res, run,
+                                     run_uuid, slice_time_ref, space, subject_list,
+                                     task_id, variant, work_dir):
     """
     This workflow organizes the execution of NiBetaSeries, with a sub-workflow for
     each subject.
@@ -66,21 +67,56 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
     nibetaseries_participant_wf.base_dir = work_dir
     reportlets_dir = os.path.join(work_dir, 'reportlets')
     for subject_id in subject_list:
-        single_subject_wf = init_single_subject_wf(
-        subject_list=subject_list,
-        task_id=task_id,
-        name="single_subject_" + subject_id + "_wf",
-        derivatives_pipeline=derivatives_pipeline,
-        bids_dir=bids_dir,
-        output_dir=output_dir,
-        work_dir=work_dir,
-        space=space,
-        variant=variant,
-        res=res,
-        hrf_model=hrf_model,
-        slice_time_ref=slice_time_ref,
-        run_uuid=run_uuid,
-        omp_nthreads=omp_nthreads
+        subject_data = collect_data(layout,
+                                    subject_id,
+                                    task=task_id,
+                                    run=run_id,
+                                    space=space)
+        # if you want to avoid using the ICA-AROMA variant
+        if exclude_variant:
+            subject_data['preproc'] = [preproc for preproc in subject_data['preproc'] if not 'variant' in preproc]
+        # if you only want to use a particular variant
+        if variant:
+            subject_data['preproc'] = [preproc for preproc in subject_data['preproc'] if variant in preproc]
+
+        # make sure the lists are the same length
+        # pray to god that they are in the same order?
+        # ^they appear to be in the same order
+        length = len(subject_data['preproc'])
+        print('\n'+subject_id)
+        print('preproc:{}'.format(str(length)))
+        print('confounds:{}'.format(str(len(subject_data['confounds']))))
+        print('brainmask:{}'.format(str(len(subject_data['brainmask']))))
+        print('AROMAnoiseICs:{}'.format(str(len(subject_data['AROMAnoiseICs']))))
+        print('MELODICmix:{}'.format(str(len(subject_data['MELODICmix']))))
+        if any(len(lst) != length for lst in [subject_data['brainmask'],
+                                              subject_data['confounds'],
+                                              subject_data['AROMAnoiseICs'],
+                                              subject_data['MELODICmix']]):
+            raise ValueError('input lists are not the same length!')
+
+        single_subject_wf = init_single_subject_wf(AROMAnoiseICs=subject_data['AROMAnoiseICs'],
+                                                   brainmask=subject_data['brainmask'],
+                                                   confounds=subject_data['confounds'],
+                                                   confound_names=confound_names,
+                                                   derivatives_pipeline=derivatives_pipeline,
+                                                   hrf_model=hrf_model,
+                                                   low_pass=low_pass,
+                                                   MELODICmix=subject_data['MELODICmix'],
+                                                   name='single_subject' + subject_id + '_wf',
+                                                   preproc=subject_data['preproc'],
+                                                   regfilt=regfilt,
+                                                   res=res,
+                                                   result_dir=result_dir,
+                                                   run_id=run_id,
+                                                   run_uuid=run_uuid,
+                                                   ses_id=ses_id,
+                                                   smooth=smooth,
+                                                   space=space,
+                                                   subject_id=subject_id,
+                                                   slice_time_ref=slice_time_ref,
+                                                   task_id=task_id,
+                                                   variant=variant
         )
 
         single_subject_wf.config['execution']['crashdump_dir'] = (
@@ -93,11 +129,18 @@ def init_nibetaseries_participant_wf(subject_list, task_id, derivatives_pipeline
         fmriprep_wf.add_nodes([single_subject_wf])
     return nibetaseries_participant_wf
 
-def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
-                     bids_dir, output_dir, work_dir, space, variant, res,
-                     hrf_model, slice_time_ref, run_uuid, omp_nthreads):
+def init_single_subject_wf(AROMAnoiseICs, brainmask, confounds, confound_names,
+                           derivatives_pipeline, hrf_model, low_pass, MELODICmix,
+                           name, preproc, regfilt, res, result_dir, run_id, run_uuid,
+                           ses_id, smooth, space, subject_id, slice_time_ref, task_id,
+                           variant):
+
     import pkg_resources as pkgr
     from bids.grabbids import BIDSLayout
+    
+    single_subject_wf = pe.Workflow(name=name)
+
+
     # for querying derivatives structure
     config_file = pkgr.resource_filename('NiBetaSeries', 'utils/bids_derivatives.json')
 
@@ -183,7 +226,7 @@ def init_single_subject_wf(subject_id, task_id, name, derivatives_pipeline,
     inputnode = pe.Node(niu.IdentityInterface(fields=['subjects_dir']),
                         name='inputnode')
 
-
+    return workflow
     #bidssrc = pe.Node(BIDSDataGrabber(subject_data=subject_data, anat_only=anat_only),
     #                  name='bidssrc')
 

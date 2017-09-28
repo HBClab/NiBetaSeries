@@ -4,7 +4,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 '''
 Workflow for doing preprocessing
-that FMRIPREP doesn't complete, and derives standardized residuals from bold
+that FMRIPREP doesn't complete, and derives residuals from bold
 
 -
 '''
@@ -12,11 +12,12 @@ that FMRIPREP doesn't complete, and derives standardized residuals from bold
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import niworkflows.nipype.pipeline.engine as pe
-from niworkflows.nipype.interfaces.utility import IdentityInterface
+from niworkflows.nipype.interfaces import utility as niu
+# from niworkflows.nipype.interfaces.utility import IdentityInterface
 from niworkflows.nipype.interfaces.fsl import ImageStats, MultiImageMaths, SUSAN
 from niworkflows.nipype.interfaces.fsl.utils import FilterRegressor
 from niworkflows.nipype.interfaces.fsl.maths import MeanImage
-from niworkflows.nipype.interfaces.utility import Function
+# from niworkflows.nipype.interfaces.utility import Function
 from nilearn.image import clean_img
 import nibabel as nib
 import pandas as pd
@@ -25,18 +26,46 @@ import pandas as pd
 def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
                              smooth=None, confound_names=None,
                              regfilt=False, lp=None):
-    inputnode = pe.Node(IdentityInterface(
+    r"""
+    This workflow derives the residual image from the preprocessed FMRIPREP image.
+
+    Parameters
+
+        name : str
+            name of the workflow
+        t_r : float
+            time of repetition to collect a volume
+        smooth : float or None
+            smoothing kernel to apply to image (mm)
+        confound_names : list of str or None
+            Column names from FMRIPREP's confounds tsv that were selected for
+            nuisance regression
+        regfilt : bool
+            Selects to run FilterRegressor from the output from ICA-AROMA
+        lp : float or None
+            The frequency to set low pass filter (in Hz)
+    """
+    # Steps
+    # 1) brain mask
+    # 2) smooth (optional)
+    # 3) regfilt (optional)
+    # 4) remove residuals
+
+    inputnode = pe.Node(niu.IdentityInterface(
         fields=['bold_preproc', 'bold_mask', 'confounds', 'MELODICmix',
                 'AROMAnoiseICs']),
         name='inputnode')
 
-    outputnode = pe.Node(IdentityInterface(
+    outputnode = pe.Node(niu.IdentityInterface(
         fields=['bold_resid']),
         name='outputnode')
 
     # Function to perform confound removal
     def remove_confounds(nii, confounds, t_r=2.0, confound_names=None, lp=None):
+        import nibabel as nib
+        import pandas as pd
         import os
+        from nilearn.image import clean_img
         img = nib.load(nii)
         confounds_pd = pd.read_csv(confounds, sep="\t")
         if confound_names is None:
@@ -57,27 +86,22 @@ def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
 
         return resid_nii
 
-    # Steps
-    # 1) brain mask
-    # 2) smooth (optional)
-    # 3) regfilt (optional)
-    # 4) remove residuals
-
     # brain mask node
-    mask_bold = pe.Node(MultiImageMaths(op_string='-bin %s'), name='mask_bold')
+    mask_bold = pe.Node(MultiImageMaths(op_string='-mul %s'), name='mask_bold')
     # optional smoothing workflow
     smooth_wf = init_smooth_wf(smooth=smooth)
     # optional filtering workflow
     filt_reg_wf = init_filt_reg_wf(regfilt=regfilt)
     # residual node
     calc_resid = pe.Node(name='calc_resid',
-                         interface=Function(input_names=['nii',
+                         interface=niu.Function(input_names=['nii',
                                                          'confounds',
                                                          't_r',
                                                          'confound_names',
                                                          'lp'],
                                             output_names=['nii_resid'],
                                             function=remove_confounds))
+
     # Predefined attributes
     calc_resid.inputs.t_r = t_r
     calc_resid.inputs.confound_names = confound_names
@@ -104,22 +128,29 @@ def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
 
 # fsl regfilt workflow
 def init_filt_reg_wf(name='filt_reg_wf', regfilt=None):
-    inputnode = pe.Node(IdentityInterface(
+    inputnode = pe.Node(niu.IdentityInterface(
         fields=['bold', 'bold_mask', 'MELODICmix', 'AROMAnoiseICs']),
         name='inputnode')
 
-    outputnode = pe.Node(IdentityInterface(
+    outputnode = pe.Node(niu.IdentityInterface(
         fields=['bold_regfilt']),
         name='outputnode')
 
     workflow = pe.Workflow(name=name)
     if regfilt:
+        def csv_to_list(csv_f):
+            import csv
+            with open(csv_f) as f:
+                reader = csv.reader(f, delimiter=str(','))
+                mlist = list(reader)[0]
+            return [int(x) for x in mlist]
+
         filter_regressor = pe.Node(FilterRegressor(), name='filter_regressor')
         workflow.connect([
             (inputnode, filter_regressor, [('bold', 'in_file'),
                                            ('bold_mask', 'mask'),
                                            ('MELODICmix', 'design_file'),
-                                           ('AROMAnoiseICs', 'filter_columns')]),
+                                           (('AROMAnoiseICs', csv_to_list), 'filter_columns')]),
             (filter_regressor, outputnode, [('out_file', 'bold_regfilt')]),
         ])
     else:
@@ -133,11 +164,11 @@ def init_filt_reg_wf(name='filt_reg_wf', regfilt=None):
 # smoothing workflow
 def init_smooth_wf(name='smooth_wf', smooth=None):
     workflow = pe.Workflow(name=name)
-    inputnode = pe.Node(IdentityInterface(
+    inputnode = pe.Node(niu.IdentityInterface(
         fields=['bold', 'bold_mask']),
         name='inputnode')
 
-    outputnode = pe.Node(IdentityInterface(
+    outputnode = pe.Node(niu.IdentityInterface(
         fields=['bold_smooth']),
         name='outputnode')
 
@@ -150,7 +181,7 @@ def init_smooth_wf(name='smooth_wf', smooth=None):
 
         def _getbtthresh(medianval):
             return 0.75 * medianval
-        getusans = pe.Node(Function(function=getusans_func, output_names=['usans']),
+        getusans = pe.Node(niu.Function(function=getusans_func, output_names=['usans']),
                            name='getusans', mem_gb=0.01)
 
         smooth = pe.Node(SUSAN(fwhm=smooth), name='smooth')
@@ -172,6 +203,3 @@ def init_smooth_wf(name='smooth_wf', smooth=None):
         ])
 
     return workflow
-
-# import NiBetaSeries.workflows.preprocess as proc
-# test_wf = proc.init_derive_residuals_wf(smooth=6,regfilt=True,lp=0.1)
