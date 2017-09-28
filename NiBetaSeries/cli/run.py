@@ -3,14 +3,13 @@
 from __future__ import absolute_import
 import os
 from multiprocessing import cpu_count
-from nilearn import plotting
-from nistats.first_level_model import first_level_models_from_bids
-import nibabel as nib
+# from nilearn import plotting
+# import nibabel as nib
 import argparse
 import subprocess
-import numpy
+# import numpy
 from glob import glob
-from bids.grabbids import BIDSLayout
+# from bids.grabbids import BIDSLayout
 from niworkflows.nipype import config as ncfg
 from time import strftime
 import uuid
@@ -67,16 +66,36 @@ def get_parser():
     parser.add_argument('-v', '--version', action='version',
                         version='NiBetaSeries {}'.format(__version__))
 
-    # Derivative Specific Options
-    derivatives = parser.add_argument_group('Options for derivatives')
-    derivatives.add_argument('-t', '--task_id', action='store',
-                             help='select a specific task to be processed')
-    derivatives.add_argument('-s', '--space', action='store',
-                             help='select a bold derivative in a specific space to be used')
-    derivatives.add_argument('--variant', action='store',
-                             help='select a variant bold to process')
-    derivatives.add_argument('-r', '--res', action='store',
-                             help='select a resolution to analyze')
+    # preprocessing options
+    proc_opts = parser.add_argument_group('Options for preprocessing')
+    proc_opts.add_argument('-sm', '--smooth', action='store', type=float,
+                           help='select a smoothing kernel (mm)')
+    proc_opts.add_argument('-l', '--low_pass', action='store', type=float,
+                           default=None, help='low pass filter')
+    proc_opts.add_argument('-f', '--regfilt', action='store_true', default=False,
+                           help='Do non-aggressive filtering from ICA-AROMA')
+    proc_opts.add_argument('-c', '--confounds', help='The confound column names '
+                           'that are to be included in nuisance regression. '
+                           'write the confounds you wish to include separated by a space',
+                           nargs="+")
+
+    # Image Selection options
+    image_opts = parser.add_argument_group('Options for selecting images')
+    image_opts.add_argument('-t', '--task_id', action='store',
+                            default=None, help='select a specific task to be processed')
+    image_opts.add_argument('-sp', '--space', action='store',
+                            default=None, help='select a bold derivative in a '
+                                               'specific space to be used')
+    image_opts.add_argument('--variant', action='store',
+                            default=None, help='select a variant bold to process')
+    image_opts.add_argument('--exclude_variant', action='store_true',
+                            default=False, help='exclude the variant from FMRIPREP')
+    image_opts.add_argument('-r', '--res', action='store',
+                            default=None, help='select a resolution to analyze')
+    image_opts.add_argument('--run', action='store',
+                            default=None, help='select a run to analyze')
+    image_opts.add_argument('--ses', action='store',
+                            default=None, help='select a session to analyze')
 
     # BetaSeries Specific Options
     beta_series = parser.add_argument_group('Options for processing beta_series')
@@ -109,8 +128,12 @@ def get_parser():
 
     # misc options
     misc = parser.add_argument_group('misc options')
-    misc.add_argument('--bids_check', help='Validates the input bids dataset, requires the installation of \'bids-validator\'',
+    misc.add_argument('--bids_check', help='Validates the input bids dataset, '
+                      'requires the installation of \'bids-validator\'',
                       action='store_true')
+    misc.add_argument('--graph', action='store_true', default=False,
+                      help='generates a graph png of the workflow')
+
     return parser
 
 
@@ -142,8 +165,10 @@ def main():
 
     # Nipype config (logs and execution)
     ncfg.update_config({
-        'logging': {'log_directory': log_dir, 'log_to_file': True},
-        'execution': {'crashdump_dir': log_dir, 'crashfile_format': 'txt'},
+        'logging': {'log_directory': log_dir,
+                    'log_to_file': True},
+        'execution': {'crashdump_dir': log_dir,
+                      'crashfile_format': 'txt'},
     })
 
     # only for a subset of subjects
@@ -186,25 +211,28 @@ def main():
     if opts.analysis_level == "participant":
 
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
+            bids_dir=bids_dir,
+            derivatives_pipeline=opts.derivatives_pipeline,
+            exclude_variant=opts.exclude_variant,
+            hrf_model=opts.hrf_model,
+            omp_nthreads=omp_nthreads,
+            output_dir=output_dir,
+            res=opts.res,
+            run=opts.run,
+            run_uuid=run_uuid,
+            slice_time_ref=opts.slice_time_ref,
+            space=opts.space,
             subject_list=subject_list,
             task_id=opts.task_id,
-            derivatives_pipeline=opts.derivatives_pipeline,
-            bids_dir=bids_dir,
-            output_dir=output_dir,
-            work_dir=work_dir,
-            space=opts.space,
             variant=opts.variant,
-            res=opts.res,
-            hrf_model=opts.hrf_model,
-            slice_time_ref=opts.slice_time_ref,
-            run_uuid=run_uuid,
-            omp_nthreads=omp_nthreads
+            work_dir=work_dir,
         )
 
     try:
         nibetaseries_participant_wf.run(**plugin_settings)
     except RuntimeError as e:
         if "Workflow did not execute cleanly" in str(e):
+            # variable currently not used
             errno = 1
         else:
             raise(e)
@@ -221,20 +249,27 @@ def main():
 
     # for sub_idx,sub_model in enumerate(models):
     #     for run_idx, run_events in enumerate(models_events[sub_idx]):
-    #         run_events.sort_values(columns=['trial_type', 'onset'],ascending=[True, True],inplace=True,axis=0)
+    #         run_events.sort_values(columns=['trial_type', 'onset'],
+    #                                ascending=[True, True],inplace=True,axis=0)
     #         run_events_temp = run_events.copy()
     #         run_events_temp['trial_type'] = 'other_trials'
     #         for trial in range(len(run_events)):
     #             #if the condition changes (make sure to order the conditions)
-    #             if trial != 0 and run_events.loc[trial, 'trial_type'] != run_events.loc[trial-1, 'trial_type']:
+    #             if trial != 0 and
+    #                 run_events.loc[trial, 'trial_type'] !=
+    #                 run_events.loc[trial-1, 'trial_type']:
 
     #             run_events_temp.loc[trial, 'trial_type'] = run_events.loc[trial, 'trial_type']
     #             #fitmodel
     #             sub_model.fit(models_run_imgs[sub_idx][run_idx],run_events_temp)
     #             #compute contrast
-    #             img = sub_model.compute_contrast(contrast_def=run_events_temp.loc[trial, 'trial_type'], output_type='effect_size')
+    #             img = sub_model.compute_contrast(
+    #                contrast_def=run_events_temp.loc[trial, 'trial_type'],
+    #                output_type='effect_size')
     #             #save img
-    #             nib.save(img, os.path.join(data_dir2,'derivatives/nistats_betaseries/sub-GE140_2','sub-GE140'+run_events_temp.loc[trial,'trial_type']+str(trial)))
+    #             nib.save(img,
+    #                      os.path.join(data_dir2,'derivatives/nistats_betaseries/sub-GE140_2',
+    #                      'sub-GE140'+run_events_temp.loc[trial,'trial_type']+str(trial)))
     #             run_events_temp.loc[trial, 'trial_type'] = 'other_trials'
 
     # # running group level
