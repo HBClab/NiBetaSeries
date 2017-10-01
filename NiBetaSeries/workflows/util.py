@@ -144,7 +144,7 @@ def init_subject_info_wf(name='subject_info_wf'):
                          name='input_node')
 
     output_node = pe.Node(IdentityInterface(fields=['subject_info', 'input_units',
-                                                     'time_repetition'])
+                                                     'time_repetition']),
                            name='output_node')
 
     bids_data_node = pe.Node(
@@ -245,9 +245,7 @@ def collect_participants(bids_dir, participant_label=None, strict=False):
     return found_label
 
 
-def collect_data(bids_dir, participant_label, 
-                 task=None, run=None, space=None, variant=None):
-    import os
+def collect_data(layout, participant_label, deriv=False, ses=None, task=None, run=None, space=None):
     """
     Uses grabbids to retrieve the input data for a given participant
     >>> bids_root, _ = collect_data('ds054', '100185')
@@ -274,64 +272,54 @@ def collect_data(bids_dir, participant_label,
     >>> bids_root['t2w']  # doctest: +ELLIPSIS
     []
     """
-    config_file=pkgr.resource_filename('NiBetaSeries', 'utils/bids_derivatives.json')
-    bids_layout = BIDSLayout(bids_dir,config=config_file)
-    
-    bids_queries = {
-        'events': {'type': events, 'modality': 'func',
-                 'extensions': ['tsv']},
-    }
-    if task:
-        queries['bold']['task'] = task
+    if deriv:
+        queries = {
+            'preproc': {'subject': participant_label, 'modality': 'func', 'type': 'preproc',
+                     'extensions': ['nii', 'nii.gz']},
+            'brainmask': {'subject': participant_label, 'modality': 'func', 'type': 'brainmask',
+                      'extensions': ['nii', 'nii.gz']},
+            'AROMAnoiseICs': {'subject': participant_label, 'modality': 'func', 'type': 'AROMAnoiseICs',
+                    'extensions': '.csv'},
+            'MELODICmix': {'subject': participant_label, 'modality': 'func', 'type': 'MELODICmix',
+                    'extensions': 'tsv'},
+            'confounds': {'subject': participant_label, 'modality': 'func', 'type': 'confounds',
+                    'extensions': 'tsv'},
+        }
 
-    # pipeline
-    deriv_dir = os.path.join(bids_dir,'derivatives',pipeline)
-    deriv_layout = BIDSLayout(deriv_dir)
+        if task:
+            queries['preproc']['task'] = task
+            queries['brainmask']['task'] = task
+            queries['AROMAnoiseICs']['task'] = task
+            queries['MELODICmix']['task'] = task
+            queries['confounds']['task'] = task
+        if run:
+            queries['preproc']['run'] = run
+            queries['brainmask']['run'] = run
+            queries['AROMAnoiseICs']['run'] = run
+            queries['MELODICmix']['run'] = run
+            queries['confounds']['run'] = run
+        if space:
+            queries['preproc']['space'] = space
+            queries['brainmask']['space'] = space
+        if ses:
+            queries['preproc']['ses'] = ses
+            queries['brainmask']['ses'] = ses
+            queries['AROMAnoiseICs']['ses'] = ses
+            queries['MELODICmix']['ses'] = ses
+            queries['confounds']['ses'] = ses
 
-    
+    else:
+        queries = {
+            'events': {'subject': participant_label, 'modality': 'func', 'type': 'events',
+                    'extensions': 'tsv'},
+        }
+
+        if run:
+            queries['events']['run'] = run
+        if task:
+            queries['events']['task'] = task
+        if ses:
+            queries['events']['ses'] = ses
 
     return {modality: [x.filename for x in layout.get(**query)]
-            for modality, query in queries.items()}, layout
-# class ReadSidecarJSONInputSpec(BaseInterfaceInputSpec):
-#     in_file = File(exists=True, mandatory=True, desc='the input nifti file')
-#     fields = traits.List(traits.Str, desc='get only certain fields')
-#
-#
-# class ReadSidecarJSONOutputSpec(TraitedSpec):
-#     subject_id = traits.Str()
-#     session_id = traits.Str()
-#     task_id = traits.Str()
-#     acq_id = traits.Str()
-#     rec_id = traits.Str()
-#     run_id = traits.Str()
-#     out_dict = traits.Dict()
-#
-#
-# class ReadSidecarJSON(SimpleInterface):
-#     """
-#     An utility to find and read JSON sidecar files of a BIDS tree
-#     """
-#     expr = re.compile('^sub-(?P<subject_id>[a-zA-Z0-9]+)(_ses-(?P<session_id>[a-zA-Z0-9]+))?'
-#                       '(_task-(?P<task_id>[a-zA-Z0-9]+))?(_acq-(?P<acq_id>[a-zA-Z0-9]+))?'
-#                       '(_rec-(?P<rec_id>[a-zA-Z0-9]+))?(_run-(?P<run_id>[a-zA-Z0-9]+))?')
-#     input_spec = ReadSidecarJSONInputSpec
-#     output_spec = ReadSidecarJSONOutputSpec
-#     _always_run = True
-#
-#     def _run_interface(self, runtime):
-#         metadata = get_metadata_for_nifti(self.inputs.in_file)
-#         output_keys = [key for key in list(self.output_spec().get().keys()) if key.endswith('_id')]
-#         outputs = self.expr.search(op.basename(self.inputs.in_file)).groupdict()
-#
-#         for key in output_keys:
-#             id_value = outputs.get(key)
-#             if id_value is not None:
-#                 self._results[key] = outputs.get(key)
-#
-#         if isdefined(self.inputs.fields) and self.inputs.fields:
-#             for fname in self.inputs.fields:
-#                 self._results[fname] = metadata[fname]
-#         else:
-#             self._results['out_dict'] = metadata
-#
-#         return runtime
+            for modality, query in queries.items()}

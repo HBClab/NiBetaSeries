@@ -212,6 +212,7 @@ def main():
 
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
             bids_dir=bids_dir,
+            confound_names=opts.confounds,
             derivatives_pipeline=opts.derivatives_pipeline,
             exclude_variant=opts.exclude_variant,
             hrf_model=opts.hrf_model,
