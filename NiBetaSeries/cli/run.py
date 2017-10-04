@@ -78,6 +78,8 @@ def get_parser():
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
                            nargs="+")
+    proc_opts.add_argument('-w', '--work_dir', help='directory where temporary files '
+                           'are stored')
 
     # Image Selection options
     image_opts = parser.add_argument_group('Options for selecting images')
@@ -101,6 +103,7 @@ def get_parser():
     beta_series = parser.add_argument_group('Options for processing beta_series')
     beta_series.add_argument('--hrf_model', help='convolve your regressors '
                              'with one of the following hrfs',
+                             default='glover',
                              choices=['glover', 'spm', 'fir',
                                       'gloverDerivative',
                                       'gloverDerivativeDispersion',
@@ -168,7 +171,8 @@ def main():
         'logging': {'log_directory': log_dir,
                     'log_to_file': True},
         'execution': {'crashdump_dir': log_dir,
-                      'crashfile_format': 'txt'},
+                      'crashfile_format': 'txt',
+                      'parameterize_dirs': False,},
     })
 
     # only for a subset of subjects
@@ -210,18 +214,27 @@ def main():
     # running participant level
     if opts.analysis_level == "participant":
 
+# bids_dir, confound_names, derivatives_pipeline,
+#  exclude_variant, hrf_model, low_pass, omp_nthreads,
+#  output_dir, regfilt, res, run_id, run_uuid, ses_id,
+#  slice_time_ref, smooth, space, subject_list, task_id,
+#  variant, work_dir
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
             bids_dir=bids_dir,
             confound_names=opts.confounds,
             derivatives_pipeline=opts.derivatives_pipeline,
             exclude_variant=opts.exclude_variant,
             hrf_model=opts.hrf_model,
+            low_pass=opts.low_pass,
             omp_nthreads=omp_nthreads,
             output_dir=output_dir,
+            regfilt=opts.regfilt,
             res=opts.res,
-            run=opts.run,
+            run_id=opts.run,
             run_uuid=run_uuid,
+            ses_id=opts.ses,
             slice_time_ref=opts.slice_time_ref,
+            smooth=opts.smooth,
             space=opts.space,
             subject_list=subject_list,
             task_id=opts.task_id,
@@ -284,5 +297,5 @@ def main():
 
 
 if __name__ == '__main__':
-    raise RuntimeError("fmriprep/cli/run.py should not be run directly;\n"
-                       "Please `pip install` fmriprep and use the `fmriprep` command")
+    raise RuntimeError("NiBetaSeries/cli/run.py should not be run directly;\n"
+                       "Please `pip install` NiBetaSeries and use the `NIBS` command")

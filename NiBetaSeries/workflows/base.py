@@ -11,6 +11,7 @@ import os
 from copy import deepcopy
 from .util import collect_data
 from .preprocess import init_derive_residuals_wf
+from .model import init_betaseries_wf
 from niworkflows.nipype.pipeline import engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 import pkg_resources as pkgr
@@ -154,15 +155,66 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
             node.config = deepcopy(single_subject_wf.config)
 
         nibetaseries_participant_wf.add_nodes([single_subject_wf])
+
     return nibetaseries_participant_wf
 
 
 def init_single_subject_wf(AROMAnoiseICs, brainmask, confounds, confound_names,
                            events, hrf_model, low_pass, MELODICmix,
-                           name, preproc, regfilt, res, result_dir, run_id, run_uuid,
+                           name, preproc, regfilt, res, run_id, run_uuid,
                            ses_id, smooth, space, subject_id, slice_time_ref, task_id,
                            variant):
+    workflow = pe.Workflow(name=name)
 
-    single_subject_wf = pe.Workflow(name=name)
+    # name the nodes
+    inputnode = pe.Node(niu.IdentityInterface(fields=['AROMAnoiseICs',
+                                                      'brainmask',
+                                                      'confounds',
+                                                      'events',
+                                                      'MELODICmix',
+                                                      'preproc']),
+                        name='inputnode',
+                        iterables=[('AROMAnoiseICs', AROMAnoiseICs),
+                                   ('brainmask', brainmask),
+                                   ('confounds', confounds),
+                                   ('events', events),
+                                   ('MELODICmix', MELODICmix),
+                                   ('preproc', preproc)],
+                       synchronize=True)
 
-    return single_subject_wf
+
+    # inputnode.inputs.AROMAnoiseICs = AROMAnoiseICs
+    # inputnode.inputs.brainmask = brainmask
+    # inputnode.inputs.confounds = confounds
+    # inputnode.inputs.events = events
+    # inputnode.inputs.MELODICmix = MELODICmix
+    # inputnode.inputs.preproc = preproc
+
+    outputnode = pe.Node(niu.IdentityInterface(fields=['betas']),
+                         name='outputnode')
+
+    # preproc_wf = init_derive_residuals_wf()
+    preproc_wf = init_derive_residuals_wf(
+        lp=low_pass,
+        smooth=smooth,
+        confound_names=confound_names,
+        regfilt=regfilt,
+    )
+
+    betaseries_wf = init_betaseries_wf()
+
+    # connect the nodes
+    workflow.connect([
+        (inputnode, preproc_wf, [('AROMAnoiseICs', 'inputnode.AROMAnoiseICs'),
+                                 ('MELODICmix', 'inputnode.MELODICmix'),
+                                 ('brainmask', 'inputnode.bold_mask'),
+                                 ('confounds', 'inputnode.confounds'),
+                                 ('preproc', 'inputnode.bold_preproc')]),
+        (preproc_wf, betaseries_wf, [('outputnode.bold_resid', 'inputnode.bold')]),
+        (inputnode, betaseries_wf, [('events', 'inputnode.events'),
+                                    ('brainmask', 'inputnode.bold_mask')]),
+    ])
+
+
+
+    return workflow
