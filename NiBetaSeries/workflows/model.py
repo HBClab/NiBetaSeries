@@ -45,6 +45,7 @@ def init_betaseries_wf(name="betaseries_wf",
         import time
         import nibabel as nib
         import os
+        from glob import glob
 
         def trial_events_iterator(events):
             trial_counter = dict([(t, 0) for t in np.unique(events['trial_type'])])
@@ -62,12 +63,20 @@ def init_betaseries_wf(name="betaseries_wf",
 
         events_df = pd.read_csv(events, sep='\t', index_col=None)
 
+        t_type_prev = 0
+        beta_list = []
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
+            if t_type_prev != 0 or t_type_prev != t_type:
+                nib.funcs.concat(beta_list)
+                beta_list = []
             beta_path = os.path.join(os.getcwd(), 'betaseries')
+
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
+
             beta_file = os.path.join(
                 os.getcwd(), 'betaseries', '%s_%03d_es.nii' % (t_type, t_idx))
+
             if not os.path.exists(beta_file):
                 # Estimate and save model
                 print('Estimating trial %03d of %03d' %
@@ -79,10 +88,13 @@ def init_betaseries_wf(name="betaseries_wf",
                     model.refit_run_design(bold, t_ev, None)  # had to remove conf
 
                 beta = model.compute_contrast(t_type, output_type='effect_size')
-                nib.save(beta, beta_file)
+                beta_list.append(beta)
+                # nib.save(beta, beta_file)
+
                 print('Done in %d seconds' %
                       (time.time() - start_time))
 
+        # return the directory
         return os.path.join(os.getcwd(), 'betaseries')
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['bold',
@@ -93,6 +105,8 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries = pe.Node(niu.Function(function=run_betaseries,
                                       out_names=['betaseries_dir']),
                          name='betaseries')
+
+    # Set inputs to betaseries
     betaseries.inputs.t_r = t_r
     betaseries.inputs.slice_time_ref = slice_time_ref
     betaseries.inputs.hrf_model = hrf_model
