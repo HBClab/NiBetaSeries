@@ -146,9 +146,10 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
             space=space,
             subject_id=subject_id,
             slice_time_ref=slice_time_ref,
+            target_mni_warp=deriv_subject_data['target_mni_warp'],
+            target_t1w_warp=deriv_subject_data['target_t1w_warp'],
             task_id=task_id,
             variant=variant,
-            warp=deriv_subject_data['warp'],
         )
 
         single_subject_wf.config['execution']['crashdump_dir'] = (
@@ -166,8 +167,8 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
 def init_single_subject_wf(AROMAnoiseICs, brainmask, confounds, confound_names,
                            events, hrf_model, low_pass, MELODICmix,
                            mni_roi_coords, name, preproc, regfilt, roi_size, res, run_id, run_uuid,
-                           ses_id, smooth, space, subject_id, slice_time_ref, task_id,
-                           variant, warp):
+                           ses_id, smooth, space, subject_id, slice_time_ref,
+                           target_mni_warp, target_t1w_warp, task_id, variant):
     workflow = pe.Workflow(name=name)
 
     # name the nodes
