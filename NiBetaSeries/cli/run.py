@@ -117,6 +117,10 @@ def get_parser():
                              '0, if it is in the middle, the value is '
                              '0.5, and if the reference slice is at the end, the value is 1',
                              action='store', default=0.5)
+    beta_series.add_argument('--mni_roi_coords', help='A csv file that desribes the '
+                             '"x,y,z,t" coordinates of interest in MNI space')
+    beta_series.add_argument('--roi_size', help='spherical radius (mm) of roi components',
+                             type=int, default=12)
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
@@ -226,10 +230,12 @@ def main():
             exclude_variant=opts.exclude_variant,
             hrf_model=opts.hrf_model,
             low_pass=opts.low_pass,
+            mni_roi_coords=opts.mni_roi_coords,
             omp_nthreads=omp_nthreads,
             output_dir=output_dir,
             regfilt=opts.regfilt,
             res=opts.res,
+            roi_size=opts.roi_size,
             run_id=opts.run,
             run_uuid=run_uuid,
             ses_id=opts.ses,

@@ -284,6 +284,8 @@ def collect_data(layout, participant_label, deriv=False, ses=None, task=None, ru
                     'extensions': 'tsv'},
             'confounds': {'subject': participant_label, 'modality': 'func', 'type': 'confounds',
                     'extensions': 'tsv'},
+            'warp': {'subject': participant_label, 'modality': 'anat', 'type': 'warp',
+                'target': 'T1w', 'extensions': 'h5'},
         }
 
         if task:

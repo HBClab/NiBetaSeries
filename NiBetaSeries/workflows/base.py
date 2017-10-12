@@ -12,6 +12,7 @@ from copy import deepcopy
 from .util import collect_data
 from .preprocess import init_derive_residuals_wf
 from .model import init_betaseries_wf
+from .analysis import init_single_subject_correlation_wf
 from niworkflows.nipype.pipeline import engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 import pkg_resources as pkgr
@@ -19,10 +20,10 @@ from bids.grabbids import BIDSLayout
 
 
 def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipeline,
-                                     exclude_variant, hrf_model, low_pass, omp_nthreads,
-                                     output_dir, regfilt, res, run_id, run_uuid, ses_id,
-                                     slice_time_ref, smooth, space, subject_list, task_id,
-                                     variant, work_dir):
+                                     exclude_variant, hrf_model, low_pass, mni_roi_coords,
+                                     omp_nthreads, output_dir, regfilt, roi_size, res, run_id,
+                                     run_uuid, ses_id, slice_time_ref, smooth, space,
+                                     subject_list, task_id, variant, work_dir):
     """
     This workflow organizes the execution of NiBetaSeries, with a sub-workflow for
     each subject.
@@ -132,10 +133,12 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
             hrf_model=hrf_model,
             low_pass=low_pass,
             MELODICmix=deriv_subject_data['MELODICmix'],
+            mni_roi_coords=mni_roi_coords,
             name='single_subject' + subject_id + '_wf',
             preproc=deriv_subject_data['preproc'],
             regfilt=regfilt,
             res=res,
+            roi_size=roi_size,
             run_id=run_id,
             run_uuid=run_uuid,
             ses_id=ses_id,
@@ -144,7 +147,8 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
             subject_id=subject_id,
             slice_time_ref=slice_time_ref,
             task_id=task_id,
-            variant=variant
+            variant=variant,
+            warp=deriv_subject_data['warp'],
         )
 
         single_subject_wf.config['execution']['crashdump_dir'] = (
@@ -161,9 +165,9 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
 
 def init_single_subject_wf(AROMAnoiseICs, brainmask, confounds, confound_names,
                            events, hrf_model, low_pass, MELODICmix,
-                           name, preproc, regfilt, res, run_id, run_uuid,
+                           mni_roi_coords, name, preproc, regfilt, roi_size, res, run_id, run_uuid,
                            ses_id, smooth, space, subject_id, slice_time_ref, task_id,
-                           variant):
+                           variant, warp):
     workflow = pe.Workflow(name=name)
 
     # name the nodes
@@ -201,8 +205,10 @@ def init_single_subject_wf(AROMAnoiseICs, brainmask, confounds, confound_names,
         regfilt=regfilt,
     )
 
+    # initialize the betaseries workflow
     betaseries_wf = init_betaseries_wf()
 
+    # initialize the analysis workflow
     # connect the nodes
     workflow.connect([
         (inputnode, preproc_wf, [('AROMAnoiseICs', 'inputnode.AROMAnoiseICs'),

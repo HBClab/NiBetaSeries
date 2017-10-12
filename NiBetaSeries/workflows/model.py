@@ -4,7 +4,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 '''
 Workflow for setting up the model for BetaSeries Correlatiion.
-makes and executes a model within the fsl pipeline.
+makes and executes a model using nistats.
 '''
 from __future__ import print_function, division, absolute_import, unicode_literals
 
@@ -65,11 +65,15 @@ def init_betaseries_wf(name="betaseries_wf",
 
         t_type_prev = 0
         beta_list = []
+        beta_path = os.path.join(os.getcwd(), 'betaseries')
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
             if t_type_prev != 0 or t_type_prev != t_type:
-                nib.funcs.concat(beta_list)
+                betaseries = nib.funcs.concat(beta_list)
+                betaseries_file = os.path.join(beta_path,
+                    '{}_betaseries.nii.gz'.format(t_type_prev))
+                nib.save(betaseries, betaseries_file)
                 beta_list = []
-            beta_path = os.path.join(os.getcwd(), 'betaseries')
+
 
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
