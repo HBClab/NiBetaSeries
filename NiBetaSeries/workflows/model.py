@@ -14,14 +14,6 @@ import niworkflows.nipype.pipeline.engine as pe
 # from niworkflows.nipype.algorithms.modelgen import SpecifyModel
 # from niworkflows.nipype.interfaces.fsl.model import Level1Design, FEATModel
 from niworkflows.nipype.interfaces import utility as niu
-from nistats.first_level_model import FirstLevelModel
-
-import os
-# from bids.grabbids import BIDSLayout
-import numpy as np
-import pandas as pd
-import time
-import nibabel as nib
 
 
 def init_betaseries_wf(name="betaseries_wf",
@@ -45,7 +37,6 @@ def init_betaseries_wf(name="betaseries_wf",
         import time
         import nibabel as nib
         import os
-        from glob import glob
 
         def trial_events_iterator(events):
             trial_counter = dict([(t, 0) for t in np.unique(events['trial_type'])])
@@ -69,11 +60,10 @@ def init_betaseries_wf(name="betaseries_wf",
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
             if t_type_prev != 0 or t_type_prev != t_type:
                 betaseries = nib.funcs.concat(beta_list)
-                betaseries_file = os.path.join(beta_path,
-                    '{}_betaseries.nii.gz'.format(t_type_prev))
+                betaseries_file = os.path.join(
+                    beta_path, '{}_betaseries.nii.gz'.format(t_type_prev))
                 nib.save(betaseries, betaseries_file)
                 beta_list = []
-
 
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
@@ -122,7 +112,7 @@ def init_betaseries_wf(name="betaseries_wf",
         (inputnode, betaseries, [('bold', 'bold'),
                                  ('events', 'events'),
                                  ('bold_mask', 'bold_mask')]),
-       (betaseries, outputnode, [('betaseries_dir', 'betaseries_dir')]),
+        (betaseries, outputnode, [('betaseries_dir', 'betaseries_dir')]),
     ])
 
     return workflow
