@@ -6,13 +6,12 @@
 NiBetaSeries processing workflows
 """
 from __future__ import print_function, division, absolute_import, unicode_literals
-import sys
 import os
 from copy import deepcopy
 from .util import collect_data
 from .preprocess import init_derive_residuals_wf
 from .model import init_betaseries_wf
-from .analysis import init_single_subject_correlation_wf
+from .analysis import init_correlation_wf
 from niworkflows.nipype.pipeline import engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 import pkg_resources as pkgr
@@ -74,7 +73,7 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
     """
     nibetaseries_participant_wf = pe.Workflow(name='nibetaseries_participant_wf')
     nibetaseries_participant_wf.base_dir = os.path.join(work_dir, 'NiBetaSeries_work')
-    reportlets_dir = os.path.join(work_dir, 'reportlets')
+    # reportlets_dir = os.path.join(work_dir, 'reportlets')
     bids_deriv_config = pkgr.resource_filename('NiBetaSeries', 'data/bids_derivatives.json')
     derivatives_dir = os.path.join(bids_dir, 'derivatives', derivatives_pipeline)
     derivatives_layout = BIDSLayout(derivatives_dir, config=bids_deriv_config)
@@ -167,9 +166,10 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
 
 def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_names,
                            events, hrf_model, low_pass, MELODICmix, mni_brainmask,
-                           mni_roi_coords, name, preproc, regfilt, roi_size, res, run_id, run_uuid,
-                           ses_id, smooth, space, subject_id, slice_time_ref,
-                           target_mni_warp, target_t1w_warp, task_id, variant):
+                           mni_roi_coords, name, preproc, regfilt, roi_radius,
+                           res, run_id, run_uuid, ses_id, smooth, space,
+                           subject_id, slice_time_ref, target_mni_warp,
+                           target_t1w_warp, task_id, variant):
     workflow = pe.Workflow(name=name)
 
     # name the nodes
@@ -181,14 +181,17 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
                                                       'preproc']),
                         name='inputnode',
                         iterables=[('AROMAnoiseICs', AROMAnoiseICs),
-                                   ('bold_brainmask', brainmask),
+                                   ('bold_brainmask', bold_brainmask),
                                    ('confounds', confounds),
                                    ('events', events),
                                    ('MELODICmix', MELODICmix),
                                    ('preproc', preproc)],
-                       synchronize=True)
+                        synchronize=True)
 
-
+    inputnode.inputs.mni_roi_coords = mni_roi_coords
+    inputnode.inputs.mni_brainmask = mni_brainmask
+    inputnode.inputs.target_mni_warp = target_mni_warp
+    inputnode.inputs.target_t1w_warp = target_t1w_warp
     # inputnode.inputs.AROMAnoiseICs = AROMAnoiseICs
     # inputnode.inputs.brainmask = brainmask
     # inputnode.inputs.confounds = confounds
@@ -196,7 +199,7 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
     # inputnode.inputs.MELODICmix = MELODICmix
     # inputnode.inputs.preproc = preproc
 
-    outputnode = pe.Node(niu.IdentityInterface(fields=['betas']),
+    outputnode = pe.Node(niu.IdentityInterface(fields=['zmaps_mni']),
                          name='outputnode')
 
     # preproc_wf = init_derive_residuals_wf()
@@ -211,6 +214,7 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
     betaseries_wf = init_betaseries_wf()
 
     # initialize the analysis workflow
+    correlation_wf = init_correlation_wf(roi_radius=roi_radius)
     # connect the nodes
     workflow.connect([
         (inputnode, preproc_wf, [('AROMAnoiseICs', 'inputnode.AROMAnoiseICs'),
@@ -221,8 +225,13 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
         (preproc_wf, betaseries_wf, [('outputnode.bold_resid', 'inputnode.bold')]),
         (inputnode, betaseries_wf, [('events', 'inputnode.events'),
                                     ('bold_brainmask', 'inputnode.bold_mask')]),
+        (betaseries_wf, correlation_wf, [('outputnode.betas', 'inputnode.betas')]),
+        (inputnode, correlation_wf, [('bold_brainmask', 'inputnode.bold_mask'),
+                                     ('mni_roi_coords', 'inputnode.mni_roi_coords'),
+                                     ('mni_brainmask', 'inputnode.t1w_space_mni_mask'),
+                                     ('target_t1w_warp', 'inputnode.target_t1w_warp'),
+                                     ('target_mni_warp', 'inputnode.target_mni_warp')]),
+        (correlation_wf, outputnode, [('outputnode.zmaps_mni', 'zmaps_mni')])
     ])
-
-
 
     return workflow
