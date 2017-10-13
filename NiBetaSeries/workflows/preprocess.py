@@ -13,14 +13,9 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 import niworkflows.nipype.pipeline.engine as pe
 from niworkflows.nipype.interfaces import utility as niu
-# from niworkflows.nipype.interfaces.utility import IdentityInterface
 from niworkflows.nipype.interfaces.fsl import ImageStats, MultiImageMaths, SUSAN
 from niworkflows.nipype.interfaces.fsl.utils import FilterRegressor
 from niworkflows.nipype.interfaces.fsl.maths import MeanImage
-# from niworkflows.nipype.interfaces.utility import Function
-from nilearn.image import clean_img
-import nibabel as nib
-import pandas as pd
 
 
 def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
@@ -95,12 +90,12 @@ def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,
     # residual node
     calc_resid = pe.Node(name='calc_resid',
                          interface=niu.Function(input_names=['nii',
-                                                         'confounds',
-                                                         't_r',
-                                                         'confound_names',
-                                                         'lp'],
-                                            output_names=['nii_resid'],
-                                            function=remove_confounds))
+                                                             'confounds',
+                                                             't_r',
+                                                             'confound_names',
+                                                             'lp'],
+                                                output_names=['nii_resid'],
+                                                function=remove_confounds))
 
     # Predefined attributes
     calc_resid.inputs.t_r = t_r
