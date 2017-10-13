@@ -9,10 +9,6 @@ makes and executes a model using nistats.
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import niworkflows.nipype.pipeline.engine as pe
-# from niworkflows.nipype.interfaces import io as nio
-# from niworkflows.nipype.interfaces.base import Bunch
-# from niworkflows.nipype.algorithms.modelgen import SpecifyModel
-# from niworkflows.nipype.interfaces.fsl.model import Level1Design, FEATModel
 from niworkflows.nipype.interfaces import utility as niu
 
 
