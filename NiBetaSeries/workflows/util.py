@@ -276,8 +276,10 @@ def collect_data(layout, participant_label, deriv=False, ses=None, task=None, ru
         queries = {
             'preproc': {'subject': participant_label, 'modality': 'func', 'type': 'preproc',
                      'extensions': ['nii', 'nii.gz']},
-            'brainmask': {'subject': participant_label, 'modality': 'func', 'type': 'brainmask',
+            'bold_brainmask': {'subject': participant_label, 'modality': 'func', 'type': 'brainmask',
                       'extensions': ['nii', 'nii.gz']},
+            'mni_brainmask': {'subject': participant_label, 'modality': 'anat', 'type': 'brainmask',
+                       'space': 'MNI152NLin2009cAsym', 'extensions': ['nii', 'nii.gz']},
             'AROMAnoiseICs': {'subject': participant_label, 'modality': 'func', 'type': 'AROMAnoiseICs',
                     'extensions': '.csv'},
             'MELODICmix': {'subject': participant_label, 'modality': 'func', 'type': 'MELODICmix',
