@@ -14,12 +14,6 @@ from niworkflows.nipype import config as ncfg
 from time import strftime
 import uuid
 from ..version import __version__
-# BIDS
-# handle registration
-#    transform bold to atlas
-#    use same transform for brainmask
-# __version__ = open(os.path.join(os.path.dirname(os.path.realpath(__file__)),
-# 'version')).read()
 
 
 def run(command, env={}):
@@ -41,7 +35,8 @@ def run(command, env={}):
 def get_parser():
     """Build parser object"""
 
-    verstr = 'NiBetaSeries v{}'.format(__version__)
+    # not currently used
+    # verstr = 'NiBetaSeries v{}'.format(__version__)
 
     parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments')
     parser.add_argument('bids_dir', help='The directory with the input dataset '
@@ -118,8 +113,9 @@ def get_parser():
                              '0.5, and if the reference slice is at the end, the value is 1',
                              action='store', default=0.5)
     beta_series.add_argument('--mni_roi_coords', help='A csv file that desribes the '
-                             '"x,y,z,t" coordinates of interest in MNI space')
-    beta_series.add_argument('--roi_size', help='spherical radius (mm) of roi components',
+                             '"x,y,z" coordinates of interest in MNI space, and a name column '
+                             'labeling the roi')
+    beta_series.add_argument('--roi_size', help='spherical radius (mm) of rois',
                              type=int, default=12)
 
     # performance options
@@ -152,7 +148,7 @@ def validate_bids_ds(bids_dir):
 def main():
     from ..workflows.base import init_nibetaseries_participant_wf
     # Set up some instrumental utilities
-    errno = 0
+    # errno = 0
     run_uuid = strftime('%Y%m%d-%H%M%S_') + str(uuid.uuid4())
 
     # get commandline options
@@ -176,7 +172,7 @@ def main():
                     'log_to_file': True},
         'execution': {'crashdump_dir': log_dir,
                       'crashfile_format': 'txt',
-                      'parameterize_dirs': False,},
+                      'parameterize_dirs': False},
     })
 
     # only for a subset of subjects
@@ -217,12 +213,6 @@ def main():
 
     # running participant level
     if opts.analysis_level == "participant":
-
-# bids_dir, confound_names, derivatives_pipeline,
-#  exclude_variant, hrf_model, low_pass, omp_nthreads,
-#  output_dir, regfilt, res, run_id, run_uuid, ses_id,
-#  slice_time_ref, smooth, space, subject_list, task_id,
-#  variant, work_dir
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
             bids_dir=bids_dir,
             confound_names=opts.confounds,
@@ -253,53 +243,10 @@ def main():
     except RuntimeError as e:
         if "Workflow did not execute cleanly" in str(e):
             # variable currently not used
-            errno = 1
+            # errno = 1
+            print("Workflow did not execute cleanly")
         else:
             raise(e)
-
-    # models, models_run_imgs, models_events, models_confounds = first_level_models_from_bids(
-    #         data_dir2, task_label, space_label,
-    #         t_r=2.0, slice_time_ref=0.5,
-    #         hrf_model='glover + derivative + dispersion',
-    #         #find a general mask?
-    #         mask='template',
-    #         signal_scaling=0, verbose=3, n_jobs=-2,
-    #         derivatives_folder=derivatives_folder,
-    #         img_filters=[('variant', 'smoothAROMAnonaggr')])
-
-    # for sub_idx,sub_model in enumerate(models):
-    #     for run_idx, run_events in enumerate(models_events[sub_idx]):
-    #         run_events.sort_values(columns=['trial_type', 'onset'],
-    #                                ascending=[True, True],inplace=True,axis=0)
-    #         run_events_temp = run_events.copy()
-    #         run_events_temp['trial_type'] = 'other_trials'
-    #         for trial in range(len(run_events)):
-    #             #if the condition changes (make sure to order the conditions)
-    #             if trial != 0 and
-    #                 run_events.loc[trial, 'trial_type'] !=
-    #                 run_events.loc[trial-1, 'trial_type']:
-
-    #             run_events_temp.loc[trial, 'trial_type'] = run_events.loc[trial, 'trial_type']
-    #             #fitmodel
-    #             sub_model.fit(models_run_imgs[sub_idx][run_idx],run_events_temp)
-    #             #compute contrast
-    #             img = sub_model.compute_contrast(
-    #                contrast_def=run_events_temp.loc[trial, 'trial_type'],
-    #                output_type='effect_size')
-    #             #save img
-    #             nib.save(img,
-    #                      os.path.join(data_dir2,'derivatives/nistats_betaseries/sub-GE140_2',
-    #                      'sub-GE140'+run_events_temp.loc[trial,'trial_type']+str(trial)))
-    #             run_events_temp.loc[trial, 'trial_type'] = 'other_trials'
-
-    # # running group level
-    # elif args.analysis_level == "group":
-    #     brain_sizes = []
-    #     for subject_label in subjects_to_analyze:
-    #         for brain_file in glob(os.path.join(args.output_dir, "sub-%s*.nii*"%subject_label)):
-    #             data = nib.load(brain_file).get_data()
-    #             # calcualte average mask size in voxels
-    #             brain_sizes.append((data != 0).sum())
 
 
 if __name__ == '__main__':
