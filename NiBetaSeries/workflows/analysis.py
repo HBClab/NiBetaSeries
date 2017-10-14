@@ -36,8 +36,17 @@ from niworkflows.nipype.interfaces.afni.utils import Calc
 #   outputs: [roi1.txt, roi2.txt ... roix.txt]
 #   iterables = betaseries_files (so a separate list of rois.txt corresponding
 #       to each betaseries_file)
+#   ^^^ how should I represent this in nipype
+
 
 def init_correlation_wf(roi_radius=12, name="correlation_wf"):
+
+    # mixes the rois and betaseries_files so I can run all combinations
+    def cart(rois, bsfiles):
+        rois_x_bsfiles = [roi for roi in rois for bsfile in bsfiles]
+        bsfiles_x_rois = [bsfile for roi in rois for bsfile in bsfiles]
+        return rois_x_bsfiles, bsfiles_x_rois
+
     # transform subject coordinates (mm) to voxel coordinates
     def xyz2ijk(xyz, affine):
         import numpy as np
@@ -97,10 +106,6 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                                                       'target_mni_warp']),
                         name='inputnode')
 
-    betaseries_file = pe.Node(niu.IdentityInterface(fields=['betaseries_file']),
-                              name='betaseries_file',
-                              iterables=('betaseries_file', inputnode.inputs.betaseries_files))
-
     outputnode = pe.Node(niu.IdentityInterface(fields=['zmaps_mni']),
                          name='outputnode')
 
@@ -117,34 +122,39 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                           name='make_roi',
                           iterfield=['in_file', 'out_file'])
 
-
-
     # transform rois to subject space
-    # iterfield is infile
+    # iterfield is input_image
     roi_mni2t1w_transform = pe.MapNode(ApplyTransforms(interpolation='NearestNeighbor'),
-                                       name='roi_mni2t1w_transform')
+                                       name='roi_mni2t1w_transform',
+                                       iterfield='input_image')
 
+    cartisian_product = pe.Node(niu.Function(input_names=['rois', 'bsfiles'],
+                                             output_names=['rois_x_bsfiles',
+                                                           'bsfiles_x_rois'],
+                                             function=cart),
+                                name='cartisian_product')
 
     # get the mean signal from a subject roi
     extract_signal = pe.MapNode(ImageMeants(),
                                 name='extract_signal',
-                                iterfield=['mask'])
-    extract_signal.iterables = ('in_file', inputnode.inputs.betaseries_files)
+                                iterfield=['in_file', 'mask'])
 
     # correlation
-    pearsons_corr = pe.Node(TCorr1D(outputtype='NIFTI_GZ', pearson=True),
-                            name='3dTCorr1D')
-    pearsons_corr.iterables = ('xset', inputnode.inputs.betaseries_files)
+    pearsons_corr = pe.MapNode(TCorr1D(outputtype='NIFTI_GZ', pearson=True),
+                               name='3dTCorr1D',
+                               iterfield=['xset', 'y_1d'])
 
-    # pearson's r to z transfer
-    # 3dcalc -a Corr_subj01+tlrc -expr 'log((1+a)/(1-a))/2' -prefix Corr_subj01_Z+tlrc
-    p_to_z = pe.Node(Calc(expr='log((1+a)/(1-a))/2'))
+    # pearson's r to z transform
+    p_to_z = pe.MapNode(Calc(expr='log((1+a)/(1-a))/2'),
+                        name='p_to_z',
+                        iterfield=['in_file_a'])
 
     # TODO: rename warps
     # ds005/out/fmriprep/sub-01/anat/sub-01_T1w_target-MNI152NLin2009cAsym_warp.h5
     # transform to standard space
     zmap_t1w2mni_transform = pe.MapNode(ApplyTransforms(interpolation="LanczosWindowedSinc"),
-                                        name='zmap_t1w2mni_transform')
+                                        name='zmap_t1w2mni_transform',
+                                        iterfield='input_image')
 
     workflow.connect([
         # set up the rois (same rois will be used for each 4d betaseries file)
@@ -159,9 +169,11 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (make_roi, roi_mni2t1w_transform, [('out_file', 'input_image')]),
         (inputnode, roi_mni2t1w_transform, [('bold_mask', 'reference_image'),
                                             ('target_t1w_warp', 'transforms')]),
-        (roi_mni2t1w_transform, extract_signal, [('output_image', 'mask')]),
-        # (inputnode, extract_signal, [('betaseries_files', 'in_file')]),
-        # (inputnode, pearsons_corr, [('betaseries_files', 'xset')]),
+        (roi_mni2t1w_transform, cartisian_product, [('output_image', 'rois')]),
+        (inputnode, cartisian_product, [('betaseries_files', 'bs_files')]),
+        (cartisian_product, extract_signal, [('rois_x_bsfiles', 'mask')]),
+        (cartisian_product, extract_signal, [('bsfiles_x_rois', 'in_file')]),
+        (cartisian_product, pearsons_corr, [('bsfiles_x_rois', 'xset')]),
         (extract_signal, pearsons_corr, [('out_file', 'y_1d')]),
         (pearsons_corr, p_to_z, [('out_file', 'in_file_a')]),
         (p_to_z, zmap_t1w2mni_transform, [('out_file', 'input_image')]),
