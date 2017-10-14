@@ -50,15 +50,23 @@ def init_betaseries_wf(name="betaseries_wf",
 
         events_df = pd.read_csv(events, sep='\t', index_col=None)
 
+        # initialize trial type tracker
         t_type_prev = 0
+        # initialize list to contain trial estimates (betas)
         beta_list = []
+        # initialize list to track betaseries files
+        betaseries_files = []
         beta_path = os.path.join(os.getcwd(), 'betaseries')
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
+            # if we have collected all betas for a trial type...
             if t_type_prev != 0 or t_type_prev != t_type:
+                # concatenate and save the 4d betaseries
                 betaseries = nib.funcs.concat(beta_list)
                 betaseries_file = os.path.join(
-                    beta_path, '{}_betaseries.nii.gz'.format(t_type_prev))
+                    beta_path, 'trialtype-{}_betaseries.nii.gz'.format(t_type_prev))
                 nib.save(betaseries, betaseries_file)
+                # add the 4d betaseries to the output list
+                betaseries_files.append(betaseries_file)
                 beta_list = []
 
             if not os.path.exists(beta_path):
@@ -84,8 +92,8 @@ def init_betaseries_wf(name="betaseries_wf",
                 print('Done in %d seconds' %
                       (time.time() - start_time))
 
-        # return the directory
-        return os.path.join(os.getcwd(), 'betaseries')
+        # return the 4d betaseries files
+        return betaseries_files
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['bold',
                                                       'events',
@@ -93,7 +101,7 @@ def init_betaseries_wf(name="betaseries_wf",
                         name='inputnode')
 
     betaseries = pe.Node(niu.Function(function=run_betaseries,
-                                      out_names=['betaseries_dir']),
+                                      out_names=['betaseries_files']),
                          name='betaseries')
 
     # Set inputs to betaseries
@@ -101,14 +109,14 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries.inputs.slice_time_ref = slice_time_ref
     betaseries.inputs.hrf_model = hrf_model
 
-    outputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_dir']),
+    outputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
                          name='outputnode')
 
     workflow.connect([
         (inputnode, betaseries, [('bold', 'bold'),
                                  ('events', 'events'),
                                  ('bold_mask', 'bold_mask')]),
-        (betaseries, outputnode, [('betaseries_dir', 'betaseries_dir')]),
+        (betaseries, outputnode, [('betaseries_files', 'betaseries_files')]),
     ])
 
     return workflow

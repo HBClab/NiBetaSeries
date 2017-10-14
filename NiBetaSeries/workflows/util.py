@@ -4,7 +4,8 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 '''
 Workflow for getting subject info
--presumes fmriprep has run, expects directories to both BIDS data and fmriprep output
+presumes fmriprep has run, expects directories to exist for
+both BIDS data and fmriprep output
 '''
 from __future__ import print_function, division, absolute_import, unicode_literals
 import os

@@ -225,13 +225,14 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
         (preproc_wf, betaseries_wf, [('outputnode.bold_resid', 'inputnode.bold')]),
         (inputnode, betaseries_wf, [('events', 'inputnode.events'),
                                     ('bold_brainmask', 'inputnode.bold_mask')]),
-        (betaseries_wf, correlation_wf, [('outputnode.betas', 'inputnode.betas')]),
+        (betaseries_wf, correlation_wf, 
+            [('outputnode.betaseries_files', 'inputnode.betaseries_files')]),
         (inputnode, correlation_wf, [('bold_brainmask', 'inputnode.bold_mask'),
                                      ('mni_roi_coords', 'inputnode.mni_roi_coords'),
                                      ('mni_brainmask', 'inputnode.t1w_space_mni_mask'),
                                      ('target_t1w_warp', 'inputnode.target_t1w_warp'),
                                      ('target_mni_warp', 'inputnode.target_mni_warp')]),
-        (correlation_wf, outputnode, [('outputnode.zmaps_mni', 'zmaps_mni')])
+        (correlation_wf, outputnode, [('outputnode.zmaps_mni', 'zmaps_mni')]),
     ])
 
     return workflow
