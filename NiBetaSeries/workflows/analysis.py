@@ -130,8 +130,9 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                 # add radius to args dictionary
                 ijk_row['radius'] = roi_radius
                 op_inputs.append(op_string.format(**ijk_row))
-
-        return op_inputs, out_names
+        # add usable filenames
+        out_filenames = [name+'.nii.gz' for name in out_names]
+        return op_inputs, out_names, out_filenames
 
     # rename outputs
     def rename(f_list, s1, s2):
@@ -151,7 +152,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
 
     # prep the input for make_roi
     parse_roi_tsv = pe.Node(niu.Function(input_names=['mni_roi_coords', 'radius', 'mni_img'],
-                                         output_names=['op_inputs', 'out_names'],
+                                         output_names=['op_inputs', 'out_names', 'out_filenames'],
                                          function=parse_mni_roi_coords_tsv),
                             name='parse_roi_tsv')
 
@@ -204,8 +205,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                                     ('t1w_space_mni_mask', 'mni_img')]),
         # parse_roi_tsv returns a list
         (parse_roi_tsv, make_roi, [('op_inputs', 'op_string'),
-                                   (('out_names', lambda rois: [roi+'.nii.gz' for roi in rois]),
-                                   'out_file')]),
+                                   ('out_filenames', 'out_file')]),
         (inputnode, make_roi, [('t1w_space_mni_mask', 'in_file')]),
         # iterate over rois
         (make_roi, roi_mni2t1w_transform, [('out_file', 'input_image')]),
@@ -217,21 +217,15 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (cartisian_product, extract_signal, [('bsfiles_x_rois', 'in_file')]),
         (cartisian_product, pearsons_corr,
             [('bsfiles_x_rois', 'xset'),
-             (('bsfiles_x_rois_names', lambda x: rename(x, s1='.nii.gz', s2='_pearcorr.nii.gz')),
+             (('bsfiles_x_rois_names', rename, '.nii.gz', '_pearcorr.nii.gz'),
              'out_file')]),
         (extract_signal, pearsons_corr, [('out_file', 'y_1d')]),
-        # the file names for all the outputs
-        (cartisian_product, pearsons_corr,
-            [(('bsfiles_x_rois_names', lambda x: rename(x, s1='.nii.gz', s2='_pearcorr.nii.gz')),
-             'out_file')]),
-        (pearsons_corr, p_to_z,
-            [('out_file', 'in_file_a'),
-             (('out_file', lambda x: rename(x, s1='_pearcorr', s2='variant-zmap_pearcorr')),
-              'out_file')])
+        (pearsons_corr, p_to_z, [('out_file', 'in_file_a'),
+                                 (('out_file', rename, '_pearcorr', 'variant-zmap_pearcorr'),
+                                 'out_file')])
         (p_to_z, zmap_t1w2mni_transform,
             [('out_file', 'input_image'),
-             (('out_file', lambda x: rename(x, s1='variant', s2='space-MNI_variant')),
-             'output_image')]),
+             (('out_file', rename, 'variant', 'space-MNI_variant'), 'output_image')]),
         (inputnode, zmap_t1w2mni_transform, [('t1w_space_mni_mask', 'reference_image'),
                                              ('target_mni_warp', 'transforms')]),
         (zmap_t1w2mni_transform, outputnode, [('output_image', 'zmaps_mni')]),
