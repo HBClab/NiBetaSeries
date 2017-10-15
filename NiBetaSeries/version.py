@@ -92,7 +92,10 @@ EXTRA_REQUIRES['all'] = [val for _, val in list(EXTRA_REQUIRES.items())]
 
 LINKS_REQUIRES = []
 
-REQUIRES = []
+REQUIRES = [
+    'networkx==1.11'
+    'nipype==0.13.1'
+]
 
 CLASSIFIERS = [
     'Development Status :: 3 - Alpha',

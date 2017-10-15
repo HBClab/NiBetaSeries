@@ -220,7 +220,7 @@ def main():
             exclude_variant=opts.exclude_variant,
             hrf_model=opts.hrf_model,
             low_pass=opts.low_pass,
-            mni_roi_coords=opts.mni_roi_coords,
+            mni_roi_coords=os.path.abspath(opts.mni_roi_coords),
             omp_nthreads=omp_nthreads,
             output_dir=output_dir,
             regfilt=opts.regfilt,
