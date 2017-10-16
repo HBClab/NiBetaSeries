@@ -3,6 +3,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
+# TODO: fix the renaming of files
 """
 Workflow for:
 1) warping rois to subject data
@@ -11,7 +12,7 @@ Workflow for:
 4) registering the results to standard space
 """
 
-from nipype.interface.fsl.utils import ImageMaths, ImageMeants
+from niworkflows.nipype.interfaces.fsl.utils import ImageMaths, ImageMeants
 import niworkflows.nipype.pipeline.engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 from niworkflows.nipype.interfaces.ants import ApplyTransforms
@@ -85,23 +86,26 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         ]
         return rois_x_bsfiles, bsfiles_x_rois, bsfiles_x_rois_names
 
-    # transform subject coordinates (mm) to voxel coordinates
-    def xyz2ijk(xyz, affine):
-        import numpy as np
-        M_prime = np.linalg.inv(affine[:3, :3])
-        abc = affine[:3, 3]
-        return M_prime.dot(xyz) - abc
-
-    # transform voxel coordinates to subject coordinates (mm)
-    def ijk2xyz(ijk, affine):
-        M = affine[:3, :3]
-        abc = affine[:3, 3]
-        return M.dot(ijk) + abc
 
     # provides the input to make the roi using ImageMaths
     def parse_mni_roi_coords_tsv(mni_roi_coords, radius, mni_img):
         import csv
         import nibabel as nib
+
+        # transform subject coordinates (mm) to voxel coordinates
+        def xyz2ijk(xyz, affine):
+            import numpy as np
+            xyz = [int(p) for p in xyz]
+            M_prime = np.linalg.inv(affine[:3, :3])
+            abc = affine[:3, 3]
+            return M_prime.dot(xyz) - abc
+
+        # transform voxel coordinates to subject coordinates (mm)
+        def ijk2xyz(ijk, affine):
+            ijk = [int(p) for p in ijk]
+            M = affine[:3, :3]
+            abc = affine[:3, 3]
+            return M.dot(ijk) + abc
 
         # base string for ImageMaths command
         op_string = """\
@@ -115,7 +119,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         # out_file to pass to ImageMaths
         out_names = []
         with open(mni_roi_coords) as tsvfile:
-            reader = csv.DictReader(tsvfile, delimiter='\t')
+            reader = csv.DictReader(tsvfile, delimiter=str('\t'))
             for row in reader:
                 out_names.append('roi-'+row.pop('name'))
                 # transfer the subject coordinates in the tsv to
@@ -128,7 +132,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                                        nib_img.affine))
                 }
                 # add radius to args dictionary
-                ijk_row['radius'] = roi_radius
+                ijk_row['radius'] = radius
                 op_inputs.append(op_string.format(**ijk_row))
         # add usable filenames
         out_filenames = [name+'.nii.gz' for name in out_names]
@@ -155,19 +159,20 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                                          output_names=['op_inputs', 'out_names', 'out_filenames'],
                                          function=parse_mni_roi_coords_tsv),
                             name='parse_roi_tsv')
-
+    # set input radius
+    parse_roi_tsv.inputs.radius = roi_radius
     # make the rois first
     # fslmaths -roi uses ijk coordinates
     # iterate over roi coordinate + name of roi
     make_roi = pe.MapNode(ImageMaths(),
                           name='make_roi',
-                          iterfield=['in_file', 'out_file'])
+                          iterfield=['op_string', 'out_file'])
 
     # transform rois to subject space
     # iterfield is input_image
     roi_mni2t1w_transform = pe.MapNode(ApplyTransforms(interpolation='NearestNeighbor'),
                                        name='roi_mni2t1w_transform',
-                                       iterfield='input_image')
+                                       iterfield=['input_image'])
 
     cartisian_product = pe.Node(niu.Function(input_names=['rois', 'bsfiles'],
                                              output_names=['rois_x_bsfiles',
@@ -184,24 +189,22 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     # correlation
     pearsons_corr = pe.MapNode(TCorr1D(outputtype='NIFTI_GZ', pearson=True),
                                name='3dTCorr1D',
-                               iterfield=['xset', 'y_1d'])
+                               iterfield=['xset', 'y_1d', 'out_file'])
 
     # pearson's r to z transform
     p_to_z = pe.MapNode(Calc(expr='log((1+a)/(1-a))/2'),
                         name='p_to_z',
-                        iterfield=['in_file_a'])
+                        iterfield=['in_file_a', 'out_file'])
 
-    # TODO: rename warps
     # ds005/out/fmriprep/sub-01/anat/sub-01_T1w_target-MNI152NLin2009cAsym_warp.h5
     # transform to standard space
     zmap_t1w2mni_transform = pe.MapNode(ApplyTransforms(interpolation="LanczosWindowedSinc"),
                                         name='zmap_t1w2mni_transform',
-                                        iterfield='input_image')
+                                        iterfield=['input_image', 'output_image'])
 
     workflow.connect([
         # set up the rois (same rois will be used for each 4d betaseries file)
         (inputnode, parse_roi_tsv, [('mni_roi_coords', 'mni_roi_coords'),
-                                    ('roi_radius', 'radius'),
                                     ('t1w_space_mni_mask', 'mni_img')]),
         # parse_roi_tsv returns a list
         (parse_roi_tsv, make_roi, [('op_inputs', 'op_string'),
@@ -212,7 +215,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (inputnode, roi_mni2t1w_transform, [('bold_mask', 'reference_image'),
                                             ('target_t1w_warp', 'transforms')]),
         (roi_mni2t1w_transform, cartisian_product, [('output_image', 'rois')]),
-        (inputnode, cartisian_product, [('betaseries_files', 'bs_files')]),
+        (inputnode, cartisian_product, [('betaseries_files', 'bsfiles')]),
         (cartisian_product, extract_signal, [('rois_x_bsfiles', 'mask')]),
         (cartisian_product, extract_signal, [('bsfiles_x_rois', 'in_file')]),
         (cartisian_product, pearsons_corr,
@@ -222,7 +225,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (extract_signal, pearsons_corr, [('out_file', 'y_1d')]),
         (pearsons_corr, p_to_z, [('out_file', 'in_file_a'),
                                  (('out_file', rename, '_pearcorr', 'variant-zmap_pearcorr'),
-                                 'out_file')])
+                                 'out_file')]),
         (p_to_z, zmap_t1w2mni_transform,
             [('out_file', 'input_image'),
              (('out_file', rename, 'variant', 'space-MNI_variant'), 'output_image')]),

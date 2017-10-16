@@ -179,22 +179,22 @@ def collect_data(layout, participant_label, deriv=False, ses=None,
 
         if task:
             queries['preproc']['task'] = task
-            queries['brainmask']['task'] = task
+            queries['bold_brainmask']['task'] = task
             queries['AROMAnoiseICs']['task'] = task
             queries['MELODICmix']['task'] = task
             queries['confounds']['task'] = task
         if run:
             queries['preproc']['run'] = run
-            queries['brainmask']['run'] = run
+            queries['bold_brainmask']['run'] = run
             queries['AROMAnoiseICs']['run'] = run
             queries['MELODICmix']['run'] = run
             queries['confounds']['run'] = run
         if space:
             queries['preproc']['space'] = space
-            queries['brainmask']['space'] = space
+            queries['bold_brainmask']['space'] = space
         if ses:
             queries['preproc']['ses'] = ses
-            queries['brainmask']['ses'] = ses
+            queries['bold_brainmask']['ses'] = ses
             queries['AROMAnoiseICs']['ses'] = ses
             queries['MELODICmix']['ses'] = ses
             queries['confounds']['ses'] = ses

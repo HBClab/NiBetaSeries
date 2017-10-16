@@ -6,6 +6,7 @@
 Workflow for setting up the model for BetaSeries Correlatiion.
 makes and executes a model using nistats.
 '''
+# TODO: handle cases where there aren't enough trials for a trial_type
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 import niworkflows.nipype.pipeline.engine as pe
@@ -56,19 +57,21 @@ def init_betaseries_wf(name="betaseries_wf",
         beta_list = []
         # initialize list to track betaseries files
         betaseries_files = []
-        beta_path = os.path.join(os.getcwd(), 'betaseries')
+        beta_path = os.getcwd()
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
             # if we have collected all betas for a trial type...
-            if t_type_prev != 0 or t_type_prev != t_type:
+            if t_type_prev != t_type and t_type_prev != 0:
                 # concatenate and save the 4d betaseries
-                betaseries = nib.funcs.concat(beta_list)
+                betaseries = nib.funcs.concat_images(beta_list)
                 betaseries_file = os.path.join(
                     beta_path, 'trialtype-{}_betaseries.nii.gz'.format(t_type_prev))
+                print('betaseries: {}'.format(betaseries_file))
                 nib.save(betaseries, betaseries_file)
                 # add the 4d betaseries to the output list
                 betaseries_files.append(betaseries_file)
                 beta_list = []
 
+            t_type_prev = t_type
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
 
@@ -93,6 +96,7 @@ def init_betaseries_wf(name="betaseries_wf",
                       (time.time() - start_time))
 
         # return the 4d betaseries files
+        print("all betaseries_files: {}".format(betaseries_files))
         return betaseries_files
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['bold',
@@ -101,7 +105,8 @@ def init_betaseries_wf(name="betaseries_wf",
                         name='inputnode')
 
     betaseries = pe.Node(niu.Function(function=run_betaseries,
-                                      out_names=['betaseries_files']),
+                                      input_names=['bold', 'events', 'bold_mask'],
+                                      output_names=['betaseries_files']),
                          name='betaseries')
 
     # Set inputs to betaseries
@@ -112,6 +117,7 @@ def init_betaseries_wf(name="betaseries_wf",
     outputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
                          name='outputnode')
 
+    # main workflow
     workflow.connect([
         (inputnode, betaseries, [('bold', 'bold'),
                                  ('events', 'events'),

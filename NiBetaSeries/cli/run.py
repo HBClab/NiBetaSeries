@@ -115,7 +115,7 @@ def get_parser():
     beta_series.add_argument('--mni_roi_coords', help='A csv file that desribes the '
                              '"x,y,z" coordinates of interest in MNI space, and a name column '
                              'labeling the roi')
-    beta_series.add_argument('--roi_size', help='spherical radius (mm) of rois',
+    beta_series.add_argument('--roi_radius', help='spherical radius (mm) of rois',
                              type=int, default=12)
 
     # performance options
@@ -225,7 +225,7 @@ def main():
             output_dir=output_dir,
             regfilt=opts.regfilt,
             res=opts.res,
-            roi_size=opts.roi_size,
+            roi_radius=opts.roi_radius,
             run_id=opts.run,
             run_uuid=run_uuid,
             ses_id=opts.ses,
