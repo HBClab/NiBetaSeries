@@ -109,6 +109,8 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
         # ^they appear to be in the same order
         length = len(deriv_subject_data['preproc'])
         print('\n'+subject_id)
+        print('target-MNI WARP: {}'.format(deriv_subject_data['target_mni_warp'][0]))
+        print('target-T1w WARP: {}'.format(deriv_subject_data['target_t1w_warp'][0]))
         print('preproc:{}'.format(str(length)))
         print('confounds:{}'.format(str(len(deriv_subject_data['confounds']))))
         print('bold_brainmask:{}'.format(str(len(deriv_subject_data['bold_brainmask']))))

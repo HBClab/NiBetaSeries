@@ -78,12 +78,22 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     # mixes the rois and betaseries_files so I can run all combinations
     def cart(rois, bsfiles):
         import os
+        bsfile_names = [os.path.basename(bsfile).replace('.nii.gz','') for bsfile in bsfiles]
+        roi_names = [os.path.basename(roi).replace('.nii.gz','') for roi in rois]
         rois_x_bsfiles = [roi for roi in rois for bsfile in bsfiles]
         bsfiles_x_rois = [bsfile for roi in rois for bsfile in bsfiles]
-        bsfiles_x_rois_names = [
-            os.path.basename(bsfile).replace('.nii.gz', roi+'.nii.gz')
-            for roi in rois for bsfile in bsfiles
+        rois_x_bsfiles_names = [
+            roi + '_' + bsfile + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
         ]
+        bsfiles_x_rois_names = [
+            bsfile + '_' + roi + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
+        ]
+
+        #bsfiles_x_rois_names = [
+        #    os.path.basename(bsfile).replace('.nii.gz', roi+'.nii.gz')
+        #    for roi in rois for bsfile in bsfiles
+        #]
+        print('bsfiles_x_rois_names: {}'.format(bsfiles_x_rois_names))
         return rois_x_bsfiles, bsfiles_x_rois, bsfiles_x_rois_names
 
 
@@ -140,7 +150,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
 
     # rename outputs
     def rename(f_list, s1, s2):
-        return [f.replace(s1, s2) for f in f_list]
+        return [os.path.basename(f).replace(s1, s2) for f in f_list]
     workflow = pe.Workflow(name=name)
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files',

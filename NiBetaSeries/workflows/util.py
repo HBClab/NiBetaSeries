@@ -165,14 +165,16 @@ def collect_data(layout, participant_label, deriv=False, ses=None,
                 'subject': participant_label,
                 'modality': 'anat',
                 'type': 'warp',
+                'space': 'MNI152NLin2009cAsym',
                 'target': 'T1w',
                 'extensions': 'h5'
             },
             'target_mni_warp': {
                 'subject': participant_label,
                 'modality': 'anat',
-                'type': 'warp',
+                'space': 'T1w',
                 'target': 'MNI152NLin2009cAsym',
+                'type': 'warp',
                 'extensions': 'h5'
             },
         }
