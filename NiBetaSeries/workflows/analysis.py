@@ -149,6 +149,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         return op_inputs, out_names, out_filenames
 
     # rename outputs
+    # see http://bit.ly/2xNNDAM
     def rename(f_list, s1, s2):
         return [os.path.basename(f).replace(s1, s2) for f in f_list]
     workflow = pe.Workflow(name=name)
