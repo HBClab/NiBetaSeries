@@ -100,10 +100,10 @@ def get_parser():
                              'with one of the following hrfs',
                              default='glover',
                              choices=['glover', 'spm', 'fir',
-                                      'gloverDerivative',
-                                      'gloverDerivativeDispersion',
-                                      'spmDerivative'
-                                      'spmDerivativeDispersion'])
+                                      'glover + derivative',
+                                      'glover + derivative + dispersion',
+                                      'spm + derivative'
+                                      'spm + derivative + dispersion'])
     beta_series.add_argument('--slice_time_ref', help='If slice time correction '
                              'was applied select the reference slice: '
                              'the reference slice is idenfied as a percentage of '

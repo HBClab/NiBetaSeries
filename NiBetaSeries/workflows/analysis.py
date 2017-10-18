@@ -17,6 +17,7 @@ import niworkflows.nipype.pipeline.engine as pe
 from niworkflows.nipype.interfaces import utility as niu
 from niworkflows.nipype.interfaces.ants import ApplyTransforms
 from niworkflows.nipype.interfaces.afni.preprocess import TCorr1D
+from niworkflows.nipype.interfaces.afni.utils import Resample, Undump
 from niworkflows.nipype.interfaces.afni.utils import Calc
 
 # name:
@@ -75,11 +76,17 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         zmaps_mni
             3D z-statistic map for each roi within each betaseries file
     """
+    def check_imgs_length(nifti_lst):
+        import nibabel as nib
+        # remove nifti from list if it's less than 3 volumes in the 4th dimension
+        # can't do correlations with less than 3 volumes
+        return [nifti for nifti in nifti_lst if nib.load(nifti).shape[3] > 2]
+
     # mixes the rois and betaseries_files so I can run all combinations
     def cart(rois, bsfiles):
         import os
-        bsfile_names = [os.path.basename(bsfile).replace('.nii.gz','') for bsfile in bsfiles]
-        roi_names = [os.path.basename(roi).replace('.nii.gz','') for roi in rois]
+        bsfile_names = [os.path.basename(bsfile).replace('.nii.gz', '') for bsfile in bsfiles]
+        roi_names = [os.path.basename(roi).replace('.nii.gz', '') for roi in rois]
         rois_x_bsfiles = [roi for roi in rois for bsfile in bsfiles]
         bsfiles_x_rois = [bsfile for roi in rois for bsfile in bsfiles]
         rois_x_bsfiles_names = [
@@ -89,13 +96,12 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
             bsfile + '_' + roi + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
         ]
 
-        #bsfiles_x_rois_names = [
+        # bsfiles_x_rois_names = [
         #    os.path.basename(bsfile).replace('.nii.gz', roi+'.nii.gz')
         #    for roi in rois for bsfile in bsfiles
-        #]
+        # ]
         print('bsfiles_x_rois_names: {}'.format(bsfiles_x_rois_names))
         return rois_x_bsfiles, bsfiles_x_rois, bsfiles_x_rois_names
-
 
     # provides the input to make the roi using ImageMaths
     def parse_mni_roi_coords_tsv(mni_roi_coords, radius, mni_img):
@@ -151,11 +157,13 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     # rename outputs
     # see http://bit.ly/2xNNDAM
     def rename(f_list, s1, s2):
+        import os
         return [os.path.basename(f).replace(s1, s2) for f in f_list]
     workflow = pe.Workflow(name=name)
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files',
-                                                      'bold_mask',
+                                                      'bold_t1w_mask',
+                                                      'bold_mni_mask',
                                                       'mni_roi_coords',
                                                       't1w_space_mni_mask',
                                                       'target_t1w_warp',
@@ -206,7 +214,9 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     p_to_z = pe.MapNode(Calc(expr='log((1+a)/(1-a))/2'),
                         name='p_to_z',
                         iterfield=['in_file_a', 'out_file'])
-
+    # resample T1_mask to bold
+    # resample = pe.Node(Resample(outputtype='NIFTI_GZ'),
+    #                   name='resample')
     # ds005/out/fmriprep/sub-01/anat/sub-01_T1w_target-MNI152NLin2009cAsym_warp.h5
     # transform to standard space
     zmap_t1w2mni_transform = pe.MapNode(ApplyTransforms(interpolation="LanczosWindowedSinc"),
@@ -223,10 +233,10 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (inputnode, make_roi, [('t1w_space_mni_mask', 'in_file')]),
         # iterate over rois
         (make_roi, roi_mni2t1w_transform, [('out_file', 'input_image')]),
-        (inputnode, roi_mni2t1w_transform, [('bold_mask', 'reference_image'),
+        (inputnode, roi_mni2t1w_transform, [('bold_t1w_mask', 'reference_image'),
                                             ('target_t1w_warp', 'transforms')]),
         (roi_mni2t1w_transform, cartisian_product, [('output_image', 'rois')]),
-        (inputnode, cartisian_product, [('betaseries_files', 'bsfiles')]),
+        (inputnode, cartisian_product, [(('betaseries_files', check_imgs_length), 'bsfiles')]),
         (cartisian_product, extract_signal, [('rois_x_bsfiles', 'mask')]),
         (cartisian_product, extract_signal, [('bsfiles_x_rois', 'in_file')]),
         (cartisian_product, pearsons_corr,
@@ -240,9 +250,21 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         (p_to_z, zmap_t1w2mni_transform,
             [('out_file', 'input_image'),
              (('out_file', rename, 'variant', 'space-MNI_variant'), 'output_image')]),
-        (inputnode, zmap_t1w2mni_transform, [('t1w_space_mni_mask', 'reference_image'),
-                                             ('target_mni_warp', 'transforms')]),
+        # (inputnode, resample, [('t1w_space_mni_mask', 'in_file'),
+        #                       ('bold_mask', 'master')]),
+        # (resample, zmap_t1w2mni_transform, [('out_file', 'reference_image')]),
+        (inputnode, zmap_t1w2mni_transform, [('target_mni_warp', 'transforms'),
+                                             ('bold_mni_mask', 'reference_image')]),
         (zmap_t1w2mni_transform, outputnode, [('output_image', 'zmaps_mni')]),
     ])
 
     return workflow
+
+# def init_correlation_derivatives_wf(output_dir, name='correlation_derivatives_wf'):
+#     """
+#     Set up a battery of datasinks to store derivatives in the right location
+#     """
+#     workflow = pe.Workflow(name=name)
+#
+#     inputnode = pe.Node(niu.IdentityInterface(fields))
+#

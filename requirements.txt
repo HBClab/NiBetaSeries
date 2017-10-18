@@ -10,7 +10,7 @@ mock==2.0.0
 networkx==1.11
 nibabel==2.1.0
 nilearn==0.3.1
-nipype==0.13.1
+git+git://github.com/nipy/nipype.git@66411f4edbc03a43a56e49ee791652cc7d824572
 numpy==1.13.1
 pandas==0.20.3
 patsy==0.4.1

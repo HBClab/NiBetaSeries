@@ -113,12 +113,13 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
         print('target-T1w WARP: {}'.format(deriv_subject_data['target_t1w_warp'][0]))
         print('preproc:{}'.format(str(length)))
         print('confounds:{}'.format(str(len(deriv_subject_data['confounds']))))
-        print('bold_brainmask:{}'.format(str(len(deriv_subject_data['bold_brainmask']))))
+        print('bold_t1w_brainmask:{}'.format(str(len(deriv_subject_data['bold_t1w_brainmask']))))
         print('AROMAnoiseICs:{}'.format(str(len(deriv_subject_data['AROMAnoiseICs']))))
         print('MELODICmix:{}'.format(str(len(deriv_subject_data['MELODICmix']))))
         print('events:{}'.format(str(len(bids_subject_data['events']))))
 
-        if any(len(lst) != length for lst in [deriv_subject_data['bold_brainmask'],
+        if any(len(lst) != length for lst in [deriv_subject_data['bold_t1w_brainmask'],
+                                              deriv_subject_data['bold_mni_brainmask'],
                                               deriv_subject_data['confounds'],
                                               deriv_subject_data['AROMAnoiseICs'],
                                               deriv_subject_data['MELODICmix'],
@@ -127,7 +128,8 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
 
         single_subject_wf = init_single_subject_wf(
             AROMAnoiseICs=deriv_subject_data['AROMAnoiseICs'],
-            bold_brainmask=deriv_subject_data['bold_brainmask'],
+            bold_mni_brainmask=deriv_subject_data['bold_mni_brainmask'],
+            bold_t1w_brainmask=deriv_subject_data['bold_t1w_brainmask'],
             confounds=deriv_subject_data['confounds'],
             confound_names=confound_names,
             events=bids_subject_data['events'],
@@ -166,24 +168,26 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
     return nibetaseries_participant_wf
 
 
-def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_names,
-                           events, hrf_model, low_pass, MELODICmix, mni_brainmask,
-                           mni_roi_coords, name, preproc, regfilt, roi_radius,
-                           res, run_id, run_uuid, ses_id, smooth, space,
-                           subject_id, slice_time_ref, target_mni_warp,
+def init_single_subject_wf(AROMAnoiseICs, bold_mni_brainmask, bold_t1w_brainmask,
+                           confounds, confound_names, events, hrf_model, low_pass,
+                           MELODICmix, mni_brainmask, mni_roi_coords, name, preproc,
+                           regfilt, roi_radius, res, run_id, run_uuid, ses_id,
+                           smooth, space, subject_id, slice_time_ref, target_mni_warp,
                            target_t1w_warp, task_id, variant):
     workflow = pe.Workflow(name=name)
 
     # name the nodes
     inputnode = pe.Node(niu.IdentityInterface(fields=['AROMAnoiseICs',
-                                                      'bold_brainmask',
+                                                      'bold_mni_brainmask',
+                                                      'bold_t1w_brainmask',
                                                       'confounds',
                                                       'events',
                                                       'MELODICmix',
                                                       'preproc']),
                         name='inputnode',
                         iterables=[('AROMAnoiseICs', AROMAnoiseICs),
-                                   ('bold_brainmask', bold_brainmask),
+                                   ('bold_mni_brainmask', bold_mni_brainmask),
+                                   ('bold_t1w_brainmask', bold_t1w_brainmask),
                                    ('confounds', confounds),
                                    ('events', events),
                                    ('MELODICmix', MELODICmix),
@@ -221,15 +225,16 @@ def init_single_subject_wf(AROMAnoiseICs, bold_brainmask, confounds, confound_na
     workflow.connect([
         (inputnode, preproc_wf, [('AROMAnoiseICs', 'inputnode.AROMAnoiseICs'),
                                  ('MELODICmix', 'inputnode.MELODICmix'),
-                                 ('bold_brainmask', 'inputnode.bold_mask'),
+                                 ('bold_t1w_brainmask', 'inputnode.bold_mask'),
                                  ('confounds', 'inputnode.confounds'),
                                  ('preproc', 'inputnode.bold_preproc')]),
         (preproc_wf, betaseries_wf, [('outputnode.bold_resid', 'inputnode.bold')]),
         (inputnode, betaseries_wf, [('events', 'inputnode.events'),
-                                    ('bold_brainmask', 'inputnode.bold_mask')]),
+                                    ('bold_t1w_brainmask', 'inputnode.bold_mask')]),
         (betaseries_wf, correlation_wf,
             [('outputnode.betaseries_files', 'inputnode.betaseries_files')]),
-        (inputnode, correlation_wf, [('bold_brainmask', 'inputnode.bold_mask'),
+        (inputnode, correlation_wf, [('bold_t1w_brainmask', 'inputnode.bold_t1w_mask'),
+                                     ('bold_mni_brainmask', 'inputnode.bold_mni_mask'),
                                      ('mni_roi_coords', 'inputnode.mni_roi_coords'),
                                      ('mni_brainmask', 'inputnode.t1w_space_mni_mask'),
                                      ('target_t1w_warp', 'inputnode.target_t1w_warp'),

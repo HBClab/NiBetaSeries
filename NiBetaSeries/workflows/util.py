@@ -130,10 +130,18 @@ def collect_data(layout, participant_label, deriv=False, ses=None,
                 'type': 'preproc',
                 'extensions': ['nii', 'nii.gz']
             },
-            'bold_brainmask': {
+            'bold_t1w_brainmask': {
                 'subject': participant_label,
                 'modality': 'func',
                 'type': 'brainmask',
+                'space': 'T1w',
+                'extensions': ['nii', 'nii.gz']
+            },
+            'bold_mni_brainmask': {
+                'subject': participant_label,
+                'modality': 'func',
+                'type': 'brainmask',
+                'space': 'MNI152NLin2009cAsym',
                 'extensions': ['nii', 'nii.gz']
             },
             'mni_brainmask': {
@@ -181,22 +189,25 @@ def collect_data(layout, participant_label, deriv=False, ses=None,
 
         if task:
             queries['preproc']['task'] = task
-            queries['bold_brainmask']['task'] = task
+            queries['bold_t1w_brainmask']['task'] = task
+            queries['bold_mni_brainmask']['task'] = task
             queries['AROMAnoiseICs']['task'] = task
             queries['MELODICmix']['task'] = task
             queries['confounds']['task'] = task
         if run:
             queries['preproc']['run'] = run
-            queries['bold_brainmask']['run'] = run
+            queries['bold_t1w_brainmask']['run'] = run
+            queries['bold_mni_brainmask']['run'] = run
             queries['AROMAnoiseICs']['run'] = run
             queries['MELODICmix']['run'] = run
             queries['confounds']['run'] = run
         if space:
             queries['preproc']['space'] = space
-            queries['bold_brainmask']['space'] = space
+            # queries['bold_brainmask']['space'] = space
         if ses:
             queries['preproc']['ses'] = ses
-            queries['bold_brainmask']['ses'] = ses
+            queries['bold_t1w_brainmask']['ses'] = ses
+            queries['bold_mni_brainmask']['ses'] = ses
             queries['AROMAnoiseICs']['ses'] = ses
             queries['MELODICmix']['ses'] = ses
             queries['confounds']['ses'] = ses
