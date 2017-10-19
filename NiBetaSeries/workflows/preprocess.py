@@ -11,11 +11,11 @@ that FMRIPREP doesn't complete, and derives residuals from bold
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-import niworkflows.nipype.pipeline.engine as pe
-from niworkflows.nipype.interfaces import utility as niu
-from niworkflows.nipype.interfaces.fsl import ImageStats, MultiImageMaths, SUSAN
-from niworkflows.nipype.interfaces.fsl.utils import FilterRegressor
-from niworkflows.nipype.interfaces.fsl.maths import MeanImage
+import nipype.pipeline.engine as pe
+from nipype.interfaces import utility as niu
+from nipype.interfaces.fsl import ImageStats, MultiImageMaths, SUSAN
+from nipype.interfaces.fsl.utils import FilterRegressor
+from nipype.interfaces.fsl.maths import MeanImage
 
 
 def init_derive_residuals_wf(name='derive_residuals_wf', t_r=2.0,

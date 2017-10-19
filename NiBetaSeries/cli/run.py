@@ -10,7 +10,7 @@ import subprocess
 # import numpy
 from glob import glob
 # from bids.grabbids import BIDSLayout
-from niworkflows.nipype import config as ncfg
+from nipype import config as ncfg
 from time import strftime
 import uuid
 from ..version import __version__

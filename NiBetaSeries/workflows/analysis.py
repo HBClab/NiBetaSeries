@@ -12,13 +12,13 @@ Workflow for:
 4) registering the results to standard space
 """
 
-from niworkflows.nipype.interfaces.fsl.utils import ImageMaths, ImageMeants
-import niworkflows.nipype.pipeline.engine as pe
-from niworkflows.nipype.interfaces import utility as niu
-from niworkflows.nipype.interfaces.ants import ApplyTransforms
-from niworkflows.nipype.interfaces.afni.preprocess import TCorr1D
-from niworkflows.nipype.interfaces.afni.utils import Resample, Undump
-from niworkflows.nipype.interfaces.afni.utils import Calc
+from nipype.interfaces.fsl.utils import ImageMaths, ImageMeants
+import nipype.pipeline.engine as pe
+from nipype.interfaces import utility as niu
+from nipype.interfaces.ants import ApplyTransforms
+from nipype.interfaces.afni.preprocess import TCorr1D
+from nipype.interfaces.afni.utils import Undump
+from nipype.interfaces.afni.utils import Calc
 
 # name:
 #   <source_file>[_space-<space>][_res-<XxYxZ>][_atlas-<atlas_name>]\
@@ -104,6 +104,26 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         return rois_x_bsfiles, bsfiles_x_rois, bsfiles_x_rois_names
 
     # provides the input to make the roi using ImageMaths
+    def split_tsv(mni_roi_coords):
+        import os
+        import csv
+        outdir = os.getcwd()
+        roi_names = []
+        roi_tsvs = []
+        with open(mni_roi_coords) as intsvfile:
+            reader = csv.DictReader(intsvfile, delimiter=str('\t'))
+            for row in reader:
+                out_name = ''.join(('roi-', row.pop('name')))
+                roi_names.append(out_name)
+                out_file_name = os.path.join(outdir, out_name+'.tsv')
+                roi_tsvs.append(out_file_name)
+                with open(out_file_name, 'w') as outtsvfile:
+                    fieldnames = ['x', 'y', 'z']
+                    writer = csv.DictWriter(outtsvfile, fieldnames=fieldnames, delimiter=str('\t'))
+                    writer.writerow(row)
+
+        return roi_names, roi_tsvs
+
     def parse_mni_roi_coords_tsv(mni_roi_coords, radius, mni_img):
         import csv
         import nibabel as nib
@@ -161,6 +181,10 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         return [os.path.basename(f).replace(s1, s2) for f in f_list]
     workflow = pe.Workflow(name=name)
 
+    def add_ext(lst):
+        return [x+'.nii.gz' for x in lst]
+    def lst2file(x):
+        return x[0]
     inputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files',
                                                       'bold_t1w_mask',
                                                       'bold_mni_mask',
@@ -173,20 +197,29 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     outputnode = pe.Node(niu.IdentityInterface(fields=['zmaps_mni']),
                          name='outputnode')
 
+
     # prep the input for make_roi
-    parse_roi_tsv = pe.Node(niu.Function(input_names=['mni_roi_coords', 'radius', 'mni_img'],
-                                         output_names=['op_inputs', 'out_names', 'out_filenames'],
-                                         function=parse_mni_roi_coords_tsv),
+    # parse_roi_tsv = pe.Node(niu.Function(input_names=['mni_roi_coords', 'radius', 'mni_img'],
+    #                                     output_names=['op_inputs', 'out_names', 'out_filenames'],
+    #                                     function=parse_mni_roi_coords_tsv),
+    #                        name='parse_roi_tsv')
+    parse_roi_tsv = pe.Node(niu.Function(output_names=['roi_names', 'roi_tsvs'],
+                                         function=split_tsv),
                             name='parse_roi_tsv')
     # set input radius
-    parse_roi_tsv.inputs.radius = roi_radius
+    # parse_roi_tsv.inputs.radius = roi_radius
     # make the rois first
     # fslmaths -roi uses ijk coordinates
     # iterate over roi coordinate + name of roi
-    make_roi = pe.MapNode(ImageMaths(),
-                          name='make_roi',
-                          iterfield=['op_string', 'out_file'])
-
+    # make_roi = pe.MapNode(ImageMaths(),
+    #                      name='make_roi',
+    #                      iterfield=['op_string', 'out_file'])
+    make_roi = pe.MapNode(Undump(coordinates_specification='xyz',
+                                 outputtype='NIFTI_GZ',
+                                 srad=roi_radius),
+                          iterfield=['in_file'],
+                          #, 'out_file'],
+                          name='make_roi')
     # transform rois to subject space
     # iterfield is input_image
     roi_mni2t1w_transform = pe.MapNode(ApplyTransforms(interpolation='NearestNeighbor'),
@@ -225,12 +258,12 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
 
     workflow.connect([
         # set up the rois (same rois will be used for each 4d betaseries file)
-        (inputnode, parse_roi_tsv, [('mni_roi_coords', 'mni_roi_coords'),
-                                    ('t1w_space_mni_mask', 'mni_img')]),
-        # parse_roi_tsv returns a list
-        (parse_roi_tsv, make_roi, [('op_inputs', 'op_string'),
-                                   ('out_filenames', 'out_file')]),
-        (inputnode, make_roi, [('t1w_space_mni_mask', 'in_file')]),
+        (inputnode, parse_roi_tsv, [('mni_roi_coords', 'mni_roi_coords')]),
+        # parse_roi_tsv returns a list of names and files
+        (parse_roi_tsv, make_roi, [('roi_tsvs', 'in_file'),
+                                   # ('roi_names', 'out_file'),
+                                   ]),
+        (inputnode, make_roi, [('t1w_space_mni_mask', 'master')]),
         # iterate over rois
         (make_roi, roi_mni2t1w_transform, [('out_file', 'input_image')]),
         (inputnode, roi_mni2t1w_transform, [('bold_t1w_mask', 'reference_image'),

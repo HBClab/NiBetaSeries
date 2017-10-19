@@ -9,9 +9,9 @@ makes and executes a model using nistats.
 # TODO: handle cases where there aren't enough trials for a trial_type
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-import niworkflows.nipype.pipeline.engine as pe
-from niworkflows.nipype.interfaces import utility as niu
-
+import nipype.pipeline.engine as pe
+from nipype.interfaces import utility as niu
+from nipype.interfaces.afni.preprocess import Detrend
 
 def init_betaseries_wf(name="betaseries_wf",
                        t_r=2.0,
@@ -114,6 +114,9 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries.inputs.slice_time_ref = slice_time_ref
     betaseries.inputs.hrf_model = hrf_model
 
+    demean = pe.MapNode(Detrend(args = '-polort 0', outputtype='NIFTI_GZ'),
+                        iterfield=['in_file'], name='demean')
+
     outputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
                          name='outputnode')
 
@@ -122,7 +125,8 @@ def init_betaseries_wf(name="betaseries_wf",
         (inputnode, betaseries, [('bold', 'bold'),
                                  ('events', 'events'),
                                  ('bold_mask', 'bold_mask')]),
-        (betaseries, outputnode, [('betaseries_files', 'betaseries_files')]),
+        (betaseries, demean, [('betaseries_files', 'in_file')]),
+        (demean, outputnode, [('out_file', 'betaseries_files')]),
     ])
 
     return workflow

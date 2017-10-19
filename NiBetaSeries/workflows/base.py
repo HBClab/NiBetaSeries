@@ -12,8 +12,8 @@ from .util import collect_data
 from .preprocess import init_derive_residuals_wf
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
-from niworkflows.nipype.pipeline import engine as pe
-from niworkflows.nipype.interfaces import utility as niu
+from nipype.pipeline import engine as pe
+from nipype.interfaces import utility as niu
 import pkg_resources as pkgr
 from bids.grabbids import BIDSLayout
 
