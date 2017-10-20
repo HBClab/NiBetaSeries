@@ -50,6 +50,7 @@ def init_betaseries_wf(name="betaseries_wf",
                                 verbose=1, n_jobs=n_jobs)
 
         events_df = pd.read_csv(events, sep='\t', index_col=None)
+        num_events = len(events_df)
 
         # initialize trial type tracker
         t_type_prev = 0
@@ -59,19 +60,6 @@ def init_betaseries_wf(name="betaseries_wf",
         betaseries_files = []
         beta_path = os.getcwd()
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
-            # if we have collected all betas for a trial type...
-            if t_type_prev != t_type and t_type_prev != 0:
-                # concatenate and save the 4d betaseries
-                betaseries = nib.funcs.concat_images(beta_list)
-                betaseries_file = os.path.join(
-                    beta_path, 'trialtype-{}_betaseries.nii.gz'.format(t_type_prev))
-                print('betaseries: {}'.format(betaseries_file))
-                nib.save(betaseries, betaseries_file)
-                # add the 4d betaseries to the output list
-                betaseries_files.append(betaseries_file)
-                beta_list = []
-
-            t_type_prev = t_type
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
 
@@ -88,12 +76,25 @@ def init_betaseries_wf(name="betaseries_wf",
                 else:
                     model.refit_run_design(bold, t_ev, None)  # had to remove conf
 
-                beta = model.compute_contrast(t_type, output_type='effect_size')
-                beta_list.append(beta)
-                # nib.save(beta, beta_file)
+            beta = model.compute_contrast(t_type, output_type='effect_size')  
+            if t_type_prev != t_type and t_type_prev != 0 or t_ev_idx == (num_events-1):
+                if t_ev_idx == (num_events-1):
+                    beta_list.append(beta)
+                # concatenate and save the 4d betaseries
+                betaseries = nib.funcs.concat_images(beta_list)
+                betaseries_file = os.path.join(
+                    beta_path, 'trialtype-{}_betaseries.nii.gz'.format(t_type_prev))
+                print('betaseries: {}'.format(betaseries_file))
+                nib.save(betaseries, betaseries_file)
+                # add the 4d betaseries to the output list
+                betaseries_files.append(betaseries_file)
+                beta_list = []
 
-                print('Done in %d seconds' %
-                      (time.time() - start_time))
+            t_type_prev = t_type
+            beta_list.append(beta)
+            # nib.save(beta, beta_file)
+
+            print('Done in %d seconds' % (time.time() - start_time))
 
         # return the 4d betaseries files
         print("all betaseries_files: {}".format(betaseries_files))

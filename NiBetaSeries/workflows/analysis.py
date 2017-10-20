@@ -80,7 +80,7 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         import nibabel as nib
         # remove nifti from list if it's less than 3 volumes in the 4th dimension
         # can't do correlations with less than 3 volumes
-        return [nifti for nifti in nifti_lst if nib.load(nifti).shape[3] > 2]
+        return [nifti for nifti in nifti_lst if len(nib.load(nifti).shape) == 4 and nib.load(nifti).shape[3] > 2]
 
     # mixes the rois and betaseries_files so I can run all combinations
     def cart(rois, bsfiles):
