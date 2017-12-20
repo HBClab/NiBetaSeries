@@ -50,8 +50,13 @@ def init_betaseries_wf(name="betaseries_wf",
                                 verbose=1, n_jobs=n_jobs)
 
         events_df = pd.read_csv(events, sep='\t', index_col=None)
+        # sort conditions so they stick together
+        events_df.sort_values('trial_type', inplace=True)
+        # reset index of dataframe
+        events_df.reset_index(drop=True, inplace=True)
         num_events = len(events_df)
 
+        print(events_df)
         # initialize trial type tracker
         t_type_prev = 0
         # initialize list to contain trial estimates (betas)
@@ -60,6 +65,10 @@ def init_betaseries_wf(name="betaseries_wf",
         betaseries_files = []
         beta_path = os.getcwd()
         for t_ev_idx, (t_ev, t_type, t_idx) in enumerate(trial_events_iterator(events_df)):
+            print('t_ev_idx: '+str(t_ev_idx))
+            print('t_ev: '+str(t_ev))
+            print('t_type: '+str(t_type))
+            print('t_idx: '+str(t_idx))
             if not os.path.exists(beta_path):
                 os.makedirs(beta_path)
 
@@ -76,7 +85,7 @@ def init_betaseries_wf(name="betaseries_wf",
                 else:
                     model.refit_run_design(bold, t_ev, None)  # had to remove conf
 
-            beta = model.compute_contrast(t_type, output_type='effect_size')  
+            beta = model.compute_contrast(t_type, output_type='effect_size')
             if t_type_prev != t_type and t_type_prev != 0 or t_ev_idx == (num_events-1):
                 if t_ev_idx == (num_events-1):
                     beta_list.append(beta)

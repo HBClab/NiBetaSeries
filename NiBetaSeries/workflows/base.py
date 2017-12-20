@@ -94,6 +94,8 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
                                          run=run_id,
                                          ses=ses_id)
         # if you want to avoid using the ICA-AROMA variant
+        print('\n'+'deriv '+str(deriv_subject_data))
+        print('\n'+'bids '+str(bids_subject_data))
         if exclude_variant:
             deriv_subject_data['preproc'] = [
                 preproc for preproc in deriv_subject_data['preproc'] if variant not in preproc
@@ -118,13 +120,15 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
         print('MELODICmix:{}'.format(str(len(deriv_subject_data['MELODICmix']))))
         print('events:{}'.format(str(len(bids_subject_data['events']))))
 
-        if any(len(lst) != length for lst in [deriv_subject_data['bold_t1w_brainmask'],
-                                              deriv_subject_data['bold_mni_brainmask'],
-                                              deriv_subject_data['confounds'],
-                                              deriv_subject_data['AROMAnoiseICs'],
-                                              deriv_subject_data['MELODICmix'],
-                                              bids_subject_data['events']]):
-            raise ValueError('input lists are not the same length!')
+        #HACK
+        deriv_subject_data['bold_t1w_brainmask'] = deriv_subject_data['bold_mni_brainmask']
+        # if any(len(lst) != length for lst in [deriv_subject_data['bold_t1w_brainmask'],
+        #                                       deriv_subject_data['bold_mni_brainmask'],
+        #                                       deriv_subject_data['confounds'],
+        #                                       deriv_subject_data['AROMAnoiseICs'],
+        #                                       deriv_subject_data['MELODICmix'],
+        #                                       bids_subject_data['events']]):
+        #     raise ValueError('input lists are not the same length!')
 
         single_subject_wf = init_single_subject_wf(
             AROMAnoiseICs=deriv_subject_data['AROMAnoiseICs'],
