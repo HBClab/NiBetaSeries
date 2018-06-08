@@ -1,2 +1,0 @@
-git+git://github.com/jdkent/nistats.gitb39e335f84b12964a39c3470bfa3bb8dbfec12c6
-git+git://github.com/nipy/nipype.git@66411f4edbc03a43a56e49ee791652cc7d824572
