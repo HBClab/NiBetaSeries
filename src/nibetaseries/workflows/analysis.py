@@ -12,7 +12,7 @@ Workflow for:
 4) registering the results to standard space
 """
 
-from nipype.interfaces.fsl.utils import ImageMaths, ImageMeants
+from nipype.interfaces.fsl.utils import ImageMeants
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from nipype.interfaces.ants import ApplyTransforms
@@ -80,7 +80,8 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         import nibabel as nib
         # remove nifti from list if it's less than 3 volumes in the 4th dimension
         # can't do correlations with less than 3 volumes
-        return [nifti for nifti in nifti_lst if len(nib.load(nifti).shape) == 4 and nib.load(nifti).shape[3] > 2]
+        return [nifti for nifti in nifti_lst
+                if len(nib.load(nifti).shape) == 4 and nib.load(nifti).shape[3] > 2]
 
     # mixes the rois and betaseries_files so I can run all combinations
     def cart(rois, bsfiles):
@@ -89,9 +90,9 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
         roi_names = [os.path.basename(roi).replace('.nii.gz', '') for roi in rois]
         rois_x_bsfiles = [roi for roi in rois for bsfile in bsfiles]
         bsfiles_x_rois = [bsfile for roi in rois for bsfile in bsfiles]
-        rois_x_bsfiles_names = [
-            roi + '_' + bsfile + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
-        ]
+        # rois_x_bsfiles_names = [
+        #   roi + '_' + bsfile + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
+        # ]
         bsfiles_x_rois_names = [
             bsfile + '_' + roi + '.nii.gz' for roi in roi_names for bsfile in bsfile_names
         ]
@@ -183,8 +184,10 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
 
     def add_ext(lst):
         return [x+'.nii.gz' for x in lst]
+
     def lst2file(x):
         return x[0]
+
     inputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files',
                                                       'bold_t1w_mask',
                                                       'bold_mni_mask',
@@ -196,7 +199,6 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
 
     outputnode = pe.Node(niu.IdentityInterface(fields=['zmaps_mni']),
                          name='outputnode')
-
 
     # prep the input for make_roi
     # parse_roi_tsv = pe.Node(niu.Function(input_names=['mni_roi_coords', 'radius', 'mni_img'],
@@ -218,7 +220,6 @@ def init_correlation_wf(roi_radius=12, name="correlation_wf"):
                                  outputtype='NIFTI_GZ',
                                  srad=roi_radius),
                           iterfield=['in_file'],
-                          #, 'out_file'],
                           name='make_roi')
     # transform rois to subject space
     # iterfield is input_image

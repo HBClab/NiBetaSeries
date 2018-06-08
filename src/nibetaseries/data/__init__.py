@@ -4,4 +4,3 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
 from __future__ import absolute_import, division, print_function
-

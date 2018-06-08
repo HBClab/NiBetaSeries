@@ -31,14 +31,14 @@ version = release = '0.1.0'
 pygments_style = 'trac'
 templates_path = ['.']
 extlinks = {
-    'issue': ('https://github.com/jdkent/NiBetaSeries/issues/%s', '#'),
-    'pr': ('https://github.com/jdkent/NiBetaSeries/pull/%s', 'PR #'),
+    'issue': ('https://github.com/HBClab/NiBetaSeries/issues/%s', '#'),
+    'pr': ('https://github.com/HBClab/NiBetaSeries/pull/%s', 'PR #'),
 }
 import sphinx_py3doc_enhanced_theme
 html_theme = "sphinx_py3doc_enhanced_theme"
 html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
 html_theme_options = {
-    'githuburl': 'https://github.com/jdkent/NiBetaSeries/'
+    'githuburl': 'https://github.com/HBClab/NiBetaSeries/'
 }
 
 html_use_smartypants = True

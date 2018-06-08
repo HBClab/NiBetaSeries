@@ -32,6 +32,7 @@ pip-log.txt
 nosetests.xml
 coverage.xml
 htmlcov
+.pytest_cache
 
 # Translations
 *.mo
@@ -40,7 +41,7 @@ htmlcov
 .mr.developer.cfg
 .project
 .pydevproject
-.idea
+.idea/*
 *.iml
 *.komodoproject
 

@@ -8,10 +8,10 @@ makes and executes a model using nistats.
 '''
 # TODO: handle cases where there aren't enough trials for a trial_type
 from __future__ import print_function, division, absolute_import, unicode_literals
-
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from nipype.interfaces.afni.preprocess import Detrend
+
 
 def init_betaseries_wf(name="betaseries_wf",
                        t_r=2.0,
@@ -76,7 +76,7 @@ def init_betaseries_wf(name="betaseries_wf",
                 else:
                     model.refit_run_design(bold, t_ev, None)  # had to remove conf
 
-            beta = model.compute_contrast(t_type, output_type='effect_size')  
+            beta = model.compute_contrast(t_type, output_type='effect_size')
             if t_type_prev != t_type and t_type_prev != 0 or t_ev_idx == (num_events-1):
                 if t_ev_idx == (num_events-1):
                     beta_list.append(beta)
@@ -115,7 +115,7 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries.inputs.slice_time_ref = slice_time_ref
     betaseries.inputs.hrf_model = hrf_model
 
-    demean = pe.MapNode(Detrend(args = '-polort 0', outputtype='NIFTI_GZ'),
+    demean = pe.MapNode(Detrend(args='-polort 0', outputtype='NIFTI_GZ'),
                         iterfield=['in_file'], name='demean')
 
     outputnode = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),

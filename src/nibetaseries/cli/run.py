@@ -46,9 +46,6 @@ def run(command, env={}):
 def get_parser():
     """Build parser object"""
 
-    # not currently used
-    # verstr = 'NiBetaSeries v{}'.format(__version__)
-
     parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments')
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
