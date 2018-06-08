@@ -65,6 +65,7 @@ setup(
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
         'nipype>=1.0.0',
         'pybids>=0.5.1',
+        'duecredit'
     ],
     extras_require={
         # eg:
@@ -73,7 +74,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'nibs = nibetaseries.cli:main',
+            'nibs = nibetaseries.cli.run:main',
         ]
     },
 )
