@@ -1,7 +1,16 @@
+[paths]
+source =
+   src/nibetaseries
+   */site-packages/nibetaseries
+
 [run]
-branch = True
-source = NiBetaSeries/*
-include = NiBetaSeries/*
-omit = */setup.py
+branch = true
+source =
+    nibetaseries
+    tests
+parallel = true
+
 [report]
-include = NiBetaSeries/*
+show_missing = true
+precision = 2
+omit = *migrations*
