@@ -3,7 +3,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 '''
-Workflow for setting up the model for BetaSeries Correlatiion.
+Workflow for setting up the model for BetaSeries Correlation.
 makes and executes a model using nistats.
 '''
 # TODO: handle cases where there aren't enough trials for a trial_type
@@ -26,6 +26,7 @@ def init_betaseries_wf(name="betaseries_wf",
     # 3: process events
 
     # Helpful definitions
+    # TODO: make this an interface
     def run_betaseries(bold, events, bold_mask, t_r=2.0, slice_time_ref=0.0,
                        hrf_model='glover', n_jobs=1):
         from nistats.first_level_model import FirstLevelModel

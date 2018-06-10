@@ -8,6 +8,7 @@ that FMRIPREP doesn't complete, and derives residuals from bold
 
 -
 '''
+# TODO: Eliminate this file (no longer doing preprocessing outside of nistats/nilearn)
 
 from __future__ import print_function, division, absolute_import, unicode_literals
 

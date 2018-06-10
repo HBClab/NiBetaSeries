@@ -44,7 +44,7 @@ from nipype.interfaces.afni.utils import Calc
 #       to each betaseries_file)
 #   ^^^ how should I represent this in nipype
 
-
+# TODO: do correlations in nilearn (using nilearn interfaces)
 def init_correlation_wf(roi_radius=12, name="correlation_wf"):
     """
     This workflow calculates betaseries correlations using regions of interest defined in
