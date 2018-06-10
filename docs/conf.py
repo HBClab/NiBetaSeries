@@ -34,9 +34,9 @@ extlinks = {
     'issue': ('https://github.com/HBClab/NiBetaSeries/issues/%s', '#'),
     'pr': ('https://github.com/HBClab/NiBetaSeries/pull/%s', 'PR #'),
 }
-import sphinx_py3doc_enhanced_theme
-html_theme = "sphinx_py3doc_enhanced_theme"
-html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
+# import sphinx_py3doc_enhanced_theme
+html_theme = "sphinx_rtd_theme"
+# html_theme_path = [sphinx_py3doc_enhanced_theme.get_html_theme_path()]
 html_theme_options = {
     'githuburl': 'https://github.com/HBClab/NiBetaSeries/'
 }
