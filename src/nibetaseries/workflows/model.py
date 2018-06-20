@@ -14,9 +14,15 @@ from nipype.interfaces.afni.preprocess import Detrend
 
 
 def init_betaseries_wf(name="betaseries_wf",
+                       hrf_model='glover',
+                       low_pass=None,
+                       high_pass=None,
+                       smoothing_kernel=None,
+                       confound_column_headers=None,
                        t_r=2.0,
                        slice_time_ref=0.0,
-                       hrf_model='glover'):
+
+                       ):
 
     workflow = pe.Workflow(name=name)
 
@@ -107,14 +113,18 @@ def init_betaseries_wf(name="betaseries_wf",
                         name='inputnode')
 
     betaseries = pe.Node(niu.Function(function=run_betaseries,
-                                      input_names=['bold', 'events', 'bold_mask'],
-                                      output_names=['betaseries_files']),
+                                      input_names=['bold_img', 'events_tsv', 'brainmask', 'confound_tsv'],
+                                      output_names=['betaseries_img_list']),
                          name='betaseries')
 
     # Set inputs to betaseries
     betaseries.inputs.t_r = t_r
     betaseries.inputs.slice_time_ref = slice_time_ref
     betaseries.inputs.hrf_model = hrf_model
+    betaseries.inputs.low_pass = low_pass
+    betaseries.inputs.high_pass = high_pass
+    betaseries.inputs.smoothing_kernel = smoothing_kernel
+    betaseries.inputs.confound_column_headers = confound_column_headers
 
     demean = pe.MapNode(Detrend(args='-polort 0', outputtype='NIFTI_GZ'),
                         iterfield=['in_file'], name='demean')
