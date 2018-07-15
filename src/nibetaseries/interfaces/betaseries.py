@@ -15,17 +15,17 @@ def _lss_events_iterator(events_file):
 
     Parameters
     ----------
-    events_file: str
+    events_file : str
         File that contains all events from the bold run
 
     Yields
     ------
-    events_trial: DataFrame
+    events_trial : DataFrame
         A DataFrame in which the target trial maintains its trial type,
         but all other trials are assigned to 'other'
-    trial_type: str
+    trial_type : str
         The trial_type of the target trial
-    trial_counter: int
+    trial_counter : int
         The marker for the nth trial of that type
     """
 
@@ -50,14 +50,14 @@ def _select_confounds(confounds_file, selected_confounds):
 
     Parameters
     ----------
-    confounds_file: str
+    confounds_file : str
         File that contains all usable confounds
-    selected_confounds: list
+    selected_confounds : list
         List containing all desired confounds
 
     Returns
     -------
-    desired_confounds: DataFrame
+    desired_confounds : DataFrame
         contains all desired (processed) confounds.
     """
     import pandas as pd
@@ -91,6 +91,7 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
                           desc="File that contains all usable confounds")
     selected_confounds = traits.List(desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
+    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
 
 
 class BetaSeriesOutputSpec(TraitedSpec):
@@ -98,6 +99,7 @@ class BetaSeriesOutputSpec(TraitedSpec):
 
 
 class BetaSeries(NistatsBaseInterface, SimpleInterface):
+    """Calculates BetaSeries Maps From a BOLD file (one series map per event type)."""
     input_spec = BetaSeriesInputSpec
     output_spec = BetaSeriesOutputSpec
 
@@ -117,6 +119,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                                                   slice_time_ref=0,
                                                   hrf_model=self.inputs.hrf_model,
                                                   mask=self.inputs.bold_mask,
+                                                  smoothing_fwhm=self.inputs.smoothing_kernel,
                                                   standardize=1,
                                                   signal_scaling=0,
                                                   verbose=1)
