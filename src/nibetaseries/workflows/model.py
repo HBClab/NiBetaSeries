@@ -12,7 +12,7 @@ Derive Beta Series Maps
 from __future__ import print_function, division, absolute_import, unicode_literals
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
-from ..interfaces.betaseries import BetaSeries
+from ..interfaces.nistats import BetaSeries
 
 
 def init_betaseries_wf(name="betaseries_wf",
@@ -78,7 +78,15 @@ def init_betaseries_wf(name="betaseries_wf",
     """
     workflow = pe.Workflow(name=name)
 
-    # Helper Functions
+    input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
+                                                       'events_file',
+                                                       'bold_mask_file',
+                                                       'confounds_file',
+                                                       'bold_info'
+                                                       ]),
+                         name='input_node')
+
+    # function for temporal filtering
     def _temporal_filter(bold, lp, hp):
         from nilearn.image import clean_img
         import nibabel as nib
@@ -89,14 +97,6 @@ def init_betaseries_wf(name="betaseries_wf",
         out_file = os.path.join(out_path, 'bold_tfilt.nii.gz')
         nib.save(tfilt_niimg, out_file)
         return out_file
-
-    input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
-                                                       'events_file',
-                                                       'bold_mask_file',
-                                                       'confounds_file',
-                                                       'bold_info'
-                                                       ]),
-                         name='input_node')
 
     temp_filt_node = pe.Node(niu.Function(output_names=['bold_tfilt_file'],
                                           function=_temporal_filter),
