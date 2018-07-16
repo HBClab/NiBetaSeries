@@ -10,94 +10,6 @@ from nipype.interfaces.base import (
     )
 
 
-def _lss_events_iterator(events_file):
-    """Make a model for each trial using least squares separate (LSS)
-
-    Parameters
-    ----------
-    events_file : str
-        File that contains all events from the bold run
-
-    Yields
-    ------
-    events_trial : DataFrame
-        A DataFrame in which the target trial maintains its trial type,
-        but all other trials are assigned to 'other'
-    trial_type : str
-        The trial_type of the target trial
-    trial_counter : int
-        The marker for the nth trial of that type
-    """
-
-    import pandas as pd
-    import numpy as np
-    events = pd.read_csv(events_file, sep='\t')
-    trial_counter = dict([(t, 0) for t in np.unique(events['trial_type'])])
-    for trial_id in range(len(events)):
-        trial_type = events.loc[trial_id, 'trial_type']
-        # make a copy of the dataframe
-        events_trial = events.copy()
-        # assign all events to be other (non-target trial)
-        events_trial['trial_type'] = 'other'
-        # assign the trial of interest to be its original value
-        events_trial.loc[trial_id, 'trial_type'] = trial_type
-        yield events_trial, trial_type, trial_counter[trial_type]
-        trial_counter[trial_type] += 1
-
-
-def _select_confounds(confounds_file, selected_confounds):
-    """Process and return selected confounds from the confounds file
-
-    Parameters
-    ----------
-    confounds_file : str
-        File that contains all usable confounds
-    selected_confounds : list
-        List containing all desired confounds
-
-    Returns
-    -------
-    desired_confounds : DataFrame
-        contains all desired (processed) confounds.
-    """
-    import pandas as pd
-    import numpy as np
-    confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
-
-    # fill the first value of FramewiseDisplacement with the mean.
-    if 'FramewiseDisplacement' in selected_confounds:
-        confounds_df['FramewiseDisplacement'] = confounds_df['FramewiseDisplacement'].fillna(
-                                np.mean(confounds_df['FramewiseDisplacement']))
-
-    desired_confounds = confounds_df[selected_confounds]
-
-    return desired_confounds
-
-
-class NistatsBaseInterface(LibraryBaseInterface):
-    _pkg = 'nistats'
-
-
-class BetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
-    bold_info = traits.Dict(desc='Dictionary containing useful information about'
-                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
-    events_file = File(exists=True, mandatory=True,
-                       desc="File that contains all events from the bold run")
-    confounds_file = File(exists=True,
-                          desc="File that contains all usable confounds")
-    selected_confounds = traits.List(desc="Column names of the regressors to include")
-    hrf_model = traits.String(desc="hemodynamic response model")
-    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
-
-
-class BetaSeriesOutputSpec(TraitedSpec):
-    beta_maps = OutputMultiPath(File)
-
-
 class BetaSeries(NistatsBaseInterface, SimpleInterface):
     """Calculates BetaSeries Maps From a BOLD file (one series map per event type)."""
     input_spec = BetaSeriesInputSpec
@@ -160,3 +72,91 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
             self._results['beta_maps'] = beta_series_lst
 
         return runtime
+
+
+class NistatsBaseInterface(LibraryBaseInterface):
+    _pkg = 'nistats'
+
+
+class BetaSeriesInputSpec(BaseInterfaceInputSpec):
+    bold_file = File(exists=True, mandatory=True,
+                     desc="The bold run")
+    bold_info = traits.Dict(desc='Dictionary containing useful information about'
+                                 ' the bold_file')
+    mask_file = File(exists=True, mandatory=True,
+                     desc="Binarized nifti file indicating the brain")
+    events_file = File(exists=True, mandatory=True,
+                       desc="File that contains all events from the bold run")
+    confounds_file = File(exists=True,
+                          desc="File that contains all usable confounds")
+    selected_confounds = traits.List(desc="Column names of the regressors to include")
+    hrf_model = traits.String(desc="hemodynamic response model")
+    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
+
+
+class BetaSeriesOutputSpec(TraitedSpec):
+    beta_maps = OutputMultiPath(File)
+
+
+def _lss_events_iterator(events_file):
+    """Make a model for each trial using least squares separate (LSS)
+
+    Parameters
+    ----------
+    events_file : str
+        File that contains all events from the bold run
+
+    Yields
+    ------
+    events_trial : DataFrame
+        A DataFrame in which the target trial maintains its trial type,
+        but all other trials are assigned to 'other'
+    trial_type : str
+        The trial_type of the target trial
+    trial_counter : int
+        The marker for the nth trial of that type
+    """
+
+    import pandas as pd
+    import numpy as np
+    events = pd.read_csv(events_file, sep='\t')
+    trial_counter = dict([(t, 0) for t in np.unique(events['trial_type'])])
+    for trial_id in range(len(events)):
+        trial_type = events.loc[trial_id, 'trial_type']
+        # make a copy of the dataframe
+        events_trial = events.copy()
+        # assign all events to be other (non-target trial)
+        events_trial['trial_type'] = 'other'
+        # assign the trial of interest to be its original value
+        events_trial.loc[trial_id, 'trial_type'] = trial_type
+        yield events_trial, trial_type, trial_counter[trial_type]
+        trial_counter[trial_type] += 1
+
+
+def _select_confounds(confounds_file, selected_confounds):
+    """Process and return selected confounds from the confounds file
+
+    Parameters
+    ----------
+    confounds_file : str
+        File that contains all usable confounds
+    selected_confounds : list
+        List containing all desired confounds
+
+    Returns
+    -------
+    desired_confounds : DataFrame
+        contains all desired (processed) confounds.
+    """
+    import pandas as pd
+    import numpy as np
+    confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
+
+    # fill the first value of FramewiseDisplacement with the mean.
+    if 'FramewiseDisplacement' in selected_confounds:
+        confounds_df['FramewiseDisplacement'] = confounds_df['FramewiseDisplacement'].fillna(
+                                np.mean(confounds_df['FramewiseDisplacement']))
+
+    desired_confounds = confounds_df[selected_confounds]
+
+    return desired_confounds
