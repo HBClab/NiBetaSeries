@@ -90,14 +90,6 @@ def get_parser():
                                       'spm + derivative + dispersion'],
                              help='convolve your regressors '
                                   'with one of the following hemodynamic response functions')
-    beta_series.add_argument('--slice_time_ref',  action='store', default=0.,
-                             help='If slice time correction '
-                             'was applied select the reference slice: '
-                             'the reference slice is idenfied as a percentage of '
-                             'the scan volume, for example, if the '
-                             'reference slice is the beginning then the value is '
-                             '0, if it is in the middle, the value is '
-                             '0.5, and if the reference slice is at the end, the value is 1')
     beta_series.add_argument('-a', '--atlas-img', action='store',
                              help='input atlas nifti')
     beta_series.add_argument('-l', '--atlas-lut', action='store', required=True,
@@ -130,7 +122,11 @@ def main():
     log_dir = os.path.join(output_dir, 'logs')
     os.makedirs(log_dir, exist_ok=True)
 
-    work_dir = os.path.abspath(opts.work_dir)
+    if opts.work_dir:
+        work_dir = os.path.abspath(opts.work_dir)
+    else:
+        work_dir = os.path.join(os.getcwd(), 'nibetaseries_work')
+
     os.makedirs(work_dir, exist_ok=True)
 
     # only for a subset of subjects
@@ -159,7 +155,6 @@ def main():
             atlas_img=os.path.abspath(opts.atlas_img),
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,
-            confound_column_headers=opts.confounds,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_variant_label=opts.exclude_variant_label,
             high_pass=opts.high_pass,
@@ -167,8 +162,8 @@ def main():
             low_pass=opts.low_pass,
             output_dir=output_dir,
             run_label=opts.run_label,
+            selected_confounds=opts.confounds,
             session_label=opts.session_label,
-            slice_time_ref=opts.slice_time_ref,
             smoothing_kernel=opts.smoothing_kernel,
             space_label=opts.space_label,
             subject_list=subject_list,
