@@ -10,6 +10,30 @@ from nipype.interfaces.base import (
     )
 
 
+class NistatsBaseInterface(LibraryBaseInterface):
+    _pkg = 'nistats'
+
+
+class BetaSeriesInputSpec(BaseInterfaceInputSpec):
+    bold_file = File(exists=True, mandatory=True,
+                     desc="The bold run")
+    bold_info = traits.Dict(desc='Dictionary containing useful information about'
+                                 ' the bold_file')
+    mask_file = File(exists=True, mandatory=True,
+                     desc="Binarized nifti file indicating the brain")
+    events_file = File(exists=True, mandatory=True,
+                       desc="File that contains all events from the bold run")
+    confounds_file = File(exists=True,
+                          desc="File that contains all usable confounds")
+    selected_confounds = traits.List(desc="Column names of the regressors to include")
+    hrf_model = traits.String(desc="hemodynamic response model")
+    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
+
+
+class BetaSeriesOutputSpec(TraitedSpec):
+    beta_maps = OutputMultiPath(File)
+
+
 class BetaSeries(NistatsBaseInterface, SimpleInterface):
     """Calculates BetaSeries Maps From a BOLD file (one series map per event type)."""
     input_spec = BetaSeriesInputSpec
@@ -55,7 +79,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                 beta_maps[trial_type] = [beta_map]
 
         # make a beta series from each beta map list
-        beta_series_template = os.path.join(runtime.cwd, 'betaseries_{trial_type}.nii.gz')
+        beta_series_template = os.path.join(runtime.cwd, 'betaseries_trialtype-{trial_type}.nii.gz')
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
@@ -72,30 +96,6 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
             self._results['beta_maps'] = beta_series_lst
 
         return runtime
-
-
-class NistatsBaseInterface(LibraryBaseInterface):
-    _pkg = 'nistats'
-
-
-class BetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
-    bold_info = traits.Dict(desc='Dictionary containing useful information about'
-                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
-    events_file = File(exists=True, mandatory=True,
-                       desc="File that contains all events from the bold run")
-    confounds_file = File(exists=True,
-                          desc="File that contains all usable confounds")
-    selected_confounds = traits.List(desc="Column names of the regressors to include")
-    hrf_model = traits.String(desc="hemodynamic response model")
-    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
-
-
-class BetaSeriesOutputSpec(TraitedSpec):
-    beta_maps = OutputMultiPath(File)
 
 
 def _lss_events_iterator(events_file):
