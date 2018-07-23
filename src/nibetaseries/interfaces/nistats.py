@@ -54,7 +54,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         model = first_level_model.FirstLevelModel(t_r=t_r,
                                                   slice_time_ref=0,
                                                   hrf_model=self.inputs.hrf_model,
-                                                  mask=self.inputs.bold_mask,
+                                                  mask=self.inputs.mask_file,
                                                   smoothing_fwhm=self.inputs.smoothing_kernel,
                                                   standardize=1,
                                                   signal_scaling=0,
@@ -158,5 +158,5 @@ def _select_confounds(confounds_file, selected_confounds):
                                 np.mean(confounds_df['FramewiseDisplacement']))
 
     desired_confounds = confounds_df[selected_confounds]
-
+    print(desired_confounds)
     return desired_confounds
