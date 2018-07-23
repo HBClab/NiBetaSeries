@@ -3,10 +3,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
+import re
 from nipype.interfaces.base import (
     traits, isdefined, TraitedSpec, BaseInterfaceInputSpec,
-    File, Directory, InputMultiPath, OutputMultiPath, Str,
-    SimpleInterface
+    File, SimpleInterface
 )
 
 BIDS_NAME = re.compile(
@@ -32,7 +32,7 @@ class DerivativesDataSinkInputSpec(BaseInterfaceInputSpec):
 
 
 class DerivativesDataSinkOutputSpec(TraitedSpec):
-    out_file = OutputMultiPath(File(exists=True, desc='written file path'))
+    out_file = File(exists=True, desc='written file path')
 
 
 class DerivativesDataSink(SimpleInterface):
@@ -53,13 +53,50 @@ class DerivativesDataSink(SimpleInterface):
         _, ext = _splitext(self.inputs.in_file)
 
         bids_dict = BIDS_NAME.search(src_fname).groupdict()
+        bids_dict = {key: value for key,value in bids_dict.items() if value is not None}
+        betaseries_dict = BETASERIES_NAME.search(betaseries_fname).groupdict()
 
-        betaseries_dict = BETASERIES_NAME.search(betaseries_dict).groupdict()
+        # TODO: this quick and dirty modality detection needs to be implemented
+        # correctly
+        mod = 'func'
+        if 'anat' in os.path.dirname(self.inputs.source_file):
+            mod = 'anat'
+        elif 'dwi' in os.path.dirname(self.inputs.source_file):
+            mod = 'dwi'
+        elif 'fmap' in os.path.dirname(self.inputs.source_file):
+            mod = 'fmap'
+
+        base_directory = runtime.cwd
+        if isdefined(self.inputs.base_directory):
+            base_directory = os.path.abspath(self.inputs.base_directory)
+
+        out_path = '{}/{subject_id}'.format(self.out_path_base, **bids_dict)
+        if bids_dict['session_id'] is not None:
+            out_path += '/{session_id}'.format(**bids_dict)
+        out_path += '/{}'.format(mod)
+
+        out_path = os.path.join(base_directory, out_path)
+
+        os.makedirs(out_path, exist_ok=True)
+
+        base_fname = os.path.join(out_path, src_fname)
+
+
+        formatstr = '{bname}_{trialtype}_{suffix}{ext}'
+
+        out_file = formatstr.format(
+            bname=base_fname,
+            trialtype=betaseries_dict['trialtype_id'],
+            suffix=self.inputs.suffix,
+            ext=ext)
+
+        self._results['out_file'] = out_file
+
         return runtime
 
 
 def _splitext(fname):
-    fname, ext = op.splitext(os.path.basename(fname))
+    fname, ext = os.path.splitext(os.path.basename(fname))
     if ext == '.gz':
         fname, ext2 = os.path.splitext(fname)
         ext = ext2 + ext
