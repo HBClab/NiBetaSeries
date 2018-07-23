@@ -43,7 +43,7 @@ def get_parser():
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for preprocessing')
-    proc_opts.add_argument('-sm', '--smoothing_kernel', action='store', type=float,
+    proc_opts.add_argument('-sm', '--smoothing_kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
     proc_opts.add_argument('-lp', '--low_pass', action='store', type=float,
                            default=None, help='low pass filter')
