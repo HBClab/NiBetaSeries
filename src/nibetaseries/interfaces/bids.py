@@ -53,7 +53,7 @@ class DerivativesDataSink(SimpleInterface):
         _, ext = _splitext(self.inputs.in_file)
 
         bids_dict = BIDS_NAME.search(src_fname).groupdict()
-        bids_dict = {key: value for key,value in bids_dict.items() if value is not None}
+        bids_dict = {key: value for key, value in bids_dict.items() if value is not None}
         betaseries_dict = BETASERIES_NAME.search(betaseries_fname).groupdict()
 
         # TODO: this quick and dirty modality detection needs to be implemented
@@ -80,7 +80,6 @@ class DerivativesDataSink(SimpleInterface):
         os.makedirs(out_path, exist_ok=True)
 
         base_fname = os.path.join(out_path, src_fname)
-
 
         formatstr = '{bname}_{trialtype}_{suffix}{ext}'
 
