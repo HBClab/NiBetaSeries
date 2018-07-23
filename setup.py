@@ -66,6 +66,7 @@ setup(
         'nipype>=1.0.0',
         'pybids==0.6.*',
         'nibabel',
+        'grabbit >= 0.2.0',
         'nistats',
         'nilearn==0.4.*',
         'pandas',
