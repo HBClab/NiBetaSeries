@@ -85,6 +85,8 @@ def init_betaseries_wf(name="betaseries_wf",
                                                        'bold_info'
                                                        ]),
                          name='input_node')
+    # TODO: fix this hardcoding
+    input_node.inputs.bold_info = {'RepetitionTime': 2.0}
 
     # function for temporal filtering
     def _temporal_filter(bold, lp, hp):
@@ -116,7 +118,9 @@ def init_betaseries_wf(name="betaseries_wf",
     workflow.connect([
         (input_node, temp_filt_node, [('bold_file', 'bold')]),
         (input_node, betaseries_node, [('events_file', 'events_file'),
-                                       ('bold_mask_file', 'mask_file')]),
+                                       ('bold_mask_file', 'mask_file'),
+                                       ('bold_info', 'bold_info'),
+                                       ('confounds_file', 'confounds_file')]),
         (temp_filt_node, betaseries_node, [('bold_tfilt_file', 'bold_file')]),
         (betaseries_node, output_node, [('beta_maps', 'betaseries_files')]),
     ])

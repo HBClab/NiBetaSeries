@@ -64,7 +64,7 @@ def init_correlation_wf(name="correlation_wf"):
     output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix']),
                           name='output_node')
 
-    atlas_corr_node = pe.MapNode(AtlasConnectivity, name='atlas_corr_node', iterfield=['timeseries_file'])
+    atlas_corr_node = pe.MapNode(AtlasConnectivity(), name='atlas_corr_node', iterfield=['timeseries_file'])
 
     rename_matrix_node = pe.MapNode(niu.Function(output_names=['correlation_matrix_trialtype'],
                                                  function=_rename_matrix),

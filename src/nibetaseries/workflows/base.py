@@ -93,8 +93,8 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     os.makedirs(nibetaseries_participant_wf.base_dir, exist_ok=True)
 
     # reading in derivatives and bids inputs as queryable database like objects
-    derivatives_specification = pkgr.resource_filename('NiBetaSeries', 'data/bids_derivatives.json')
-    derivatives_layout = BIDSLayout(derivatives_pipeline_dir, config=derivatives_specification)
+    derivatives_specification = pkgr.resource_filename('nibetaseries', 'data/bids_derivatives.json')
+    derivatives_layout = BIDSLayout([(derivatives_pipeline_dir, ['bids', 'derivatives'])])
     bids_layout = BIDSLayout(bids_dir)
 
     for subject_label in subject_list:
@@ -201,7 +201,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
              ('confound_tsv', 'input_node.confounds_file')]),
         (betaseries_wf, correlation_wf,
             [('output_node.betaseries_files', 'input_node.betaseries_files')]),
-        (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_img'),
+        (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
                                      ('atlas_lut', 'input_node.atlas_lut')]),
         (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrices')]),
     ])
