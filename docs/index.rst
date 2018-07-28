@@ -6,6 +6,7 @@ Contents
    :maxdepth: 2
 
    readme
+   betaseries
    installation
    usage
    reference/index

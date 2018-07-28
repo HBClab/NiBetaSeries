@@ -64,7 +64,13 @@ setup(
     install_requires=[
         # eg: 'aspectlib==1.1.1', 'six>=1.7',
         'nipype>=1.0.0',
-        'pybids>=0.5.1',
+        'pybids==0.6.*',
+        'nibabel',
+        'grabbit >= 0.2.0',
+        'nistats',
+        'nilearn==0.4.*',
+        'pandas',
+        'numpy',
         'duecredit'
     ],
     extras_require={

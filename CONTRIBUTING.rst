@@ -37,7 +37,7 @@ Development
 
 To set up `NiBetaSeries` for local development:
 
-1. Fork `NiBetaSeries <https://github.com/jdkent/NiBetaSeries>`_
+1. Fork `NiBetaSeries <https://github.com/HBClab/NiBetaSeries>`_
    (look for the "Fork" button).
 2. Clone your fork locally::
 

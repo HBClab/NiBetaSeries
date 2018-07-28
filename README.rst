@@ -17,24 +17,24 @@ Overview
         | |commits-since|
 
 .. |docs| image:: https://readthedocs.org/projects/NiBetaSeries/badge/?style=flat
-    :target: https://readthedocs.org/projects/NiBetaSeries
+    :target: https://readthedocs.org/projects/nibetaseries
     :alt: Documentation Status
 
-.. |travis| image:: https://travis-ci.org/jdkent/NiBetaSeries.svg?branch=master
+.. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/jdkent/NiBetaSeries
+    :target: https://travis-ci.org/HBClab/NiBetaSeries
 
-.. |codecov| image:: https://codecov.io/github/jdkent/NiBetaSeries/coverage.svg?branch=master
+.. |codecov| image:: https://codecov.io/github/HBClab/NiBetaSeries/coverage.svg?branch=master
     :alt: Coverage Status
-    :target: https://codecov.io/github/jdkent/NiBetaSeries
+    :target: https://codecov.io/github/HBClab/NiBetaSeries
 
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/nibetaseries
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/jdkent/NiBetaSeries/v0.1.0.svg
+.. |commits-since| image:: https://img.shields.io/github/commits-since/HBClab/NiBetaSeries/v0.1.0.svg
     :alt: Commits since latest release
-    :target: https://github.com/jdkent/NiBetaSeries/compare/v0.1.0...master
+    :target: https://github.com/HBClab/NiBetaSeries/compare/v0.1.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/nibetaseries.svg
     :alt: PyPI Wheel

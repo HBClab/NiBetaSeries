@@ -8,8 +8,7 @@ NiBetaSeries processing workflows
 from __future__ import print_function, division, absolute_import, unicode_literals
 import os
 from copy import deepcopy
-from .util import collect_data
-from .preprocess import init_derive_residuals_wf
+from .utils import collect_data
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
 from nipype.pipeline import engine as pe
@@ -18,146 +17,139 @@ import pkg_resources as pkgr
 from bids.grabbids import BIDSLayout
 
 
-def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipeline,
-                                     exclude_variant, hrf_model, low_pass, mni_roi_coords,
-                                     omp_nthreads, output_dir, regfilt, roi_radius, res, run_id,
-                                     run_uuid, ses_id, slice_time_ref, smooth, space,
-                                     subject_list, task_id, variant, work_dir):
+def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
+                                     derivatives_pipeline_dir, exclude_variant_label, high_pass, hrf_model, low_pass,
+                                     output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
+                                     space_label, subject_list, task_label, variant_label, work_dir):
     """
     This workflow organizes the execution of NiBetaSeries, with a sub-workflow for
     each subject.
     .. workflow::
         from NiBetaSeries.workflows.base import init_nibetaseries_participant_wf
-        wf = init_nibetaseries_participant_wf(subject_list=['NiBetaSeriesSubsTest'],
-                              task_id='',
-                              derivatives_pipeline='.',
-                              bids_dir='.',
-                              output_dir='.',
-                              work_dir='.',
-                              space='',
-                              variant='',
-                              res='',
-                              hrf_model='glover',
-                              slice_time_ref='0.5',
-                              run_uuid='X',
-                              omp_nthreads=1)
+        wf = init_nibetaseries_participant_wf(
+            atlas_img='',
+            atlas_lut='',
+            bids_dir='.',
+            confound_column_headers=[''],
+            derivatives_pipeline_dir='.',
+            exclude_variant_label='',
+            high_pass='',
+            hrf_model='',
+            low_pass='',
+            output_dir='',
+            run_label='',
+            session_label='',
+            slice_time_ref='',
+            smoothing_kernel='',
+            space_label='',
+            subject_list=[''],
+            task_label='',
+            variant_label='',
+            work_dir='.')
+
     Parameters
-        subject_list : list
-            List of subject labels
-        task_id : str or None
-            Task ID of preprocessed BOLD series to derive betas, or ``None`` to process all
-        derivatives_pipeline : str
-            Directory where preprocessed derivatives live
+        atlas_img: str
+            Path to input atlas nifti
+        atlas_lut: str
+            Path to input atlas lookup table (tsv)
         bids_dir : str
             Root directory of BIDS dataset
-        output_dir : str
-            Directory in which to save derivatives
-        work_dir : str
+        confound_column_headers: list
+            The confound column names that are to be included in nuisance regression of the bold series
+        derivatives_pipeline_dir: str
+            Root directory of the derivatives pipeline
+        exclude_variant_label: str or None
+            Exclude bold series containing this variant label
+        high_pass: float or None
+            High pass filter (Hz)
+        hrf_model: str
+            The model that represents the shape of the hemodynamic response function
+        low_pass: float or None
+            Low pass filter (Hz)
+        output_dir: str
+            Directory where derivatives are saved
+        run_label: str or None
+            Include bold series containing this run label
+        session_label: str or None
+            Include bold series containing this session label
+        slice_time_ref: float
+            The reference slice for slice time correction
+        smoothing_kernel: float or None
+            The smoothing kernel to be applied to the bold series before beta estimation
+        space_label: str or None
+            Include bold series containing this space label
+        subject_list: list
+            List of subject labels
+        task_label: str or None
+            Include bold series containing this task label
+        variant_label: str or None
+            Include bold series containing this variant label
+        work_dir: str
             Directory in which to store workflow execution state and temporary files
-        space : str
-            Space of preprocessed BOLD series to derive betas, or ``None`` to process all
-        variant : str
-            Variant of preprocessed BOLD series to derive betas, or ``None`` to process all
-        res : str
-            resolution (XxYxZ) of preprocessed BOLD series to derive betas, or
-            ``None`` to process all
-        hrf_model : str
-            hrf model used to convolve events
-        slice_time_ref : float
-            fractional representation of the slice that used as the reference
-            during slice time correction.
-        run_uuid : str
-            Unique identifier for execution instance
-        omp_nthreads : int
-            Maximum number of threads an individual process may use
     """
+    # setup workflow
     nibetaseries_participant_wf = pe.Workflow(name='nibetaseries_participant_wf')
     nibetaseries_participant_wf.base_dir = os.path.join(work_dir, 'NiBetaSeries_work')
-    # reportlets_dir = os.path.join(work_dir, 'reportlets')
-    bids_deriv_config = pkgr.resource_filename('NiBetaSeries', 'data/bids_derivatives.json')
-    derivatives_dir = os.path.join(bids_dir, 'derivatives', derivatives_pipeline)
-    derivatives_layout = BIDSLayout(derivatives_dir, config=bids_deriv_config)
+    os.makedirs(nibetaseries_participant_wf.base_dir, exist_ok=True)
+
+    # reading in derivatives and bids inputs as queryable database like objects
+    derivatives_specification = pkgr.resource_filename('nibetaseries', 'data/bids_derivatives.json')
+    derivatives_layout = BIDSLayout([(derivatives_pipeline_dir, ['bids', 'derivatives'])])
     bids_layout = BIDSLayout(bids_dir)
 
-    for subject_id in subject_list:
-        deriv_subject_data = collect_data(derivatives_layout,
-                                          subject_id,
-                                          task=task_id,
-                                          run=run_id,
-                                          ses=ses_id,
-                                          space=space,
-                                          deriv=True)
+    for subject_label in subject_list:
 
-        bids_subject_data = collect_data(bids_layout,
-                                         subject_id,
-                                         task=task_id,
-                                         run=run_id,
-                                         ses=ses_id)
-        # if you want to avoid using the ICA-AROMA variant
-        if exclude_variant:
-            deriv_subject_data['preproc'] = [
-                preproc for preproc in deriv_subject_data['preproc'] if variant not in preproc
+        # collect the necessary inputs for both collect data
+        subject_derivative_data = collect_data(derivatives_layout,
+                                               subject_label,
+                                               task=task_label,
+                                               run=run_label,
+                                               ses=session_label,
+                                               space=space_label,
+                                               deriv=True)
+
+        subject_bids_data = collect_data(bids_layout,
+                                         subject_label,
+                                         task=task_label,
+                                         run=run_label,
+                                         ses=session_label)
+
+        # if you want to avoid using a particular variant
+        if exclude_variant_label:
+            subject_derivative_data['preproc'] = [
+                preproc for preproc in subject_derivative_data['preproc'] if exclude_variant_label not in preproc
             ]
+
         # if you only want to use a particular variant
-        if variant:
-            deriv_subject_data['preproc'] = [
-                preproc for preproc in deriv_subject_data['preproc'] if variant in preproc
+        if variant_label:
+            subject_derivative_data['preproc'] = [
+                preproc for preproc in subject_derivative_data['preproc'] if variant_label in preproc
             ]
 
-        # make sure the lists are the same length
-        # pray to god that they are in the same order?
-        # ^they appear to be in the same order
-        length = len(deriv_subject_data['preproc'])
-        print('\n'+subject_id)
-        print('target-MNI WARP: {}'.format(deriv_subject_data['target_mni_warp'][0]))
-        print('target-T1w WARP: {}'.format(deriv_subject_data['target_t1w_warp'][0]))
-        print('preproc:{}'.format(str(length)))
-        print('confounds:{}'.format(str(len(deriv_subject_data['confounds']))))
-        print('bold_t1w_brainmask:{}'.format(str(len(deriv_subject_data['bold_t1w_brainmask']))))
-        print('AROMAnoiseICs:{}'.format(str(len(deriv_subject_data['AROMAnoiseICs']))))
-        print('MELODICmix:{}'.format(str(len(deriv_subject_data['MELODICmix']))))
-        print('events:{}'.format(str(len(bids_subject_data['events']))))
+        length = len(subject_derivative_data['preproc'])
 
-        if any(len(lst) != length for lst in [deriv_subject_data['bold_t1w_brainmask'],
-                                              deriv_subject_data['bold_mni_brainmask'],
-                                              deriv_subject_data['confounds'],
-                                              deriv_subject_data['AROMAnoiseICs'],
-                                              deriv_subject_data['MELODICmix'],
-                                              bids_subject_data['events']]):
+        if any(len(lst) != length for lst in [subject_derivative_data['brainmask'],
+                                              subject_derivative_data['confounds'],
+                                              subject_bids_data['events']]):
             raise ValueError('input lists are not the same length!')
 
         single_subject_wf = init_single_subject_wf(
-            AROMAnoiseICs=deriv_subject_data['AROMAnoiseICs'],
-            bold_mni_brainmask=deriv_subject_data['bold_mni_brainmask'],
-            bold_t1w_brainmask=deriv_subject_data['bold_t1w_brainmask'],
-            confounds=deriv_subject_data['confounds'],
-            confound_names=confound_names,
-            events=bids_subject_data['events'],
+            atlas_img=atlas_img,
+            atlas_lut=atlas_lut,
+            brainmask_list=subject_derivative_data['brainmask'],
+            confound_tsv_list=subject_derivative_data['confounds'],
+            events_tsv_list=subject_bids_data['events'],
+            high_pass=high_pass,
             hrf_model=hrf_model,
             low_pass=low_pass,
-            MELODICmix=deriv_subject_data['MELODICmix'],
-            mni_brainmask=deriv_subject_data['mni_brainmask'][0],
-            mni_roi_coords=mni_roi_coords,
-            name='single_subject' + subject_id + '_wf',
-            preproc=deriv_subject_data['preproc'],
-            regfilt=regfilt,
-            res=res,
-            roi_radius=roi_radius,
-            run_id=run_id,
-            run_uuid=run_uuid,
-            ses_id=ses_id,
-            smooth=smooth,
-            space=space,
-            subject_id=subject_id,
-            slice_time_ref=slice_time_ref,
-            target_mni_warp=deriv_subject_data['target_mni_warp'][0],
-            target_t1w_warp=deriv_subject_data['target_t1w_warp'][0],
-            task_id=task_id,
-            variant=variant,
+            name='single_subject' + subject_label + '_wf',
+            preproc_img_list=subject_derivative_data['preproc'],
+            selected_confounds=selected_confounds,
+            smoothing_kernel=smoothing_kernel,
         )
 
         single_subject_wf.config['execution']['crashdump_dir'] = (
-            os.path.join(output_dir, "nibetaseries", "sub-" + subject_id, 'log', run_uuid)
+            os.path.join(output_dir, "nibetaseries", "sub-" + subject_label, 'log')
         )
 
         for node in single_subject_wf._get_all_nodes():
@@ -168,78 +160,50 @@ def init_nibetaseries_participant_wf(bids_dir, confound_names, derivatives_pipel
     return nibetaseries_participant_wf
 
 
-def init_single_subject_wf(AROMAnoiseICs, bold_mni_brainmask, bold_t1w_brainmask,
-                           confounds, confound_names, events, hrf_model, low_pass,
-                           MELODICmix, mni_brainmask, mni_roi_coords, name, preproc,
-                           regfilt, roi_radius, res, run_id, run_uuid, ses_id,
-                           smooth, space, subject_id, slice_time_ref, target_mni_warp,
-                           target_t1w_warp, task_id, variant):
+def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list, high_pass,
+                           hrf_model, low_pass, name, preproc_img_list, selected_confounds, smoothing_kernel):
+
     workflow = pe.Workflow(name=name)
 
     # name the nodes
-    inputnode = pe.Node(niu.IdentityInterface(fields=['AROMAnoiseICs',
-                                                      'bold_mni_brainmask',
-                                                      'bold_t1w_brainmask',
-                                                      'confounds',
-                                                      'events',
-                                                      'MELODICmix',
-                                                      'preproc']),
-                        name='inputnode',
-                        iterables=[('AROMAnoiseICs', AROMAnoiseICs),
-                                   ('bold_mni_brainmask', bold_mni_brainmask),
-                                   ('bold_t1w_brainmask', bold_t1w_brainmask),
-                                   ('confounds', confounds),
-                                   ('events', events),
-                                   ('MELODICmix', MELODICmix),
-                                   ('preproc', preproc)],
-                        synchronize=True)
+    input_node = pe.Node(niu.IdentityInterface(fields=['brainmask',
+                                                       'confound_tsv',
+                                                       'events_tsv',
+                                                       'preproc_img',
+                                                       'atlas_img',
+                                                       'atlas_lut']),
+                         name='input_node',
+                         iterables=[('brainmask', brainmask_list),
+                                    ('confound_tsv', confound_tsv_list),
+                                    ('events_tsv', events_tsv_list),
+                                    ('preproc_img', preproc_img_list)],
+                         synchronize=True)
 
-    inputnode.inputs.mni_roi_coords = mni_roi_coords
-    inputnode.inputs.mni_brainmask = mni_brainmask
-    inputnode.inputs.target_mni_warp = target_mni_warp
-    inputnode.inputs.target_t1w_warp = target_t1w_warp
-    # inputnode.inputs.AROMAnoiseICs = AROMAnoiseICs
-    # inputnode.inputs.brainmask = brainmask
-    # inputnode.inputs.confounds = confounds
-    # inputnode.inputs.events = events
-    # inputnode.inputs.MELODICmix = MELODICmix
-    # inputnode.inputs.preproc = preproc
+    input_node.inputs.atlas_img = atlas_img
+    input_node.inputs.atlas_lut = atlas_lut
 
-    outputnode = pe.Node(niu.IdentityInterface(fields=['zmaps_mni']),
-                         name='outputnode')
-
-    # preproc_wf = init_derive_residuals_wf()
-    preproc_wf = init_derive_residuals_wf(
-        lp=low_pass,
-        smooth=smooth,
-        confound_names=confound_names,
-        regfilt=regfilt,
-    )
+    output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix']),
+                          name='output_node')
 
     # initialize the betaseries workflow
-    betaseries_wf = init_betaseries_wf()
+    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, low_pass=low_pass, high_pass=high_pass,
+                                       selected_confounds=selected_confounds, smoothing_kernel=smoothing_kernel)
 
     # initialize the analysis workflow
-    correlation_wf = init_correlation_wf(roi_radius=roi_radius)
+    correlation_wf = init_correlation_wf()
+
     # connect the nodes
     workflow.connect([
-        (inputnode, preproc_wf, [('AROMAnoiseICs', 'inputnode.AROMAnoiseICs'),
-                                 ('MELODICmix', 'inputnode.MELODICmix'),
-                                 ('bold_t1w_brainmask', 'inputnode.bold_mask'),
-                                 ('confounds', 'inputnode.confounds'),
-                                 ('preproc', 'inputnode.bold_preproc')]),
-        (preproc_wf, betaseries_wf, [('outputnode.bold_resid', 'inputnode.bold')]),
-        (inputnode, betaseries_wf, [('events', 'inputnode.events'),
-                                    ('bold_t1w_brainmask', 'inputnode.bold_mask')]),
+        (input_node, betaseries_wf,
+            [('preproc_img', 'input_node.bold_file'),
+             ('events_tsv', 'input_node.events_file'),
+             ('brainmask', 'input_node.bold_mask_file'),
+             ('confound_tsv', 'input_node.confounds_file')]),
         (betaseries_wf, correlation_wf,
-            [('outputnode.betaseries_files', 'inputnode.betaseries_files')]),
-        (inputnode, correlation_wf, [('bold_t1w_brainmask', 'inputnode.bold_t1w_mask'),
-                                     ('bold_mni_brainmask', 'inputnode.bold_mni_mask'),
-                                     ('mni_roi_coords', 'inputnode.mni_roi_coords'),
-                                     ('mni_brainmask', 'inputnode.t1w_space_mni_mask'),
-                                     ('target_t1w_warp', 'inputnode.target_t1w_warp'),
-                                     ('target_mni_warp', 'inputnode.target_mni_warp')]),
-        (correlation_wf, outputnode, [('outputnode.zmaps_mni', 'zmaps_mni')]),
+            [('output_node.betaseries_files', 'input_node.betaseries_files')]),
+        (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
+                                     ('atlas_lut', 'input_node.atlas_lut')]),
+        (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrices')]),
     ])
 
     return workflow
