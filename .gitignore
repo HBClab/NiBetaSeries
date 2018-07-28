@@ -63,3 +63,6 @@ docs/_build
 .bootstrap
 .appveyor.token
 *.bak
+
+# python notebooks
+.ipynb_checkpoints
