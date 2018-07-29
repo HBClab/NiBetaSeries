@@ -2,6 +2,11 @@
 Usage
 =====
 
-To use NiBetaSeries in a project::
+Command-Line Arguments
+----------------------
 
-	import nibetaseries
+.. argparse::
+   :ref: nibetaseries.cli.run.get_parser
+   :prog: nibs
+   :nodefault:
+   :nodefaultconst:
