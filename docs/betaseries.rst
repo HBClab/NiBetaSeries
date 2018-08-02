@@ -16,6 +16,33 @@ a GLM will show you active regions that may be encoding size or position or both
 Betaseries correlations, on the other hand, could provide evidence of which
 regions form a size encoding network, and which form a position encoding network.
 
+
+Conceptual Background
+---------------------
+Jesse Rissman [Rissman, 2004]_ was the first to publish on betaseries correlations
+describing their usage in the context of a working memory task.
+In this task, participants saw a cue, a delay, and a probe, all occurring
+close in time.
+Specifically, a cue was presented for one second, a delay occurred for seven seconds,
+and a probe was presented for one second.
+Given the hemodynamic response function takes approximately six seconds to reach its
+peak, and generally takes over 20 seconds to completely resolve, we can begin to see
+a problem.
+The events within the trials occur too close to each other to discern what brain regions
+are related to encoding the cue, the delay, or the probe.
+To discern how the activated brain regions form networks, Rissman conceptualized
+betaseries correlations.
+In brief, instead of having a single regressor to describe all the cue events,
+a single regressor for all the delay events, and a single regressor for all the
+probe events, there is an individual regressor for every event in the experiment.
+For example, if your experiment has 40 trials, each with a cue, delay, and probe
+event, the GLM will have a total of 120 regressors, fitting a beta estimate for
+each trial.
+Complete this process for each trial of a given event type (e.g. cue), at the end
+you will have 4D volume where each volume represents the beta estimates for a
+particular trial, and each voxel represents a specific beta estimate.
+
+
 Math Background
 ---------------
 .. math::
@@ -73,3 +100,4 @@ reliable.
 
 This python psuedocode demonstrates LSS where each trial is given it's own model.
 
+.. [Rissman, 2004] https://www.ncbi.nlm.nih.gov/pubmed/15488425
