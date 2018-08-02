@@ -39,8 +39,23 @@ For example, if your experiment has 40 trials, each with a cue, delay, and probe
 event, the GLM will have a total of 120 regressors, fitting a beta estimate for
 each trial.
 Complete this process for each trial of a given event type (e.g. cue), at the end
-you will have 4D volume where each volume represents the beta estimates for a
+you will have ``4D`` volume where each volume represents the beta estimates for a
 particular trial, and each voxel represents a specific beta estimate.
+
+Having one regressor per trial in a single model is known as least squares all.
+This method, however, has limitations in the context of fast event related designs.
+Since each trial has its own regressor, trials that occur very close in time are
+colinear (remember the hemodynamic response is slow).
+Jeanette Mumford et al. [Mumford, 2012]_ investigated this issue in the context
+of image classification.
+In this article, Mumford introduces another modelling strategy known as least
+squares separate.
+In this modelling strategy, instead of having one GLM with a regressor per trial,
+least squares separate implements a GLM per trial with two regressors: 1) one for
+the trial of interest, and 2) one for every other trial in the experiment.
+This process reduces the colinearity of the regressors and creates a more valid
+estimate of how each regressors fits the data.
+
 
 
 Math Background
@@ -90,7 +105,7 @@ In LSA, if trials occurred close in time then it would be difficult to model whe
 the fluctuations should be attributed to one trial or the other.
 LSS reduces this ambiguity by only having two regressors: one for the trial of interest
 and another for every other trial.
-This reduces the colinearity between regressors, and makes each beta estimate more
+This reduces the colinearity between regressors and makes each beta estimate more
 reliable.
 
 .. code-block:: python
@@ -101,3 +116,5 @@ reliable.
 This python psuedocode demonstrates LSS where each trial is given it's own model.
 
 .. [Rissman, 2004] https://www.ncbi.nlm.nih.gov/pubmed/15488425
+
+.. [Mumford, 2012] https://www.ncbi.nlm.nih.gov/pubmed/21924359
