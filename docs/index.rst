@@ -9,6 +9,7 @@ Contents
    betaseries
    installation
    usage
+   workflows
    reference/index
    contributing
    authors
