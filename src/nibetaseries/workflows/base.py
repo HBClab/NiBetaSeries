@@ -25,6 +25,9 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     This workflow organizes the execution of NiBetaSeries, with a sub-workflow for
     each subject.
     .. workflow::
+        :graph2use: orig
+        :simple_form: yes
+
         from NiBetaSeries.workflows.base import init_nibetaseries_participant_wf
         wf = init_nibetaseries_participant_wf(
             atlas_img='',
