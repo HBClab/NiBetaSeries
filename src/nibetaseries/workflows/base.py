@@ -13,7 +13,6 @@ from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
-import pkg_resources as pkgr
 from bids.grabbids import BIDSLayout
 
 
