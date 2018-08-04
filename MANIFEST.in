@@ -17,7 +17,7 @@ include README.rst
 include tox.ini .travis.yml
 
 global-exclude *.py[cod] __pycache__ *.so *.dylib
-recursive-exclude data *.gz
-recursive-exclude data *.ipynb
-recursive-exclude data *.json
-recursive-exclude data *.tsv
+recursive-include data *.gz
+recursive-include data *.ipynb
+recursive-include data *.json
+recursive-include data *.tsv
