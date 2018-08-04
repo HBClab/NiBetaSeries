@@ -16,6 +16,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'nipype.sphinxext.plot_workflow',
     'sphinxarg.ext',
+    'sphinx.ext.mathjax',
 ]
 if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',

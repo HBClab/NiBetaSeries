@@ -16,7 +16,15 @@ from ..interfaces.nilearn import AtlasConnectivity
 
 def init_correlation_wf(name="correlation_wf"):
     """
-    This workflow calculates betaseries correlations using an atlas
+    This workflow calculates betaseries correlations using a parcellation
+    from an atlas.
+
+    .. workflow::
+        :graph2use: orig
+        :simple_form: yes
+
+        from nibetaseries.workflows.analysis import init_correlation_wf
+        wf = init_correlation_wf()
 
     Parameters
     ----------

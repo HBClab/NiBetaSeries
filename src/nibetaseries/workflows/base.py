@@ -24,70 +24,45 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     """
     This workflow organizes the execution of NiBetaSeries, with a sub-workflow for
     each subject.
-    .. workflow::
-        :graph2use: orig
-        :simple_form: yes
-
-        from NiBetaSeries.workflows.base import init_nibetaseries_participant_wf
-        wf = init_nibetaseries_participant_wf(
-            atlas_img='',
-            atlas_lut='',
-            bids_dir='.',
-            confound_column_headers=[''],
-            derivatives_pipeline_dir='.',
-            exclude_variant_label='',
-            high_pass='',
-            hrf_model='',
-            low_pass='',
-            output_dir='',
-            run_label='',
-            session_label='',
-            slice_time_ref='',
-            smoothing_kernel='',
-            space_label='',
-            subject_list=[''],
-            task_label='',
-            variant_label='',
-            work_dir='.')
 
     Parameters
-        atlas_img: str
+    ----------
+
+        atlas_img : str
             Path to input atlas nifti
-        atlas_lut: str
+        atlas_lut : str
             Path to input atlas lookup table (tsv)
         bids_dir : str
             Root directory of BIDS dataset
-        confound_column_headers: list
-            The confound column names that are to be included in nuisance regression of the bold series
         derivatives_pipeline_dir: str
             Root directory of the derivatives pipeline
         exclude_variant_label: str or None
             Exclude bold series containing this variant label
-        high_pass: float or None
+        high_pass : float or None
             High pass filter (Hz)
-        hrf_model: str
+        hrf_model : str
             The model that represents the shape of the hemodynamic response function
-        low_pass: float or None
+        low_pass : float or None
             Low pass filter (Hz)
-        output_dir: str
+        output_dir : str
             Directory where derivatives are saved
-        run_label: str or None
+        run_label : str or None
             Include bold series containing this run label
-        session_label: str or None
+        selected_confounds : list
+            List of confounds to be included in regression
+        session_label : str or None
             Include bold series containing this session label
-        slice_time_ref: float
-            The reference slice for slice time correction
-        smoothing_kernel: float or None
+        smoothing_kernel : float or None
             The smoothing kernel to be applied to the bold series before beta estimation
-        space_label: str or None
+        space_label : str or None
             Include bold series containing this space label
-        subject_list: list
+        subject_list : list
             List of subject labels
-        task_label: str or None
+        task_label : str or None
             Include bold series containing this task label
-        variant_label: str or None
+        variant_label : str or None
             Include bold series containing this variant label
-        work_dir: str
+        work_dir : str
             Directory in which to store workflow execution state and temporary files
     """
     # setup workflow
@@ -165,16 +140,87 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
 
 def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list, high_pass,
                            hrf_model, low_pass, name, preproc_img_list, selected_confounds, smoothing_kernel):
+    """
+    This workflow completes the generation of the betaseries files and the calculation of the correlation matrices.
+    .. workflow::
+        :graph2use: orig
+        :simple_form: yes
 
+        from nibetaseries.workflows.base import init_single_subject_wf
+        wf = init_single_subject_wf(
+            atlas_img='',
+            atlas_lut='',
+            brainmask_list=[''],
+            confound_tsv_list=[''],
+            events_tsv_list=[''],
+            high_pass='',
+            hrf_model='',
+            low_pass='',
+            name='subtest',
+            preproc_img_list=[''],
+            selected_confounds=[''],
+            smoothing_kernel=0.0)
+
+    Parameters
+    ----------
+
+        atlas_img : str
+            path to input atlas nifti
+        atlas_lut : str
+            path to input atlas lookup table (tsv)
+        brainmask_list : list
+            list of brain masks in MNI space
+        confound_tsv_list : list
+            list of confound tsvs (e.g. from FMRIPREP)
+        events_tsv_list : list
+            list of event tsvs
+        high_pass : float or None
+            high pass filter to apply to bold (in Hertz). Reminder - frequencies _higher_ than this number are kept.
+        hrf_model : str
+            hemodynamic response function used to model the data
+        low_pass : float or None
+            low pass filter to apply to bold (in Hertz). Reminder - frequencies _lower_ than this number are kept.
+        name : str
+            name of the workflow (e.g. ``subject-01_wf``)
+        preproc_img_list : list
+            list of preprocessed bold files
+        selected_confounds : list or None
+            the list of confounds to be included in regression
+        smoothing_kernel : float or None
+            the size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
+
+   Inputs
+   ------
+
+        atlas_img
+            path to input atlas nifti
+        atlas_lut
+            path to input atlas lookup table (tsv)
+        brainmask
+            binary mask in MNI space for the participant
+        confound_tsv
+            tsv containing all the generated confounds
+        events_tsv
+            tsv containing all of the events that occurred during the bold run
+        preproc_img
+            preprocessed bold files
+
+    Outputs
+    -------
+
+        correlation_matrix
+            a matrix (tsv) file denoting all roi-roi correlations
+    """
     workflow = pe.Workflow(name=name)
 
     # name the nodes
-    input_node = pe.Node(niu.IdentityInterface(fields=['brainmask',
+    input_node = pe.Node(niu.IdentityInterface(fields=['atlas_img',
+                                                       'atlas_lut',
+                                                       'brainmask',
                                                        'confound_tsv',
                                                        'events_tsv',
                                                        'preproc_img',
-                                                       'atlas_img',
-                                                       'atlas_lut']),
+                                                       ]),
                          name='input_node',
                          iterables=[('brainmask', brainmask_list),
                                     ('confound_tsv', confound_tsv_list),

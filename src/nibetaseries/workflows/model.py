@@ -32,12 +32,12 @@ def init_betaseries_wf(name="betaseries_wf",
         :simple_form: yes
 
         from nibetaseries.workflows.model import init_betaseries_wf
-         wf = init_betaseries_wf(
+        wf = init_betaseries_wf(
             hrf_model='glover',
             low_pass=None,
             high_pass=None,
-            smoothing_kernel=None,
-            selected_confounds=None)
+            smoothing_kernel=0.0,
+            selected_confounds=[''])
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ def init_betaseries_wf(name="betaseries_wf",
     smoothing_kernel : float or None
         The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
     selected_confounds : list or None
-        The list of confounds selected to be included in analysis.
+        the list of confounds to be included in regression.
 
     Inputs
     ------
