@@ -40,7 +40,8 @@ def init_correlation_wf(name="correlation_wf"):
         atlas_file
             atlas file with indexed regions of interest
         atlas_lut
-            atlas look up table (tsv) with a column for regions and a column for what number the label corresponds to.
+            atlas look up table (tsv) with a column for regions
+            and a column for what number the label corresponds to.
 
     Outputs
     -------
@@ -88,4 +89,3 @@ def init_correlation_wf(name="correlation_wf"):
     ])
 
     return workflow
-
