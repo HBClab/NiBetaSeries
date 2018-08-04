@@ -16,9 +16,10 @@ Overview
       - | |version| |wheel| |supported-versions| |supported-implementations|
         | |commits-since|
 
-.. |docs| image:: https://readthedocs.org/projects/NiBetaSeries/badge/?style=flat
-    :target: https://readthedocs.org/projects/nibetaseries
+.. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
     :alt: Documentation Status
+    :target: https://nibetaseries.readthedocs.io/en/latest/?badge=latest
+    
 
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
