@@ -89,4 +89,3 @@ def init_correlation_wf(name="correlation_wf"):
     ])
 
     return workflow
-

@@ -79,7 +79,6 @@ def get_parser():
     image_opts.add_argument('--exclude_variant_label', action='store_true',
                             default=False, help='exclude the variant from FMRIPREP')
 
-
     # BetaSeries Specific Options
     beta_series = parser.add_argument_group('Options for processing beta_series')
     beta_series.add_argument('--hrf_model', default='glover',

@@ -62,7 +62,3 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         self._results['correlation_matrix'] = out_file
 
         return runtime
-
-
-
-
