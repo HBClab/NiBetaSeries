@@ -24,7 +24,7 @@ articles, and such.
 Feature requests and feedback
 =============================
 
-The best way to send feedback is to file an issue at https://github.com/jdkent/NiBetaSeries/issues.
+The best way to send feedback is to file an issue at https://github.com/HBClab/NiBetaSeries/issues.
 
 If you are proposing a feature:
 
