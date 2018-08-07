@@ -63,7 +63,7 @@ In practical terms, NiBetaSeries uses the output of `fmriprep <http://fmriprep.r
 a great BIDS compatible preprocessing tool.
 Specifically, NiBetaSeries requires the input and the atlas to already be in MNI space since currently no
 transformations are applied to the data.
-You can use any arbitrary atlas as long as it is in MNI space (the same space as the preprocessed data.
+You can use any arbitrary atlas as long as it is in MNI space (the same space as the preprocessed data).
 
 With NiBetaSeries you can receive:
 
