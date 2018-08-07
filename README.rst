@@ -63,17 +63,21 @@ In practical terms, NiBetaSeries uses the output of `fmriprep <http://fmriprep.r
 a great BIDS compatible preprocessing tool.
 Specifically, NiBetaSeries requires the input and the atlas to already be in MNI space since currently no
 transformations are applied to the data.
+You can use any arbitrary atlas as long as it is in MNI space (the same space as the preprocessed data.
 
-With NiBetaSeries you receive:
-- betaseries images (TODO)
-- correlation matrices
+With NiBetaSeries you can receive:
+
+* betaseries images (TODO)
+* correlation matrices
+
+This is a very young project that still needs some tender loving care to grow.
+That's where you fit in!
+If you would like to contribute, please read our code of conduct and contributing page.
 
 This project heavily leverages `nipype <http://nipype.readthedocs.io/en/latest/>`_,
 `nilearn <https://nilearn.github.io/>`_, `pybids <https://incf.github.io/pybids/>`_, and
 `nistats <https://nistats.github.io/>`_ for development.
 Please check out their pages and support the developers.
-
-
 
 
 * Free software: MIT license
