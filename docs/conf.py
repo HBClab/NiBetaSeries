@@ -43,12 +43,6 @@ html_theme_options = {
     'githuburl': 'https://github.com/HBClab/NiBetaSeries/'
 }
 
-# interpret markdown
-source_parsers = {
-    '.md': CommonMarkParser,
-}
-source_suffix = ['.rst', '.md']
-
 html_use_smartypants = True
 html_last_updated_fmt = '%b %d, %Y'
 html_split_index = False
