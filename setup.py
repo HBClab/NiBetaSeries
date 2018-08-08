@@ -67,7 +67,8 @@ setup(
         'nilearn==0.4.*',
         'pandas',
         'numpy',
-        'duecredit'
+        'duecredit',
+        'sklearn'
     ],
     extras_require={
         # eg:
