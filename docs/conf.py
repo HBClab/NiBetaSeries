@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 import os
 
 
@@ -43,6 +42,12 @@ html_theme = "sphinx_rtd_theme"
 html_theme_options = {
     'githuburl': 'https://github.com/HBClab/NiBetaSeries/'
 }
+
+# interpret markdown
+source_parsers = {
+    '.md': CommonMarkParser,
+}
+source_suffix = ['.rst', '.md']
 
 html_use_smartypants = True
 html_last_updated_fmt = '%b %d, %Y'
