@@ -94,7 +94,8 @@ Documentation
 
 https://NiBetaSeries.readthedocs.io/
 
-If you're interested in contributing to this project, here are some guidelines for `contributing <https://nibetaseries.readthedocs.io/en/latest/contributing.html>_`. Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>_`.
+If you're interested in contributing to this project, here are some guidelines for `contributing <https://nibetaseries.readthedocs.io/en/latest/contributing.html>`_.
+Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>`_.
 
 Development
 ===========
