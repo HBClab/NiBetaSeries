@@ -8,6 +8,7 @@ env:
   matrix:
     - TOXENV=check
     - TOXENV=docs
+    - TOXENV=functional
 matrix:
   include:
     - python: '3.6'
