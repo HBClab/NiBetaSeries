@@ -11,6 +11,7 @@ from copy import deepcopy
 from .utils import collect_data
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
+from ..interfaces.bids import DerivativesDataSink
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
 from bids.grabbids import BIDSLayout
@@ -119,6 +120,7 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
             hrf_model=hrf_model,
             low_pass=low_pass,
             name='single_subject' + subject_label + '_wf',
+            output_dir=output_dir,
             preproc_img_list=subject_derivative_data['preproc'],
             selected_confounds=selected_confounds,
             smoothing_kernel=smoothing_kernel,
@@ -137,7 +139,8 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
 
 
 def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list, high_pass,
-                           hrf_model, low_pass, name, preproc_img_list, selected_confounds, smoothing_kernel):
+                           hrf_model, low_pass, name, output_dir, preproc_img_list, selected_confounds,
+                           smoothing_kernel):
     """
     This workflow completes the generation of the betaseries files and the calculation of the correlation matrices.
     .. workflow::
@@ -155,6 +158,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             hrf_model='',
             low_pass='',
             name='subtest',
+            output_dir='.',
             preproc_img_list=[''],
             selected_confounds=[''],
             smoothing_kernel=0.0)
@@ -180,6 +184,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             low pass filter to apply to bold (in Hertz). Reminder - frequencies _lower_ than this number are kept.
         name : str
             name of the workflow (e.g. ``subject-01_wf``)
+        output_dir : str
+            Directory where derivatives are saved
         preproc_img_list : list
             list of preprocessed bold files
         selected_confounds : list or None
@@ -239,6 +245,12 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
     # initialize the analysis workflow
     correlation_wf = init_correlation_wf()
 
+    # correlation matrix datasink
+    ds_correlation_matrix = pe.MapNode(DerivativesDataSink(base_directory=output_dir,
+                                                           suffix='matrix'),
+                                       iterfield=['betaseries_file', 'in_file'],
+                                       name='ds_correlation_matrix')
+
     # connect the nodes
     workflow.connect([
         (input_node, betaseries_wf,
@@ -251,6 +263,9 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
         (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
                                       ('atlas_lut', 'input_node.atlas_lut')]),
         (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrices')]),
+        (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
+        (betaseries_wf, ds_correlation_matrix, [('output_node.betaseries_files', 'betaseries_file')]),
+        (output_node, ds_correlation_matrix, [('correlation_matrices', 'in_file')]),
     ])
 
     return workflow
