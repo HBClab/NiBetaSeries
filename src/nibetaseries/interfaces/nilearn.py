@@ -56,7 +56,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
 
         # write out the file.
         out_file = os.path.join(runtime.cwd, 'fisher_z_correlation.tsv')
-        fisher_z_matrix_df.to_csv(out_file, sep='\t')
+        fisher_z_matrix_df.to_csv(out_file, sep='\t', na_rep='n/a')
 
         # save the filename in the outputs
         self._results['correlation_matrix'] = out_file
