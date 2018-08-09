@@ -19,6 +19,7 @@ Participant Workflow
         hrf_model='',
         low_pass='',
         name='subtest',
+        output_dir='.',
         preproc_img_list=[''],
         selected_confounds=[''],
         smoothing_kernel=0.0)

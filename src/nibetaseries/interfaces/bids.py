@@ -4,6 +4,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
 import re
+from shutil import copy
 from nipype.interfaces.base import (
     traits, isdefined, TraitedSpec, BaseInterfaceInputSpec,
     File, SimpleInterface
@@ -71,7 +72,7 @@ class DerivativesDataSink(SimpleInterface):
             base_directory = os.path.abspath(self.inputs.base_directory)
 
         out_path = '{}/{subject_id}'.format(self.out_path_base, **bids_dict)
-        if bids_dict['session_id'] is not None:
+        if bids_dict.get('session_id', None) is not None:
             out_path += '/{session_id}'.format(**bids_dict)
         out_path += '/{}'.format(mod)
 
@@ -88,6 +89,9 @@ class DerivativesDataSink(SimpleInterface):
             trialtype=betaseries_dict['trialtype_id'],
             suffix=self.inputs.suffix,
             ext=ext)
+
+        # copy the file to the output directory
+        copy(self.inputs.in_file, out_file)
 
         self._results['out_file'] = out_file
 
