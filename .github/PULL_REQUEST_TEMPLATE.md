@@ -12,7 +12,7 @@ Pull-request guidelines
 <!-- Please reference any related issue and use fixes/close to automatically
 close them, if pertinent -->
 
-Fixes # .
+Fixes #<NUM>. (e.g. Fixes #58.)
 
 ## List of changes proposed in this PR (pull-request)
 <!-- We suggest using bullets (indicated by * or -) and filled checkboxes [x] here -->
