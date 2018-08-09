@@ -14,7 +14,7 @@ NiBetaSeries
         | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since|
+        | |commits-since| |zenodo|
 
 .. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
     :alt: Documentation Status
