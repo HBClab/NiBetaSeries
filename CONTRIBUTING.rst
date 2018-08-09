@@ -325,15 +325,25 @@ You're awesome.
 `STEMMRoleModels <https://github.com/KirstieJane/STEMMRoleModels>`__
 *project.*
 
-.. |help-wanted| image:: https://img.shields.io/badge/-help%20wanted-159818.svg
+.. |help-wanted| image:: https://img.shields.io/badge/-help%20wanted-%23128A0C.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/help%20wanted
-.. |Question| image:: https://img.shields.io/badge/-question-cc317c.svg
+.. |Question| image:: https://img.shields.io/badge/-question-%23cc317c.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/question
-.. |good-first-issue| image:: https://img.shields.io/badge/-good%20first%20issue-1b3487.svg
+.. |invalid| image:: https://img.shields.io/badge/-invalid-%23e6e6e6.svg
+   :target: https://github.com/HBClab/NiBetaSeries/labels/invalid
+.. |good-first-issue| image:: https://img.shields.io/badge/-good%20first%20issue-%239cdb4a.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/good%20first%20issue
-.. |feature| image:: https://img.shields.io/badge/-feature-84b6eb.svg
+.. |duplicate| image:: https://img.shields.io/badge/-duplicate-cccccc.svg
+   :target: https://github.com/HBClab/NiBetaSeries/labels/duplicate
+.. |enhancement| image:: https://img.shields.io/badge/-enhancement-%2384b6eb.svg
+   :target| https://github.com/HBClab/NiBetaSeries/labels/enhancement
+.. |feature| image:: https://img.shields.io/badge/-feature-%239d2cd6.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/feature
-.. |documentation| image:: https://img.shields.io/badge/-documentation-ffd700.svg
+.. |wontfix| image:: https://img.shields.io/badge/-wontfix-8bf4e3.svg
+   :target: https://github.com/HBClab/NiBetaSeries/labels/wontfix
+.. |hackathon| image:: https://img.shields.io/badge/-hackathon-%23463ea3.svg
+   |target| https://github.com/HBClab/NiBetaSeries/labels/hackathon
+.. |documentation| image:: https://img.shields.io/badge/-documentation-%2393f9a7.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/documentation
 .. |bug| image:: https://img.shields.io/badge/-bug-ee0701.svg
    :target: https://github.com/HBClab/NiBetaSeries/labels/bug
