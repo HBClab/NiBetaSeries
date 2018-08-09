@@ -23,3 +23,5 @@ recursive-include data *.gz
 recursive-include data *.ipynb
 recursive-include data *.json
 recursive-include data *.tsv
+include versioneer.py
+include src/nibetaseries/_version.py
