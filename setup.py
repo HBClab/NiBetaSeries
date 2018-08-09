@@ -10,9 +10,9 @@ from os.path import basename
 from os.path import dirname
 from os.path import join
 from os.path import splitext
-
 from setuptools import find_packages
 from setuptools import setup
+import versioneer
 
 
 def read(*names, **kwargs):
@@ -24,8 +24,9 @@ def read(*names, **kwargs):
 
 setup(
     name='nibetaseries',
-    version='0.1.0',
     license='MIT license',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description='BetaSeries Correlations implemented in Nipype',
     long_description='%s\n%s' % (
         re.compile('^.. start-badges.*^.. end-badges', re.M | re.S).sub('', read('README.rst')),
