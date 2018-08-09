@@ -19,7 +19,9 @@ NiBetaSeries
 .. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
     :alt: Documentation Status
     :target: https://nibetaseries.readthedocs.io/en/latest/?badge=latest
-    
+
+.. |zenodo| image:: https://zenodo.org/badge/95605121.svg
+   :target: https://zenodo.org/badge/latestdoi/95605121    
 
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
