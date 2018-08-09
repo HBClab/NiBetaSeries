@@ -20,6 +20,7 @@ Been here before? Already know what you're looking for in this guide?
 Jump to the following sections:
 
 -  `Joining the BIDS community <#joining-the-bids-community>`__
+-  `Check out the BIDS Starter Kit <#check-bids-starter-kit>`__
 -  `Get in touch <#get-in-touch>`__
 -  `Contributing through GitHub <#contributing-through-github>`__
 -  `Where to start: wiki, code and
@@ -46,6 +47,11 @@ Conduct <CODE_OF_CONDUCT.md>`__.
 How do you know that you're a member of the BIDS community? You're here!
 You know that BIDS exists! You're officially a member of the community.
 It's THAT easy! Welcome!
+
+Check out the BIDS Starter Kit
+------------------------------
+
+If you're new to BIDS make sure to check out the amazing  `BIDS Starter Kit <https://github.com/INCF/BIDS-Starter-Kit>`_.
 
 Get in touch
 ------------
@@ -119,7 +125,7 @@ The list of labels for current issues can be found
    docs <https://nibetaseries.readthedocs.io/en/latest/>`__!
 
 -  |good-first-issue| *These issues are particularly appropriate if it
-   is your first contribution to the BIDS Starter Kit, or to GitHub
+   is your first contribution to NiBetaSeries, or to GitHub
    overall.*
 
    If you're not sure about how to go about contributing, these are good
@@ -133,7 +139,7 @@ The list of labels for current issues can be found
 
    If you want to ask for something new, please try to make sure that
    your request is distinct from any others that are already in the
-   queue (or part of the starter kit!). If you find one that's similar
+   queue (or part of NiBetaSeries!). If you find one that's similar
    but there are subtle differences please reference the other
    enhancement in your issue.
 
@@ -151,7 +157,7 @@ The list of labels for current issues can be found
    the bug, please open an issue first and then `submit a pull
    request <#making-a-change-with-a-pull-request>`__
 
-   We like to model best practice, so the BIDS Starter Kit itself is
+   We like to model best practice, so NiBetaSeries itself is
    managed through these issues. We may occasionally have some to
    coordinate some logistics.
 
