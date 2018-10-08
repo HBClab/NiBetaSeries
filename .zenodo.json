@@ -1,0 +1,18 @@
+{
+  "creators": [
+    {
+      "name": "Kent, James D.",
+      "affiliation": "Neuroscience Program, University of Iowa",
+      "orcid": "0000-0002-4892-2659"
+    }
+  ],
+  "keywords": [
+    "neuroimaging",
+    "betaseries",
+    "analysis",
+    "fMRI",
+    "BIDS"
+  ],
+  "license": "MIT",
+  "upload_type": "software"
+}
