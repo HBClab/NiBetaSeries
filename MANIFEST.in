@@ -8,6 +8,7 @@ include .coveragerc
 include .cookiecutterrc
 include .editorconfig
 include *.md
+include *.json
 
 include AUTHORS.rst
 include CHANGELOG.rst

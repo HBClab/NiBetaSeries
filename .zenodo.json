@@ -1,0 +1,92 @@
+{
+  "creators": [
+    {
+      "name": "Kent, James D.",
+      "affiliation": "Neuroscience Program, University of Iowa",
+      "orcid": "0000-0002-4892-2659"
+    },
+    {
+      "name": "Rokem, Ariel",
+      "affiliation": "eScience Institute, University of Washington",
+      "orcid": "0000-0003-0679-1985"
+    },
+    {
+      "name": "VanderPlas, Jake",
+      "affiliation": "eScience Institute, University of Washington",
+      "orcid": "0000-0002-9623-3401"
+    },
+    {
+      "name": "Mayer, Andreas",
+      "affiliation": "Lewis-Singler Institute, Princeton University",
+      "orcid": "0000-0002-6643-7622"
+    },
+    {
+      "name": "Halchenko, Yaroslav",
+      "affiliation": "Center for Open Neuroscience, Dartmouth College",
+      "orcid": "0000-0003-3456-2493"
+    },
+    {
+      "name": "Holdgraf, Chris",
+      "affiliation": "Berkeley Institute for Data Science, University of California Berkeley",
+      "orcid": "0000-0002-9420-9301"
+    },
+    {
+      "name": "DeStasio, Krista",
+      "affiliation": "Social & Affective Neuroscience Laboratory, University of Oregon",
+      "orcid": "0000-0002-3959-9060"
+    },
+    {
+      "name": "Ludwig, Rita",
+      "affiliation": "Social & Affective Neuroscience Laboratory, University of Oregon"
+    },
+    {
+      "name": "Martin, Rebecca",
+      "affiliation": "Hartley Lab, New York University",
+      "orcid": "0000-0002-5482-1707"
+    },
+    {
+      "name": "Wilson, Greg",
+      "affiliation": "Software Carpentry Foundation"
+    },
+    {
+      "name": "Toro-Serey, Claudio",
+      "affiliation": "Cognition and Decision Lab, Boston University",
+      "orcid": "0000-0002-5273-2276"
+    },
+    {
+      "name": "Eschenburg, Kristian",
+      "affiliation": "Integrated Brain Imaging Center, University of Washington"
+    },
+    {
+      "name": "Nelson, Andrew"
+    },
+    {
+      "name": "Mandel, Mark",
+      "affiliation": "University of Wisconsin, Madison"
+    },
+    {
+      "name": "Visconti di Oleggio Castello, Matteo",
+      "affiliation": "Gallant Lab, University of California Berkeley",
+      "orcid": "0000-0001-7931-5272"
+    },
+    {
+      "name": "Erramuzpe, Asier",
+      "affiliation": "Computational Neuroimaging Lab, BioCruces Health Research Institute",
+      "orcid": "0000-0002-9402-2184"
+    },
+    {
+      "name": "Herholz, Peer",
+      "affiliation": "Laboratory for Multimodal Neuroimaging, University of Marburg",
+      "orcid": "0000-0002-9840-6257"
+    }
+  ],
+  "keywords": [
+    "neuroimaging",
+    "betaseries",
+    "analysis",
+    "fMRI",
+    "BIDS"
+  ],
+  "license": "MIT",
+  "upload_type": "software"
+}
