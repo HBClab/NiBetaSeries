@@ -28,7 +28,7 @@ def collect_data(layout, participant_label, ses=None,
     if run:
         preproc_query['run'] = run
     if ses:
-        preproc_query['ses'] = ses
+        preproc_query['session'] = ses
     if space:
         preproc_query['space'] = space
     if variant:
@@ -43,15 +43,15 @@ def collect_data(layout, participant_label, ses=None,
     for preproc in preprocs:
         preproc_dict['task'] = getattr(preproc, 'task', None)
         preproc_dict['run'] = getattr(preproc, 'run', None)
-        preproc_dict['ses'] = getattr(preproc, 'ses', None)
-        preproc_dict['space'] = getattr(preproc, 'run', None)
+        preproc_dict['ses'] = getattr(preproc, 'session', None)
+        preproc_dict['space'] = getattr(preproc, 'space', None)
 
         # can't use space when looking up the events file
         preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
 
         file_queries = {
             'brainmask': _combine_dict(preproc_dict, {'type': 'brainmask', 'extensions': ['nii', 'nii.gz']}),
-            'confounds': _combine_dict(preproc_dict, {'type': 'confounds', 'extensions': '.tsv'}),
+            'confounds': _combine_dict(preproc_dict_ns, {'type': 'confounds', 'extensions': '.tsv'}),
             'events': _combine_dict(preproc_dict_ns, {'type': 'events',  'extensions': '.tsv'}),
         }
 
