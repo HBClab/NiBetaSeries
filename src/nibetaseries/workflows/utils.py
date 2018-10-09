@@ -10,61 +10,63 @@ both BIDS data and fmriprep output
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 
-def collect_data(layout, participant_label, deriv=False, ses=None,
-                 task=None, run=None, space=None):
+def collect_data(layout, participant_label, ses=None,
+                 task=None, run=None, space=None, variant=None):
     """
     Uses grabbids to retrieve the input data for a given participant
     """
-    if deriv:
-        queries = {
-            'preproc': {
-                'subject': participant_label,
-                'modality': 'func',
-                'type': 'preproc',
-                'extensions': ['nii', 'nii.gz']
-            },
-            'brainmask': {
-                'subject': participant_label,
-                'modality': 'func',
-                'type': 'brainmask',
-                'extensions': ['nii', 'nii.gz']
-            },
-            'confounds': {
-                'subject': participant_label,
-                'modality': 'func',
-                'type': 'confounds',
-                'extensions': 'tsv'
-            },
+    # get all the preprocessed fmri images.
+    preproc_query = {
+        'subject': participant_label,
+        'modality': 'func',
+        'type': 'preproc',
+        'extensions': ['nii', 'nii.gz']
+    }
+
+    if task:
+        preproc_query['task'] = task
+    if run:
+        preproc_query['run'] = run
+    if ses:
+        preproc_query['ses'] = ses
+    if space:
+        preproc_query['space'] = space
+    if variant:
+        preproc_query['variant'] = variant
+
+    preprocs = layout.get(**preproc_query)
+
+    # get the relevant files for each preproc
+    preproc_collector = []
+    # common across all queries
+    preproc_dict = {'modality': 'func', 'subject': participant_label}
+    for preproc in preprocs:
+        preproc_dict['task'] = getattr(preproc, 'task', None)
+        preproc_dict['run'] = getattr(preproc, 'run', None)
+        preproc_dict['ses'] = getattr(preproc, 'ses', None)
+        preproc_dict['space'] = getattr(preproc, 'run', None)
+
+        # can't use space when looking up the events file
+        preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
+
+        file_queries = {
+            'brainmask': _combine_dict(preproc_dict, {'type': 'brainmask', 'extensions': ['nii', 'nii.gz']}),
+            'confounds': _combine_dict(preproc_dict, {'type': 'confounds', 'extensions': '.tsv'}),
+            'events': _combine_dict(preproc_dict_ns, {'type': 'events',  'extensions': '.tsv'}),
         }
 
-        if task:
-            queries['preproc']['task'] = task
-            queries['confounds']['task'] = task
-        if run:
-            queries['preproc']['run'] = run
-            queries['confounds']['run'] = run
-        if ses:
-            queries['preproc']['ses'] = ses
-            queries['confounds']['ses'] = ses
-        if space:
-            queries['preproc']['space'] = space
-            queries['brainmask']['space'] = space
-    else:
-        queries = {
-            'events': {
-                'subject': participant_label,
-                'modality': 'func',
-                'type': 'events',
-                'extensions': 'tsv'
-            },
-        }
+        try:
+            query_res = {modality: [x.filename for x in layout.get(**query)][0]
+                         for modality, query in file_queries.items()}
+        except Exception as e:
+            raise type(e)('Could not find required files, check BIDS structure')
 
-        if run:
-            queries['events']['run'] = run
-        if task:
-            queries['events']['task'] = task
-        if ses:
-            queries['events']['ses'] = ses
+        query_res['preproc'] = preproc.filename
 
-    return {modality: [x.filename for x in layout.get(**query)]
-            for modality, query in queries.items()}
+        preproc_collector.append(query_res)
+
+    return preproc_collector
+
+
+def _combine_dict(a, b):
+    return dict(list(a.items()) + list(b.items()))

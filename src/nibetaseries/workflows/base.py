@@ -71,57 +71,37 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     os.makedirs(nibetaseries_participant_wf.base_dir, exist_ok=True)
 
     # reading in derivatives and bids inputs as queryable database like objects
-    derivatives_layout = BIDSLayout([(derivatives_pipeline_dir, ['bids', 'derivatives'])])
-    bids_layout = BIDSLayout(bids_dir)
-
+    layout = BIDSLayout([(bids_dir, ['bids']),
+                         (derivatives_pipeline_dir, ['bids', 'derivatives'])],
+                        include='sub-*')
     for subject_label in subject_list:
 
         # collect the necessary inputs for both collect data
-        subject_derivative_data = collect_data(derivatives_layout,
-                                               subject_label,
-                                               task=task_label,
-                                               run=run_label,
-                                               ses=session_label,
-                                               space=space_label,
-                                               deriv=True)
+        subject_data = collect_data(layout,
+                                    subject_label,
+                                    task=task_label,
+                                    run=run_label,
+                                    ses=session_label,
+                                    space=space_label,
+                                    variant=variant_label)
 
-        subject_bids_data = collect_data(bids_layout,
-                                         subject_label,
-                                         task=task_label,
-                                         run=run_label,
-                                         ses=session_label)
-
-        # if you want to avoid using a particular variant
-        if exclude_variant_label:
-            subject_derivative_data['preproc'] = [
-                preproc for preproc in subject_derivative_data['preproc'] if exclude_variant_label not in preproc
-            ]
-
-        # if you only want to use a particular variant
-        if variant_label:
-            subject_derivative_data['preproc'] = [
-                preproc for preproc in subject_derivative_data['preproc'] if variant_label in preproc
-            ]
-
-        length = len(subject_derivative_data['preproc'])
-
-        if any(len(lst) != length for lst in [subject_derivative_data['brainmask'],
-                                              subject_derivative_data['confounds'],
-                                              subject_bids_data['events']]):
-            raise ValueError('input lists are not the same length!')
+        brainmask_list = [d['brainmask'] for d in subject_data]
+        confound_tsv_list = [d['confounds'] for d in subject_data]
+        events_tsv_list = [d['events'] for d in subject_data]
+        preproc_img_list = [d['preproc'] for d in subject_data]
 
         single_subject_wf = init_single_subject_wf(
             atlas_img=atlas_img,
             atlas_lut=atlas_lut,
-            brainmask_list=subject_derivative_data['brainmask'],
-            confound_tsv_list=subject_derivative_data['confounds'],
-            events_tsv_list=subject_bids_data['events'],
+            brainmask_list=brainmask_list,
+            confound_tsv_list=confound_tsv_list,
+            events_tsv_list=events_tsv_list,
             high_pass=high_pass,
             hrf_model=hrf_model,
             low_pass=low_pass,
             name='single_subject' + subject_label + '_wf',
             output_dir=output_dir,
-            preproc_img_list=subject_derivative_data['preproc'],
+            preproc_img_list=preproc_img_list,
             selected_confounds=selected_confounds,
             smoothing_kernel=smoothing_kernel,
         )
