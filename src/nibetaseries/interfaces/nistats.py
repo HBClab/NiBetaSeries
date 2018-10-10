@@ -55,9 +55,9 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                                       self.inputs.selected_confounds)
         # low_pass, switch from Hz to Period
         if self.inputs.low_pass:
-            low_pass_period = 1 / self.inputs.low_pass
+            low_pass_period = int(1 / self.inputs.low_pass)
         else:
-            low_pass_period = None
+            low_pass_period = 128
 
         # setup the model
         model = first_level_model.FirstLevelModel(t_r=t_r,
@@ -75,6 +75,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         beta_maps = {}
 
         for target_trial_df, trial_type, trial_idx in _lss_events_iterator(self.inputs.events_file):
+
             # fit the model for the target trial
             model.fit(self.inputs.bold_file,
                       events=target_trial_df,

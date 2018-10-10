@@ -55,9 +55,9 @@ def init_correlation_wf(name="correlation_wf"):
         import os
         import re
         from shutil import copyfile
-
-        betaseries_regex = re.compile('.*betaseries_trialtype-(?P<trial_type>[A-Za-z0-9]+).nii.gz')
-        trial_type = betaseries_regex.search(betaseries_file).groupdict()['trial_type']
+        # import pdb; pdb.set_trace()
+        betaseries_regex = re.compile('.*betaseries_trialtype-(?P<trial_type>[A-Za-z0-9_]+).nii.gz')
+        trial_type = betaseries_regex.search(betaseries_file).groupdict()['trial_type'].replace('_', '')
         out_file = os.path.join(os.getcwd(),
                                 'correlation-matrix_trialtype-{trial_type}.tsv'.format(trial_type=trial_type))
         copyfile(correlation_matrix, out_file)
