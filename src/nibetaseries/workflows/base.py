@@ -82,15 +82,17 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
                                     ses=session_label,
                                     space=space_label,
                                     variant=variant_label)
-
+        # collect files to be associated with each preproc
         brainmask_list = [d['brainmask'] for d in subject_data]
         confound_tsv_list = [d['confounds'] for d in subject_data]
         events_tsv_list = [d['events'] for d in subject_data]
         preproc_img_list = [d['preproc'] for d in subject_data]
+        bold_metadata_list = [d['metadata'] for d in subject_data]
 
         single_subject_wf = init_single_subject_wf(
             atlas_img=atlas_img,
             atlas_lut=atlas_lut,
+            bold_metadata_list=bold_metadata_list,
             brainmask_list=brainmask_list,
             confound_tsv_list=confound_tsv_list,
             events_tsv_list=events_tsv_list,
@@ -115,9 +117,9 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     return nibetaseries_participant_wf
 
 
-def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list,
-                           hrf_model, low_pass, name, output_dir, preproc_img_list, selected_confounds,
-                           smoothing_kernel):
+def init_single_subject_wf(atlas_img, atlas_lut, bold_metadata_list, brainmask_list, confound_tsv_list,
+                           events_tsv_list, hrf_model, low_pass, name, output_dir, preproc_img_list,
+                           selected_confounds, smoothing_kernel):
     """
     This workflow completes the generation of the betaseries files and the calculation of the correlation matrices.
     .. workflow::
@@ -128,6 +130,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
         wf = init_single_subject_wf(
             atlas_img='',
             atlas_lut='',
+            bold_metadata_list=[''],
             brainmask_list=[''],
             confound_tsv_list=[''],
             events_tsv_list=[''],
@@ -146,6 +149,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             path to input atlas nifti
         atlas_lut : str
             path to input atlas lookup table (tsv)
+        bold_metadata_list : list
+            list of bold metadata associated with each preprocessed file
         brainmask_list : list
             list of brain masks in MNI space
         confound_tsv_list : list
@@ -174,6 +179,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             path to input atlas nifti
         atlas_lut
             path to input atlas lookup table (tsv)
+        bold_metadata
+            bold metadata associated with the preprocessed file
         brainmask
             binary mask in MNI space for the participant
         confound_tsv
@@ -194,6 +201,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
     # name the nodes
     input_node = pe.Node(niu.IdentityInterface(fields=['atlas_img',
                                                        'atlas_lut',
+                                                       'bold_metadata',
                                                        'brainmask',
                                                        'confound_tsv',
                                                        'events_tsv',
@@ -203,7 +211,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
                          iterables=[('brainmask', brainmask_list),
                                     ('confound_tsv', confound_tsv_list),
                                     ('events_tsv', events_tsv_list),
-                                    ('preproc_img', preproc_img_list)],
+                                    ('preproc_img', preproc_img_list),
+                                    ('bold_metadata', bold_metadata_list)],
                          synchronize=True)
 
     input_node.inputs.atlas_img = atlas_img
@@ -231,7 +240,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             [('preproc_img', 'input_node.bold_file'),
              ('events_tsv', 'input_node.events_file'),
              ('brainmask', 'input_node.bold_mask_file'),
-             ('confound_tsv', 'input_node.confounds_file')]),
+             ('confound_tsv', 'input_node.confounds_file'),
+             ('bold_metadata', 'input_node.bold_metadata')]),
         (betaseries_wf, correlation_wf,
             [('output_node.betaseries_files', 'input_node.betaseries_files')]),
         (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),

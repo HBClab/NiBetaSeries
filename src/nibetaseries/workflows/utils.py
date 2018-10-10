@@ -61,7 +61,14 @@ def collect_data(layout, participant_label, ses=None,
         except Exception as e:
             raise type(e)('Could not find required files, check BIDS structure')
 
+        # add the preprocessed file
         query_res['preproc'] = preproc.filename
+
+        # get metadata for the preproc
+        bold_query = _combine_dict(preproc_dict_ns, {'type': 'bold', 'extensions': ['nii', 'nii.gz']})
+        bold_file = layout.get(**bold_query)[0].filename
+
+        query_res['metadata'] = layout.get_metadata(bold_file)
 
         preproc_collector.append(query_res)
 

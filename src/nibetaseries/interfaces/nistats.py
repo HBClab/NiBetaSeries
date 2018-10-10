@@ -17,8 +17,8 @@ class NistatsBaseInterface(LibraryBaseInterface):
 class BetaSeriesInputSpec(BaseInterfaceInputSpec):
     bold_file = File(exists=True, mandatory=True,
                      desc="The bold run")
-    bold_info = traits.Dict(desc='Dictionary containing useful information about'
-                                 ' the bold_file')
+    bold_metadata = traits.Dict(desc='Dictionary containing useful information about'
+                                ' the bold_file')
     mask_file = File(exists=True, mandatory=True,
                      desc="Binarized nifti file indicating the brain")
     events_file = File(exists=True, mandatory=True,
@@ -47,8 +47,8 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         import nibabel as nib
         import os
 
-        # get t_r from bold_info
-        t_r = self.inputs.bold_info['RepetitionTime']
+        # get t_r from bold_metadata
+        t_r = self.inputs.bold_metadata['RepetitionTime']
 
         # get the confounds:
         confounds = _select_confounds(self.inputs.confounds_file,
