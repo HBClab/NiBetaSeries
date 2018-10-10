@@ -62,10 +62,10 @@ def init_betaseries_wf(name="betaseries_wf",
         The events tsv from the BIDS dataset.
     bold_mask_file
         The mask file from the derivatives (e.g. fmriprep) dataset.
+    bold_metadata
+        dictionary of relevant metadata of bold sequence
     confounds_file
         The tsv file from the derivatives (e.g. fmriprep) dataset.
-    bold_info
-        dictionary of information pulled from the BIDS json file connected to the bold file.
 
     Outputs
     -------
@@ -80,12 +80,10 @@ def init_betaseries_wf(name="betaseries_wf",
     input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
                                                        'events_file',
                                                        'bold_mask_file',
+                                                       'bold_metadata',
                                                        'confounds_file',
-                                                       'bold_info'
                                                        ]),
                          name='input_node')
-    # TODO: fix this hardcoding
-    input_node.inputs.bold_info = {'RepetitionTime': 2.0}
 
     betaseries_node = pe.Node(BetaSeries(selected_confounds=selected_confounds,
                                          hrf_model=hrf_model,
@@ -101,7 +99,7 @@ def init_betaseries_wf(name="betaseries_wf",
         (input_node, betaseries_node, [('bold_file', 'bold_file'),
                                        ('events_file', 'events_file'),
                                        ('bold_mask_file', 'mask_file'),
-                                       ('bold_info', 'bold_info'),
+                                       ('bold_metadata', 'bold_metadata'),
                                        ('confounds_file', 'confounds_file')]),
         (betaseries_node, output_node, [('beta_maps', 'betaseries_files')]),
     ])
