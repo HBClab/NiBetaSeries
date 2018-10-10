@@ -43,9 +43,13 @@ def collect_data(layout, participant_label, ses=None,
     for preproc in preprocs:
         preproc_dict['task'] = getattr(preproc, 'task', None)
         preproc_dict['run'] = getattr(preproc, 'run', None)
-        preproc_dict['ses'] = getattr(preproc, 'session', None)
+        preproc_dict['session'] = getattr(preproc, 'session', None)
         preproc_dict['space'] = getattr(preproc, 'space', None)
 
+        if preproc_dict['task'] == 'rest':
+            print('Found resting state bold run, skipping')
+            continue
+        
         # can't use space when looking up the events file
         preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
 
@@ -69,7 +73,6 @@ def collect_data(layout, participant_label, ses=None,
         bold_file = layout.get(**bold_query)[0].filename
 
         query_res['metadata'] = layout.get_metadata(bold_file)
-
         preproc_collector.append(query_res)
 
     return preproc_collector
