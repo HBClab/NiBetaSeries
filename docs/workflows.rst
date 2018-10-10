@@ -12,6 +12,7 @@ Participant Workflow
     wf = init_single_subject_wf(
         atlas_img='',
         atlas_lut='',
+        bold_metadata_list=[''],
         brainmask_list=[''],
         confound_tsv_list=[''],
         events_tsv_list=[''],
