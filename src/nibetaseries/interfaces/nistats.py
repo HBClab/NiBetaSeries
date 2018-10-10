@@ -27,7 +27,10 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
                           desc="File that contains all usable confounds")
     selected_confounds = traits.List(desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
-    smoothing_kernel = traits.Float(desc="full wide half max smoothing kernel")
+    smoothing_kernel = traits.Either(None, traits.Float(),
+                                     desc="full wide half max smoothing kernel")
+    low_pass = traits.Either(None, traits.Float(),
+                             desc="the low pass filter (Hz)")
 
 
 class BetaSeriesOutputSpec(TraitedSpec):
@@ -50,14 +53,22 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         # get the confounds:
         confounds = _select_confounds(self.inputs.confounds_file,
                                       self.inputs.selected_confounds)
+        # low_pass, switch from Hz to Period
+        if self.inputs.low_pass:
+            low_pass_period = 1 / self.inputs.low_pass
+        else:
+            low_pass_period = None
+
         # setup the model
         model = first_level_model.FirstLevelModel(t_r=t_r,
                                                   slice_time_ref=0,
                                                   hrf_model=self.inputs.hrf_model,
                                                   mask=self.inputs.mask_file,
                                                   smoothing_fwhm=self.inputs.smoothing_kernel,
-                                                  standardize=1,
+                                                  standardize=True,
                                                   signal_scaling=0,
+                                                  period_cut=low_pass_period,
+                                                  drift_model='cosine',
                                                   verbose=1)
 
         # initialize dictionary to contain trial estimates (betas)

@@ -46,9 +46,7 @@ def get_parser():
     proc_opts.add_argument('-sm', '--smoothing_kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
     proc_opts.add_argument('-lp', '--low_pass', action='store', type=float,
-                           default=None, help='low pass filter')
-    proc_opts.add_argument('-hp', '--high_pass', action='store', type=float,
-                           default=None, help='high pass filter')
+                           default=None, help='low pass filter (Hz)')
     proc_opts.add_argument('-c', '--confounds', help='The confound column names '
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
@@ -156,7 +154,6 @@ def main():
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_variant_label=opts.exclude_variant_label,
-            high_pass=opts.high_pass,
             hrf_model=opts.hrf_model,
             low_pass=opts.low_pass,
             output_dir=output_dir,

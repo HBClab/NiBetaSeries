@@ -15,14 +15,13 @@ Participant Workflow
         brainmask_list=[''],
         confound_tsv_list=[''],
         events_tsv_list=[''],
-        high_pass='',
-        hrf_model='',
-        low_pass='',
+        hrf_model='glover',
+        low_pass=None,
         name='subtest',
         output_dir='.',
         preproc_img_list=[''],
         selected_confounds=[''],
-        smoothing_kernel=0.0)
+        smoothing_kernel=None)
 
 The general workflow for a participant models the betaseries for each trial type
 for each bold file associated with the participant.
@@ -43,7 +42,6 @@ BetaSeries Workflow
     wf = init_betaseries_wf(
         hrf_model='glover',
         low_pass=None,
-        high_pass=None,
         smoothing_kernel=0.0,
         selected_confounds=[''])
 

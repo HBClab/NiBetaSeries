@@ -18,7 +18,7 @@ from bids.grabbids import BIDSLayout
 
 
 def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
-                                     derivatives_pipeline_dir, exclude_variant_label, high_pass, hrf_model, low_pass,
+                                     derivatives_pipeline_dir, exclude_variant_label, hrf_model, low_pass,
                                      output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
                                      space_label, subject_list, task_label, variant_label, work_dir):
     """
@@ -38,8 +38,6 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
             Root directory of the derivatives pipeline
         exclude_variant_label: str or None
             Exclude bold series containing this variant label
-        high_pass : float or None
-            High pass filter (Hz)
         hrf_model : str
             The model that represents the shape of the hemodynamic response function
         low_pass : float or None
@@ -96,7 +94,6 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
             brainmask_list=brainmask_list,
             confound_tsv_list=confound_tsv_list,
             events_tsv_list=events_tsv_list,
-            high_pass=high_pass,
             hrf_model=hrf_model,
             low_pass=low_pass,
             name='single_subject' + subject_label + '_wf',
@@ -118,7 +115,7 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     return nibetaseries_participant_wf
 
 
-def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list, high_pass,
+def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_list, events_tsv_list,
                            hrf_model, low_pass, name, output_dir, preproc_img_list, selected_confounds,
                            smoothing_kernel):
     """
@@ -134,7 +131,6 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             brainmask_list=[''],
             confound_tsv_list=[''],
             events_tsv_list=[''],
-            high_pass='',
             hrf_model='',
             low_pass='',
             name='subtest',
@@ -156,8 +152,6 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
             list of confound tsvs (e.g. from FMRIPREP)
         events_tsv_list : list
             list of event tsvs
-        high_pass : float or None
-            high pass filter to apply to bold (in Hertz). Reminder - frequencies _higher_ than this number are kept.
         hrf_model : str
             hemodynamic response function used to model the data
         low_pass : float or None
@@ -219,7 +213,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, brainmask_list, confound_tsv_li
                           name='output_node')
 
     # initialize the betaseries workflow
-    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, low_pass=low_pass, high_pass=high_pass,
+    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, low_pass=low_pass,
                                        selected_confounds=selected_confounds, smoothing_kernel=smoothing_kernel)
 
     # initialize the analysis workflow
