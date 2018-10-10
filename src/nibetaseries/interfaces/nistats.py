@@ -75,7 +75,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         beta_maps = {}
 
         for target_trial_df, trial_type, trial_idx in _lss_events_iterator(self.inputs.events_file):
-            
+
             # fit the model for the target trial
             model.fit(self.inputs.bold_file,
                       events=target_trial_df,

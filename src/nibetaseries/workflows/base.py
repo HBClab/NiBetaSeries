@@ -71,7 +71,7 @@ def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
     # reading in derivatives and bids inputs as queryable database like objects
     layout = BIDSLayout([(bids_dir, ['bids']),
                          (derivatives_pipeline_dir, ['bids', 'derivatives'])],
-                         include=['sub-*', 'dataset_description.json', 'task-*'])
+                        include=['sub-*', 'dataset_description.json', 'task-*'])
 
     for subject_label in subject_list:
 

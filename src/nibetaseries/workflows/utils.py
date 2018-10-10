@@ -49,7 +49,7 @@ def collect_data(layout, participant_label, ses=None,
         if preproc_dict['task'] == 'rest':
             print('Found resting state bold run, skipping')
             continue
-        
+
         # can't use space when looking up the events file
         preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
 
