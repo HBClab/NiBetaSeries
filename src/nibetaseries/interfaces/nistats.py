@@ -23,9 +23,10 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
                      desc="Binarized nifti file indicating the brain")
     events_file = File(exists=True, mandatory=True,
                        desc="File that contains all events from the bold run")
-    confounds_file = File(exists=True,
-                          desc="File that contains all usable confounds")
-    selected_confounds = traits.List(desc="Column names of the regressors to include")
+    confounds_file = traits.Either(None, File(exists=True),
+                                   desc="File that contains all usable confounds")
+    selected_confounds = traits.Either(None, traits.List(),
+                                       desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
@@ -35,6 +36,7 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
 
 class BetaSeriesOutputSpec(TraitedSpec):
     beta_maps = OutputMultiPath(File)
+    design_matrices = traits.Dict()
 
 
 class BetaSeries(NistatsBaseInterface, SimpleInterface):
@@ -51,8 +53,12 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         t_r = self.inputs.bold_metadata['RepetitionTime']
 
         # get the confounds:
-        confounds = _select_confounds(self.inputs.confounds_file,
-                                      self.inputs.selected_confounds)
+        if self.inputs.confounds_file and self.inputs.selected_confounds:
+            confounds = _select_confounds(self.inputs.confounds_file,
+                                          self.inputs.selected_confounds)
+        else:
+            confounds = None
+
         # low_pass, switch from Hz to Period
         if self.inputs.low_pass:
             low_pass_period = int(1 / self.inputs.low_pass)
@@ -73,7 +79,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
 
         # initialize dictionary to contain trial estimates (betas)
         beta_maps = {}
-
+        design_matrix_collector = {}
         for target_trial_df, trial_type, trial_idx in _lss_events_iterator(self.inputs.events_file):
 
             # fit the model for the target trial
@@ -83,7 +89,8 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
 
             # calculate the beta map
             beta_map = model.compute_contrast(trial_type, output_type='effect_size')
-
+            design_matrix_collector[trial_idx] = model.design_matrices_[0]
+            # import pdb; pdb.set_trace()
             # assign beta map to appropriate list
             if trial_type in beta_maps:
                 beta_maps[trial_type].append(beta_map)
@@ -106,7 +113,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                 beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
             self._results['beta_maps'] = beta_series_lst
-
+            self._results['design_matrices'] = design_matrix_collector
         return runtime
 
 
