@@ -36,9 +36,8 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         import numpy as np
         import pandas as pd
         import os
-        import scipy.io
         import matplotlib.pyplot as plt
-        from mne.viz import circular_layout, plot_connectivity_circle
+        from mne.viz import plot_connectivity_circle
 
         # extract timeseries from every label
         masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
@@ -73,10 +72,12 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         title = 'example connectivity circle'
         outfile = 'example_connectivity_circle.jpg'
 
-        n_lines = int(np.sum(connmat>0)/2)
-        fig = plt.figure(figsize=(5,5))
+        n_lines = int(np.sum(connmat > 0) / 2)
+        fig = plt.figure(figsize=(5, 5))
 
-        plot_connectivity_circle(connmat,labels,n_lines=n_lines, fig=fig,title=title,fontsize_title=10, facecolor='white',textcolor='black', colormap = 'jet', colorbar=1, node_colors=['black'],node_edgecolor=['white'])
-        fig.savefig(outfile,dpi=300)
+        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10, \
+            facecolor='white', textcolor='black', colormap='jet', colorbar=1, node_colors=['black'], \ 
+            node_edgecolor=['white'])
+        fig.savefig(outfile, dpi=300)
 
         return runtime
