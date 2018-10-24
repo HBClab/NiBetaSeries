@@ -75,9 +75,10 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         n_lines = int(np.sum(connmat > 0) / 2)
         fig = plt.figure(figsize=(5, 5))
 
-        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10, \
-            facecolor='white', textcolor='black', colormap='jet', colorbar=1, node_colors=['black'], \ 
-            node_edgecolor=['white'])
+        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10,
+                                 facecolor='white', textcolor='black', colormap='jet', colorbar=1, node_colors=['black'],
+                                 node_edgecolor=['white'])
+
         fig.savefig(outfile, dpi=300)
 
         return runtime
