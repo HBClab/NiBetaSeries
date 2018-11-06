@@ -38,6 +38,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         import os
         import matplotlib.pyplot as plt
         from mne.viz import plot_connectivity_circle
+        import re
 
         # extract timeseries from every label
         masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
@@ -69,8 +70,9 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         labels = list(fisher_z_matrix_df.index)
 
         # define title and outfile names:
-        title = 'example connectivity circle'
-        outfile = 'example_connectivity_circle.jpg'
+        trial_regex = re.compile(r'.*trialtype-(?P<trial>[A-Za-z0-9]+)')
+        title = re.search(trial_regex, self.inputs.timeseries_file).groupdict()['trial']
+        outfile = os.path.join(runtime.cwd, ".".join([trial, "jpg"]))
 
         n_lines = int(np.sum(connmat > 0) / 2)
         fig = plt.figure(figsize=(5, 5))
@@ -80,5 +82,6 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
                                  node_colors=['black'], node_edgecolor=['white'])
 
         fig.savefig(outfile, dpi=300)
+        self._results['correlation_fig'] = outfile
 
         return runtime
