@@ -23,6 +23,7 @@ class AtlasConnectivityOutputSpec(TraitedSpec):
     correlation_matrix = File(exists=True, desc='roi-roi fisher z transformed correlation matrix')
     correlation_fig = File(exists=True, desc='jpg of roi-roi fisher z transformed correlation matrix')
 
+
 class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
     """Calculates correlations between regions of interest"""
 
