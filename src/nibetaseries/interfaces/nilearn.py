@@ -72,7 +72,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         # define title and outfile names:
         trial_regex = re.compile(r'.*trialtype-(?P<trial>[A-Za-z0-9]+)')
         title = re.search(trial_regex, self.inputs.timeseries_file).groupdict()['trial']
-        outfile = os.path.join(runtime.cwd, ".".join([trial, "jpg"]))
+        outfile = os.path.join(runtime.cwd, ".".join([trial_regex, "jpg"]))
 
         n_lines = int(np.sum(connmat > 0) / 2)
         fig = plt.figure(figsize=(5, 5))
