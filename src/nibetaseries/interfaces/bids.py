@@ -11,13 +11,13 @@ from nipype.interfaces.base import (
 )
 
 BIDS_NAME = re.compile(
-    '^(.*\/)?(?P<subject_id>sub-[a-zA-Z0-9]+)(_(?P<session_id>ses-[a-zA-Z0-9]+))?'
-    '(_(?P<task_id>task-[a-zA-Z0-9]+))?(_(?P<acq_id>acq-[a-zA-Z0-9]+))?'
-    '(_(?P<rec_id>rec-[a-zA-Z0-9]+))?(_(?P<run_id>run-[a-zA-Z0-9]+))?'
-    '(_(?P<space_id>space-[a-zA-Z0-9]+))?(_(?P<variant_id>variant-[a-zA-Z0-9]+))?')
+    r'^(.*\/)?(?P<subject_id>sub-[a-zA-Z0-9]+)(_(?P<session_id>ses-[a-zA-Z0-9]+))?'
+    r'(_(?P<task_id>task-[a-zA-Z0-9]+))?(_(?P<acq_id>acq-[a-zA-Z0-9]+))?'
+    r'(_(?P<rec_id>rec-[a-zA-Z0-9]+))?(_(?P<run_id>run-[a-zA-Z0-9]+))?'
+    r'(_(?P<space_id>space-[a-zA-Z0-9]+))?(_(?P<variant_id>variant-[a-zA-Z0-9]+))?')
 
 BETASERIES_NAME = re.compile(
-    '^(.*\/)?betaseries(_(?P<trialtype_id>trialtype-[a-zA-Z0-9]+))?'
+    r'^(.*\/)?betaseries(_(?P<trialtype_id>trialtype-[a-zA-Z0-9]+))?'
 )
 
 
