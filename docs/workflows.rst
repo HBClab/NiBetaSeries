@@ -26,7 +26,7 @@ Participant Workflow
 
 The general workflow for a participant models the betaseries for each trial type
 for each bold file associated with the participant.
-Then betas within a region of interest based off a parcellation are averaged together.
+Then betas within a region of interest are based off a parcellation are averaged together.
 This occurs as many times as there are trials for that particular trial type, resulting
 in a psuedo-timeseries (e.g. each point in "time" represents an occurrence of
 that trial).

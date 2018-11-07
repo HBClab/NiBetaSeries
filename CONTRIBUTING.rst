@@ -97,12 +97,26 @@ GitHub has a helpful page on `getting started with writing and
 formatting on
 GitHub <https://help.github.com/articles/getting-started-with-writing-and-formatting-on-github>`__.
 
-Most of the writing that you'll do will be in
+Most of the writing that you'll do in github will be in
 `Markdown <https://daringfireball.net/projects/markdown>`__. You can
 think of Markdown as a few little symbols around your text that will
 allow GitHub to render the text with a little bit of formatting. For
 example you could write words as bold (``**bold**``), or in italics
 (``*italics*``), or as a `link <https://www.youtube.com/watch?v=dQw4w9WgXcQ>`__ to another webpage.
+
+Writing in ReStructuredText
+---------------------------
+
+This file and the rest of the documentation files in this project
+are written using `ReStructuredText <http://docutils.sourceforge.net/rst.html#user-documentation>`__.
+This is another markup language that interfaces with `sphinx <http://www.sphinx-doc.org/en/master/index.html>`__,
+a documentation generator.
+Sphinx is used on `ReadTheDocs <https://docs.readthedocs.io/en/latest/index.html>`__,
+a documentation hosting service.
+Putting it all together, ReadTheDocs is an online documentation hosting service
+that uses sphinx, and sphinx is a documentation generation service that uses
+ReStructuredText to format the content.
+What a mouthfull!
 
 Where to start: issue labels
 ----------------------------
@@ -211,6 +225,8 @@ edit the files::
     git clone https://github.com/YOUR-USERNAME/NiBetaSeries
     # change directories into NiBetaSeries
     cd NiBetaSeries
+    # add the upstream repository (i.e. https://github.com/HBClab/NiBetaSeries)
+    git remote add upstream https://github.com/HBClab/NiBetaSeries
 
 4. Make the changes you've discussed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -239,6 +255,9 @@ When you're done making changes, run all the checks, doc builder and spell check
 
 If the checks fail and you know what went wrong, make the change and run tox again.
 If you are not sure what the error is, go ahead to step 6.
+
+.. note:: tox doesn't work on everyone's machine, so don't worry about getting the tests
+    working on your machine for now
 
 6. Add/Commit/Push the changes to the NiBetaSeries repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

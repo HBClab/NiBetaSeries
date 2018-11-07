@@ -88,10 +88,13 @@ def get_parser():
                              help='convolve your regressors '
                                   'with one of the following hemodynamic response functions')
     beta_series.add_argument('-a', '--atlas-img', action='store',
-                             help='input atlas nifti')
+                             help='input atlas nifti where each voxel within a "region" '
+                                  'is labeled with the same integer and there is a unique '
+                                  'integer associated with each region of interest')
     beta_series.add_argument('-l', '--atlas-lut', action='store', required=True,
                              help='atlas look up table (tsv) formatted with the columns: '
-                             'index, region')
+                                  'index, regions which correspond to the regions in the '
+                                  'nifti file specified by --atlas-img')
 
     # misc options
     misc = parser.add_argument_group('misc options')
