@@ -17,6 +17,8 @@ include LICENSE
 include README.rst
 
 include tox.ini .travis.yml
+include tests
+recursive-include tests *.py
 
 prune .github
 global-exclude *.py[cod] __pycache__ *.so *.dylib
