@@ -32,27 +32,28 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
     def _run_interface(self, runtime):
         from nilearn.input_data import NiftiLabelsMasker
         from nilearn.connectome import ConnectivityMeasure
+        from sklearn.covariance import EmpiricalCovariance
         import numpy as np
         import pandas as pd
         import os
 
         # extract timeseries from every label
-        masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file, standardize=True,
-                                   memory='nilearn_cache', verbose=1)
+        masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
+                                   standardize=True, verbose=1)
         timeseries = masker.fit_transform(self.inputs.timeseries_file)
-
         # create correlation matrix
-        correlation_measure = ConnectivityMeasure(kind='correlation')
+        correlation_measure = ConnectivityMeasure(cov_estimator=EmpiricalCovariance(),
+                                                  kind="correlation")
         correlation_matrix = correlation_measure.fit_transform([timeseries])[0]
         np.fill_diagonal(correlation_matrix, np.NaN)
 
         # add the atlas labels to the matrix
         atlas_lut_df = pd.read_csv(self.inputs.atlas_lut, sep='\t')
-        regions = atlas_lut_df['regions']
+        regions = atlas_lut_df['regions'].values
         correlation_matrix_df = pd.DataFrame(correlation_matrix, index=regions, columns=regions)
 
         # do a fisher's r -> z transform
-        fisher_z_matrix_df = correlation_matrix_df.apply(lambda x: np.log((1+x) / (1-x)) * 0.5)
+        fisher_z_matrix_df = correlation_matrix_df.apply(lambda x: (np.log(1 + x) - np.log(1 - x)) * 0.5)
 
         # write out the file.
         out_file = os.path.join(runtime.cwd, 'fisher_z_correlation.tsv')

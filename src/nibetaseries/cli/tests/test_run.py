@@ -1,5 +1,5 @@
 
-from nibetaseries.cli.run import get_parser
+from ..run import get_parser
 
 
 def test_get_parser():
