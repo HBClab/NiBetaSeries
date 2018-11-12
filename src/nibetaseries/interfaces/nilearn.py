@@ -39,7 +39,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
 
         # extract timeseries from every label
         masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
-                                   verbose=1)
+                                   standardize=True, verbose=1)
         timeseries = masker.fit_transform(self.inputs.timeseries_file)
         # create correlation matrix
         correlation_measure = ConnectivityMeasure(cov_estimator=EmpiricalCovariance(),
