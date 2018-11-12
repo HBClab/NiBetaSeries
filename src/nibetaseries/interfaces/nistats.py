@@ -177,5 +177,4 @@ def _select_confounds(confounds_file, selected_confounds):
                                 np.mean(confounds_df['FramewiseDisplacement']))
 
     desired_confounds = confounds_df[selected_confounds]
-    print(desired_confounds)
     return desired_confounds
