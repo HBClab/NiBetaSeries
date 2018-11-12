@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from nistats.hemodynamic_models import spm_hrf
 
-from ..nistats import BetaSeries, _select_confounds, _lss_events_iterator
+from ..nistats import BetaSeries
 
 
 def test_beta_series():
