@@ -35,10 +35,6 @@ NiBetaSeries
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/nibetaseries
 
-.. |commits-since| image:: https://img.shields.io/github/commits-since/HBClab/NiBetaSeries/v0.1.0.svg
-    :alt: Commits since latest release
-    :target: https://github.com/HBClab/NiBetaSeries/compare/v0.1.0...master
-
 .. |wheel| image:: https://img.shields.io/pypi/wheel/nibetaseries.svg
     :alt: PyPI Wheel
     :target: https://pypi.python.org/pypi/nibetaseries
