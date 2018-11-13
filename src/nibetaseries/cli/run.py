@@ -24,6 +24,9 @@ from nipype import config as ncfg
 
 def get_parser():
     """Build parser object"""
+    from ..__init__ import __version__
+
+    verstr = 'nibs v{}'.format(__version__)
 
     parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments')
     parser.add_argument('bids_dir', help='The directory with the input dataset '
@@ -39,7 +42,7 @@ def get_parser():
                         'Multiple participant level analyses can be run independently '
                         '(in parallel) using the same output_dir')
     parser.add_argument('-v', '--version', action='version',
-                        version='NiBetaSeries 0.1.0')
+                        version=verstr)
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for preprocessing')
