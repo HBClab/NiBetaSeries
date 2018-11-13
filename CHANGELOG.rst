@@ -1,3 +1,27 @@
+0.2.1 (November 13, 2018)
+=========================
+
+Large thanks to everyone at neurohackademy that helped make this a reality.
+This release is still a bit premature because I'm testing out
+my workflow for making releases.
+
+* [ENH] Add link to Zenodo DOI (#57) @kdestasio
+* [ENH] run versioneer install (#60) @jdkent
+* [FIX] connect derivative outputs (#61) @jdkent
+* [FIX] add CODEOWNERS file (#63) @jdkent
+* [FIX] Fix pull request template (#65) @kristianeschenburg
+* [ENH]Update CONTRIBUTING.rst (#66) @PeerHerholz
+* [FIX] ignore sourcedata and derivatives directories in layout (#69) @jdkent
+* [DOC] Added zenodo file (#70) @ctoroserey
+* [FIX] file logic (#71) @jdkent
+* [FIX] confound removal (#72) @jdkent
+* [FIX] Find metadata (#74) @jdkent
+* [FIX] various fixes for a real dataset (#75) @jdkent
+* [ENH] allow confounds to be none (#76) @jdkent
+* [ENH] Reword docs (#77) @jdkent
+* [TST] Add more tests (#78) @jdkent
+* [MGT] simplify and create deployment (#79) @jdkent
+
 0.2.0 (November 13, 2018)
 =========================
 
