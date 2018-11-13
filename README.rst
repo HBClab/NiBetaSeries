@@ -13,8 +13,8 @@ NiBetaSeries
       - | |travis|
         | |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since| |zenodo|
+      - | |version| |wheel| |supported-versions| 
+        | |supported-implementations| |zenodo|
 
 .. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
     :alt: Documentation Status
@@ -34,10 +34,6 @@ NiBetaSeries
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
     :target: https://pypi.python.org/pypi/nibetaseries
-
-.. |commits-since| image:: https://img.shields.io/github/commits-since/HBClab/NiBetaSeries/v0.1.0.svg
-    :alt: Commits since latest release
-    :target: https://github.com/HBClab/NiBetaSeries/compare/v0.1.0...master
 
 .. |wheel| image:: https://img.shields.io/pypi/wheel/nibetaseries.svg
     :alt: PyPI Wheel
