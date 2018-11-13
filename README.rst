@@ -13,8 +13,8 @@ NiBetaSeries
       - | |travis|
         | |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| |supported-implementations|
-        | |commits-since| |zenodo|
+      - | |version| |wheel| |supported-versions| 
+        | |supported-implementations| |zenodo|
 
 .. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
     :alt: Documentation Status
