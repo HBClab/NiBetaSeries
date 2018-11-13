@@ -40,4 +40,4 @@ else
 fi
 
 # Replace old CHANGES.rst with new file
-mv newchanges CHANGESLOG.rst
+mv newchanges CHANGELOG.rst
