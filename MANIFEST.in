@@ -28,3 +28,4 @@ recursive-include data *.json
 recursive-include data *.tsv
 include versioneer.py
 include nibetaseries _version.py
+include update_changes.sh

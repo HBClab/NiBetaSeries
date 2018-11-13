@@ -3,33 +3,42 @@ sudo: false
 cache: pip
 env:
   global:
-    - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
-    - SEGFAULT_SIGNALS=all
+  - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+  - SEGFAULT_SIGNALS=all
   matrix:
-    - TOXENV=check
-    - TOXENV=docs
-    - TOXENV=functional
+  - TOXENV=check
+  - TOXENV=docs
+  - TOXENV=functional
 matrix:
   include:
-    - python: '3.6'
-      env:
-        - TOXENV=py36,report,codecov
+  - python: '3.6'
+    env:
+    - TOXENV=py36,report,codecov
 before_install:
-  - python --version
-  - uname -a
-  - lsb_release -a
+- python --version
+- uname -a
+- lsb_release -a
 install:
-  - pip install tox
-  - virtualenv --version
-  - easy_install --version
-  - pip --version
-  - tox --version
+- pip install tox
+- virtualenv --version
+- easy_install --version
+- pip --version
+- tox --version
 script:
-  - tox -v
+- tox -v
 after_failure:
-  - more .tox/log/* | cat
-  - more .tox/*/log/* | cat
+- more .tox/log/* | cat
+- more .tox/*/log/* | cat
 notifications:
   email:
     on_success: never
     on_failure: always
+deploy:
+  provider: pypi
+  user: jdkent
+  password:
+    secure: $PYPI_PASS
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    python: 3.6
