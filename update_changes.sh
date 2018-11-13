@@ -1,5 +1,6 @@
 #!/bin/bash
 #
+# taken from: https://github.com/poldracklab/fmriprep/blob/master/update_changes.sh
 # Collects the pull-requests since the latest release and
 # aranges them in the CHANGES.rst.txt file.
 #
@@ -7,6 +8,7 @@
 #
 # Usage /bin/bash update_changes.sh 1.0.1
 #
+
 
 # Setting      # $ help set
 set -u         # Treat unset variables as an error when substituting.
@@ -38,4 +40,4 @@ else
 fi
 
 # Replace old CHANGES.rst with new file
-mv newchanges CHANGES.rst
+mv newchanges CHANGESLOG.rst
