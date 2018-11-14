@@ -19,6 +19,7 @@ from __future__ import absolute_import
 import os
 import argparse
 from glob import glob
+from multiprocessing import cpu_count
 from nipype import config as ncfg
 
 
@@ -99,6 +100,13 @@ def get_parser():
                                   'index, regions which correspond to the regions in the '
                                   'nifti file specified by --atlas-img')
 
+    # performance options
+    g_perfm = parser.add_argument_group('Options to handle performance')
+    g_perfm.add_argument('--nthreads', '--n_cpus', '-n-cpus', action='store', type=int,
+                         help='maximum number of threads across all processes')
+    g_perfm.add_argument('--use-plugin', action='store', default=None,
+                         help='nipype plugin configuration file')
+
     # misc options
     misc = parser.add_argument_group('misc options')
     misc.add_argument('--graph', action='store_true', default=False,
@@ -141,7 +149,32 @@ def main():
         subject_list = [subject_dir.split("-")[-1] for subject_dir in subject_dirs]
 
     # Nipype plugin configuration
-    plugin_settings = {'plugin': 'Linear'}
+    # Load base plugin_settings from file if --use-plugin
+    if opts.use_plugin is not None:
+        from yaml import load as loadyml
+        with open(opts.use_plugin) as f:
+            plugin_settings = loadyml(f)
+        plugin_settings.setdefault('plugin_args', {})
+    else:
+        # Defaults
+        plugin_settings = {
+            'plugin': 'MultiProc',
+            'plugin_args': {
+                'raise_insufficient': False,
+                'maxtasksperchild': 1,
+            }
+        }
+
+     # Resource management options
+    # Note that we're making strong assumptions about valid plugin args
+    # This may need to be revisited if people try to use batch plugins
+    nthreads = plugin_settings['plugin_args'].get('n_procs')
+    # Permit overriding plugin config with specific CLI options
+    if nthreads is None or opts.nthreads is not None:
+        nthreads = opts.nthreads
+        if nthreads is None or nthreads < 1:
+            nthreads = cpu_count()
+        plugin_settings['plugin_args']['n_procs'] = nthreads
 
     # Nipype config (logs and execution)
     ncfg.update_config({
