@@ -87,7 +87,7 @@ def get_parser():
                              choices=['glover', 'spm', 'fir',
                                       'glover + derivative',
                                       'glover + derivative + dispersion',
-                                      'spm + derivative'
+                                      'spm + derivative',
                                       'spm + derivative + dispersion'],
                              help='convolve your regressors '
                                   'with one of the following hemodynamic response functions')
