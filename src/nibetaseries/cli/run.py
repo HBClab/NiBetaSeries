@@ -165,7 +165,7 @@ def main():
             }
         }
 
-     # Resource management options
+    # Resource management options
     # Note that we're making strong assumptions about valid plugin args
     # This may need to be revisited if people try to use batch plugins
     nthreads = plugin_settings['plugin_args'].get('n_procs')
