@@ -61,7 +61,7 @@ setup(
         'neuroimaging',
     ],
     install_requires=[
-        'nipype>=1.0.0',
+        'nipype>=1.1.5',
         'pybids==0.6.*',
         'nibabel',
         'grabbit >= 0.2.0',
