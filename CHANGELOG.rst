@@ -1,3 +1,11 @@
+0.2.2 (November 15, 2018)
+=========================
+
+Quick bug fixes, one related to updating the nipype dependency to a newer version (1.1.5)
+
+* [ENH] add nthreads option and make multiproc the default (#81) @jdkent
+* [FIX] add missing comma in hrf_models (#83) @jdkent
+
 0.2.1 (November 13, 2018)
 =========================
 
