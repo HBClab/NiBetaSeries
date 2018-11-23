@@ -34,7 +34,6 @@ def init_betaseries_wf(name="betaseries_wf",
         wf = init_betaseries_wf(
             hrf_model='glover',
             low_pass=None,
-            high_pass=None,
             smoothing_kernel=0.0,
             selected_confounds=[''])
 
@@ -46,8 +45,6 @@ def init_betaseries_wf(name="betaseries_wf",
         hemodynamic response function used to model the data (default: ``glover``)
     low_pass : float or None
         low pass filter to apply to bold (in Hertz). Reminder - frequencies _lower_ than this number are kept.
-    high_pass : float or None
-        high pass filter to apply to bold (in Hertz). Reminder - frequencies _higher_ than this number are kept.
     smoothing_kernel : float or None
         The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
     selected_confounds : list or None
