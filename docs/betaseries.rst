@@ -13,10 +13,10 @@ via cognitive subtraction in task fMRI.
 Relationship to Resting State
 -----------------------------
 Betaseries is similar to resting state because the same analytical strategies
-applied to resting state data can obstensibly be applied to betaseries.
+applied to resting state data can ostensibly be applied to betaseries.
 At the core of both resting state and betaseries we are working with
 a list of numbers at each voxel.
-We can correlate, estimate regional homogeniety, perform independent
+We can correlate, estimate regional homogeneity, perform independent
 components analysis, or conduct a number of different analyses
 with these voxels.
 However, betaseries deviates from resting state in two important ways.
