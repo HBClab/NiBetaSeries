@@ -22,9 +22,6 @@ matrix:
   - python: '3.6'
     env:
       - TOXENV=py36,report,codecov
-  - python: '3.7'
-    env:
-      - TOXENV=py37,report,codecov
 before_install:
 - python --version
 - uname -a
