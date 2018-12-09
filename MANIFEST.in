@@ -9,6 +9,8 @@ include .editorconfig
 include *.md
 include *.json
 
+include requirements.txt
+include requirements-dev.txt
 include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
