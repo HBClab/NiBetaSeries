@@ -3,7 +3,6 @@ graft src
 graft ci
 graft tests
 
-include .bumpversion.cfg
 include .coveragerc
 include .cookiecutterrc
 include .editorconfig
@@ -20,12 +19,9 @@ include tox.ini .travis.yml
 include tests
 recursive-include tests *.py
 
-prune .github
-global-exclude *.py[cod] __pycache__ *.so *.dylib
-recursive-include data *.gz
-recursive-include data *.ipynb
-recursive-include data *.json
-recursive-include data *.tsv
 include versioneer.py
 include nibetaseries _version.py
 include update_changes.sh
+
+prune .github
+global-exclude *.py[cod] __pycache__ *.so *.dylib
