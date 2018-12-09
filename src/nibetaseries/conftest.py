@@ -45,9 +45,11 @@ def sub_metadata(sub_bids, bids_prefix=bids_prefix):
 
     return sub_json
 
+
 @pytest.fixture(scope='session')
 def bold_file(sub_bids, bids_prefix=bids_prefix):
     return sub_bids.ensure(bids_prefix + "_bold.nii.gz")
+
 
 @pytest.fixture(scope='session')
 def preproc_file(fmriprep_dir, sub_metadata, deriv_prefix=deriv_prefix):
