@@ -14,7 +14,7 @@ from .analysis import init_correlation_wf
 from ..interfaces.bids import DerivativesDataSink
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
-from bids.grabbids import BIDSLayout
+from bids import BIDSLayout
 
 
 def init_nibetaseries_participant_wf(atlas_img, atlas_lut, bids_dir,
