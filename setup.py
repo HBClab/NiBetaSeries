@@ -64,18 +64,7 @@ setup(
         'fmri',
         'neuroimaging',
     ],
-    install_requires=[
-        'nipype>=1.1.5',
-        'pybids==0.6.*',
-        'nibabel',
-        'grabbit >= 0.2.0',
-        'nistats',
-        'nilearn>=0.4.*',
-        'pandas',
-        'numpy',
-        'duecredit',
-        'sklearn'
-    ],
+    install_requires=requirements,
     extras_require={
         # eg:
         #   'rst': ['docutils>=0.11'],
