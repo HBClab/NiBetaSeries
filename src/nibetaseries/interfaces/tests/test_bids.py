@@ -1,43 +1,38 @@
 ''' Testing module for nibetaseries.interfaces.bids '''
 import os
-from pathlib import Path
-import shutil
+import pytest
 
 from ..bids import DerivativesDataSink
 
 
-def test_derivatives_data_sink():
+@pytest.fixture(scope='session')
+def base_dir(tmpdir_factory):
+    base_dir = tmpdir_factory.mktemp('base')
+    return base_dir
 
-    # creating the fake inputs
-    base_directory = os.path.join(os.getcwd(), 'tmp')
-    os.makedirs(base_directory, exist_ok=True)
-    betaseries_file = os.path.join(base_directory, 'betaseries_trialtype-testtrial.nii.gz')
-    Path(betaseries_file).touch()
-    in_file = os.path.join(base_directory, 'mycsv.csv')
-    Path(in_file).touch()
-    source_file = os.path.join(base_directory,
-                               'sub-01_ses-01_task-testtask_run-1_preproc.nii.gz')
-    Path(source_file).touch()
-    suffix = 'matrix'
+
+@pytest.fixture(scope='session')
+def corr_csv(base_dir):
+    return base_dir.ensure("mytsv.csv")
+
+
+def test_derivatives_data_sink(base_dir, betaseries_file, corr_csv, preproc_file):
 
     # the expected output
     expected_out = os.path.join(
-        base_directory,
+        str(base_dir),
         'nibetaseries',
         'sub-01',
-        'ses-01',
+        'ses-pre',
         'func',
-        'sub-01_ses-01_task-testtask_run-1_preproc_trialtype-testtrial_matrix.csv')
+        'sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym_bold_preproc_trialtype-testCond_matrix.csv')
 
     # create and run instance of the interface
-    dds = DerivativesDataSink(base_directory=base_directory,
-                              betaseries_file=betaseries_file,
-                              in_file=in_file,
-                              source_file=source_file,
-                              suffix=suffix)
+    dds = DerivativesDataSink(base_directory=str(base_dir),
+                              betaseries_file=str(betaseries_file),
+                              in_file=str(corr_csv),
+                              source_file=str(preproc_file),
+                              suffix='matrix')
     res = dds.run()
-
-    # clean up created files
-    shutil.rmtree(base_directory)
 
     assert res.outputs.out_file == expected_out
