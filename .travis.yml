@@ -8,6 +8,9 @@ env:
   matrix:
   - TOXENV=check
   - TOXENV=docs
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y graphviz # https://github.com/nipy/nipype/issues/858
 matrix:
   include:
   - python: '3.4'

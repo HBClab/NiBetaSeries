@@ -1,6 +1,4 @@
 sphinx>=1.3
 sphinx_rtd_theme
 sphinx-argparse
-pydotplus
-pydot>=1.2.3
 -e .
