@@ -10,10 +10,18 @@ env:
   - TOXENV=docs
 matrix:
   include:
+  - python: '3.4'
+    env:
+      - TOXENV=py34,report,codecov
+  - python: '3.5'
+    env:
+      - TOXENV=py35,report,codecov
   - python: '3.6'
     env:
-    - TOXENV=py36,report,codecov
+      - TOXENV=py36,report,codecov
 before_install:
+- sudo apt-get update
+- sudo apt-get install -y graphviz # https://github.com/nipy/nipype/issues/858
 - python --version
 - uname -a
 - lsb_release -a

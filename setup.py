@@ -6,10 +6,7 @@ from __future__ import print_function
 import io
 import re
 from glob import glob
-from os.path import basename
-from os.path import dirname
-from os.path import join
-from os.path import splitext
+from os.path import dirname, abspath, join, basename, splitext
 from setuptools import find_packages
 from setuptools import setup
 import versioneer
@@ -21,6 +18,13 @@ def read(*names, **kwargs):
         encoding=kwargs.get('encoding', 'utf8')
     ).read()
 
+
+here = abspath(dirname(__file__))
+
+with open(join(here, 'requirements.txt')) as requirements_file:
+    # Parse requirements.txt, ignoring any commented-out lines.
+    requirements = [line for line in requirements_file.read().splitlines()
+                    if not line.startswith('#')]
 
 setup(
     name='nibetaseries',
@@ -60,18 +64,7 @@ setup(
         'fmri',
         'neuroimaging',
     ],
-    install_requires=[
-        'nipype>=1.1.5',
-        'pybids==0.6.*',
-        'nibabel',
-        'grabbit >= 0.2.0',
-        'nistats',
-        'nilearn>=0.4.*',
-        'pandas',
-        'numpy',
-        'duecredit',
-        'sklearn'
-    ],
+    install_requires=requirements,
     extras_require={
         # eg:
         #   'rst': ['docutils>=0.11'],

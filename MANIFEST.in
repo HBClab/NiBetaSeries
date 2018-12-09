@@ -1,4 +1,5 @@
 graft docs
+prune docs/_build
 graft src
 graft ci
 graft tests
@@ -9,6 +10,8 @@ include .editorconfig
 include *.md
 include *.json
 
+include requirements.txt
+include requirements-dev.txt
 include AUTHORS.rst
 include CHANGELOG.rst
 include CONTRIBUTING.rst
