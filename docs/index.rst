@@ -9,6 +9,7 @@ Contents
    betaseries
    installation
    usage
+   auto_examples/index
    workflows
    reference/index
    contributing
