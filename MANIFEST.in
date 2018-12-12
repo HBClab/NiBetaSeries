@@ -11,6 +11,7 @@ include .editorconfig
 include *.md
 include *.json
 
+include *.enc
 include requirements.txt
 include requirements-dev.txt
 include AUTHORS.rst
