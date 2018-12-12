@@ -21,7 +21,7 @@ matrix:
       - TOXENV=py36,report,codecov
 before_install:
 - sudo apt-get update
-- sudo apt-get install -y graphviz # https://github.com/nipy/nipype/issues/858
+- sudo apt-get install -y graphviz git-annex # https://github.com/nipy/nipype/issues/858
 - python --version
 - uname -a
 - lsb_release -a
