@@ -7,4 +7,5 @@ seaborn
 datalad
 awscli
 pillow
+doctr
 -e .
