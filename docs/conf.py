@@ -14,6 +14,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'nipype.sphinxext.plot_workflow',
+    'sphinx_gallery.gen_gallery',
     'sphinxarg.ext',
     'sphinx.ext.mathjax',
 ]
@@ -21,6 +22,13 @@ if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',
     spelling_show_suggestions = True
     spelling_lang = 'en_US'
+
+sphinx_gallery_conf = {
+     # path to your examples scripts
+     'examples_dirs': '../examples',
+     # path where to save gallery generated examples
+     'gallery_dirs': 'auto_examples',
+}
 
 source_suffix = '.rst'
 master_doc = 'index'

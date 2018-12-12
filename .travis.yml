@@ -1,3 +1,4 @@
+dist: xenial
 language: python
 sudo: false
 cache: pip
@@ -21,7 +22,10 @@ matrix:
       - TOXENV=py36,report,codecov
 before_install:
 - sudo apt-get update
-- sudo apt-get install -y graphviz # https://github.com/nipy/nipype/issues/858
+- wget -O- http://neuro.debian.net/lists/xenial.us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
+- sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
+- sudo apt-get update
+- sudo apt-get install -y graphviz git-annex-standalone # https://github.com/nipy/nipype/issues/858
 - python --version
 - uname -a
 - lsb_release -a
@@ -32,7 +36,7 @@ install:
 - pip --version
 - tox --version
 script:
-- tox -v
+- travis_wait 60 tox -v
 after_failure:
 - more .tox/log/* | cat
 - more .tox/*/log/* | cat
