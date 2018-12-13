@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 import os
 
-import nibetaseries
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -37,7 +36,7 @@ project = 'NiBetaSeries'
 year = '2018'
 author = 'James Kent'
 copyright = '{0}, {1}'.format(year, author)
-version = release = nibetaseries.__version__
+version = release = '0.1.0'
 
 pygments_style = 'trac'
 templates_path = ['.']
