@@ -21,12 +21,12 @@ matrix:
       - sudo apt-key adv --recv-keys --keyserver hkp://pool.sks-keyservers.net:80 0xA5D32F012649A5A9
       - sudo apt-get update
       - sudo apt-get install -y graphviz git-annex-standalone # https://github.com/nipy/nipype/issues/858
+      - pip install doctr
       - python --version
       - uname -a
       - lsb_release -a
     script:
       - travis_wait 60 tox -v
-      - source .tox/docs/bin/activate
       - doctr deploy --built-docs dist/docs .
   - python: '3.4'
     env:
