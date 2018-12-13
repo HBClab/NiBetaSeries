@@ -38,6 +38,7 @@ year = '2018'
 author = 'James Kent'
 copyright = '{0}, {1}'.format(year, author)
 version = release = nibetaseries.__version__
+html_last_updated_fmt = '%b %d, %Y'
 
 pygments_style = 'trac'
 templates_path = ['.']
