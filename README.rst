@@ -7,18 +7,12 @@ NiBetaSeries
 .. list-table::
     :stub-columns: 1
 
-    * - docs
-      - |docs|
     * - tests
       - | |travis|
         | |codecov|
     * - package
       - | |version| |wheel| |supported-versions| 
         | |supported-implementations| |zenodo|
-
-.. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
-    :alt: Documentation Status
-    :target: https://nibetaseries.readthedocs.io/en/latest/?badge=latest
 
 .. |zenodo| image:: https://zenodo.org/badge/95605121.svg
    :target: https://zenodo.org/badge/latestdoi/95605121    
@@ -90,9 +84,9 @@ Installation
 Documentation
 =============
 
-https://NiBetaSeries.readthedocs.io/
+https://hbclab.github.io/NiBetaSeries
 
-If you're interested in contributing to this project, here are some guidelines for `contributing <https://nibetaseries.readthedocs.io/en/latest/contributing.html>`_.
+If you're interested in contributing to this project, here are some guidelines for `contributing <https://hbclab.github.io/NiBetaSeries/contributing.html>`_.
 Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>`_.
 
 Development
