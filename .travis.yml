@@ -28,7 +28,7 @@ matrix:
       - lsb_release -a
     script:
       - travis_wait 60 tox -v
-      - doctr deploy --built-docs dist/docs .
+      - doctr deploy --build-tags --built-docs dist/docs .
   - python: '3.4'
     env:
       - TOXENV=py34,report,codecov
