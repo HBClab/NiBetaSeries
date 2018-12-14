@@ -8,9 +8,11 @@ Contributing to NiBetaSeries
 contribute.*
 
 NiBetaSeries calculates betaseries correlations using python!
-We hope that these guidelines are designed to make it as easy as possible to contribute to NiBetaSeries
+We hope that these guidelines are designed to make it as easy
+as possible to contribute to NiBetaSeries
 and the broader Brain Imaging Data Structure (BIDS) community.
-If you have any questions that aren't discussed below, please let us know through one of the many
+If you have any questions that aren't discussed below,
+please let us know through one of the many
 ways to `get in touch <#get-in-touch>`__.
 
 Table of contents
@@ -38,8 +40,8 @@ BIDS - the `Brain Imaging Data
 Structure <http://bids.neuroimaging.io>`__ - is a growing community of
 neuroimaging enthusiasts, and we want to make our resources accessible
 to and engaging for as many researchers as possible.
-NiBetaSeries will hopefully play a small part towards introducing people to BIDS
-and help the broader community.
+NiBetaSeries will hopefully play a small part towards introducing people
+to BIDS and help the broader community.
 
 We therefore require that all contributions **adhere to our** `Code of
 Conduct <CODE_OF_CONDUCT.md>`__.
@@ -56,8 +58,8 @@ If you're new to BIDS make sure to check out the amazing  `BIDS Starter Kit <htt
 Get in touch
 ------------
 
-There are lots of ways to get in touch with the team maintaining NiBetaSeries if you have
-general questions about the BIDS ecosystem.
+There are lots of ways to get in touch with the team maintaining NiBetaSeries
+if you have general questions about the BIDS ecosystem.
 For specific questions about NiBetaSeries, please see the practical guide
 (Currently the main contact is James Kent)
 
@@ -187,7 +189,8 @@ just log into GitHub, navigate to the
 `wiki <https://github.com/HBClab/NiBetaSeries/wiki>`__ and click the
 **edit** button.
 
-If you're updating the `code <#code>`__, the following steps are a guide to help you
+If you're updating the `code <#code>`__,
+the following steps are a guide to help you
 contribute in a way that will be easy for everyone to review and accept
 with ease.
 
@@ -218,7 +221,8 @@ conflicts <https://help.github.com/articles/about-merge-conflicts>`__.
 3. `Clone your forked <https://help.github.com/articles/cloning-a-repository/>`__ NiBetaSeries to your work machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now that you have your own repository to explore you should clone it to your work machine so you can easily
+Now that you have your own repository to explore you should clone
+it to your work machine so you can easily
 edit the files::
 
     # clone the repository
@@ -249,21 +253,30 @@ Example::
 5. Run the tests
 ~~~~~~~~~~~~~~~~
 
-When you're done making changes, run all the checks, doc builder and spell checker with `tox <http://tox.readthedocs.io/en/latest/install.html>`_ one command::
+When you're done making changes, run all the checks, doc builder and spell checker with `tox <http://tox.readthedocs.io/en/latest/install.html>`_.
+First you will install all the development requirements
+for the project with pip::
+
+    pip install requirements-dev.txt
+
+Then you can run tox by simply typing::
 
     tox
 
-If the checks fail and you know what went wrong, make the change and run tox again.
+If the checks fail and you know what went wrong,
+make the change and run tox again.
 If you are not sure what the error is, go ahead to step 6.
 
 .. note:: tox doesn't work on everyone's machine, so don't worry about getting the tests
-    working on your machine for now
+    working on your machine.
 
 6. Add/Commit/Push the changes to the NiBetaSeries repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Once you've made the changes on your branch you are ready to 1) add the files to be tracked by git
-2) commit the files to take a snapshot of the branch, and 3) push the changes to your forked repository.
+Once you've made the changes on your branch you are ready to
+1) add the files to be tracked by git
+2) commit the files to take a snapshot of the branch, and
+3) push the changes to your forked repository.
 You can do complete the add/commit/push process
 following this `github help page <https://help.github.com/articles/adding-a-file-to-a-repository-using-the-command-line/>`__.
 
