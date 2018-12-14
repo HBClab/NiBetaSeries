@@ -6,6 +6,7 @@ NiBetaSeries
 
 .. list-table::
     :stub-columns: 1
+
     * - docs
       - |docs|
     * - tests
