@@ -33,7 +33,7 @@ sphinx_gallery_conf = {
 }
 
 # setting for sphinx-versioning
-scv_whitelist_branches = ('master', 'latest')
+scv_whitelist_branches = ('latest')
 scv_whitelist_tags = (re.compile(r'^v\d+\.\d+\.\d+$'),)
 scv_priority = 'tags'
 
