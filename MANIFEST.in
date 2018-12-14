@@ -21,12 +21,9 @@ include LICENSE
 include README.rst
 
 include tox.ini .travis.yml
-include tests
 recursive-include tests *.py
 
 include versioneer.py
-include nibetaseries _version.py
-include update_changes.sh
 
 prune .github
 global-exclude *.py[cod] __pycache__ *.so *.dylib

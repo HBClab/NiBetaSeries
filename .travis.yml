@@ -15,16 +15,7 @@ matrix:
   - name: "Building Docs"
     env:
       - TOXENV=docs
-    python: '3.6'
-    before_install:
-      - sudo apt-get install -y graphviz # https://github.com/nipy/nipype/issues/858
-      - pip install doctr
-      - python --version
-      - uname -a
-      - lsb_release -a
-    script:
-      - tox -v
-      - doctr deploy --build-tags --built-docs dist/docs .
+    python: '3.5'  # match version from readthedocs
   - python: '3.4'
     env:
       - TOXENV=py34,report,codecov
