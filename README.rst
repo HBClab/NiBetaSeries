@@ -6,16 +6,21 @@ NiBetaSeries
 
 .. list-table::
     :stub-columns: 1
-
+    * - docs
+      - |docs|
     * - tests
       - | |travis|
         | |codecov|
     * - package
-      - | |version| |wheel| |supported-versions| 
+      - | |version| |wheel| |supported-versions|
         | |supported-implementations| |zenodo|
 
+.. |docs| image:: https://readthedocs.org/projects/nibetaseries/badge/?version=latest
+    :alt: Documentation Status
+    :target: https://nibetaseries.readthedocs.io/en/latest/?badge=latest
+
 .. |zenodo| image:: https://zenodo.org/badge/95605121.svg
-   :target: https://zenodo.org/badge/latestdoi/95605121    
+   :target: https://zenodo.org/badge/latestdoi/95605121
 
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
@@ -46,16 +51,19 @@ NiBetaSeries
 
 NiBetaSeries is `BIDS <http://bids.neuroimaging.io/>`_ compatible `application <https://bids-apps.neuroimaging.io/>`_
 that calculates betaseries correlations.
-In brief, a beta coefficient is calculated for each trial (or event) resulting in a series of betas
+In brief, a beta coefficient is calculated for each trial
+(or event) resulting in a series of betas
 that can be used to correlate regions of interest with each other.
 
 NiBetaSeries takes preprocessed data as input that satisfy the
 `BIDS deriviatives specification <http://bit.ly/2vKeKcp>`_.
 In practical terms, NiBetaSeries uses the output of `fmriprep <http://fmriprep.readthedocs.io/en/latest/>`_,
 a great BIDS compatible preprocessing tool.
-NiBetaSeries requires the input and the atlas to already be in MNI space since currently no
+NiBetaSeries requires the input and the atlas to already
+be in MNI space since currently no
 transformations are applied to the data.
-You can use any arbitrary atlas as long as it is in MNI space (the same space as the preprocessed data).
+You can use any arbitrary atlas as long as it is in MNI space
+(the same space as the preprocessed data).
 
 With NiBetaSeries you can receive:
 
@@ -64,7 +72,8 @@ With NiBetaSeries you can receive:
 
 This is a very young project that still needs some tender loving care to grow.
 That's where you fit in!
-If you would like to contribute, please read our code of conduct and contributing page.
+If you would like to contribute, please read our code of conduct
+and contributing page.
 
 This project heavily leverages `nipype <http://nipype.readthedocs.io/en/latest/>`_,
 `nilearn <https://nilearn.github.io/>`_, `pybids <https://incf.github.io/pybids/>`_, and
@@ -84,7 +93,7 @@ Installation
 Documentation
 =============
 
-https://hbclab.github.io/NiBetaSeries
+https://nibetaseries.readthedocs.io
 
 If you're interested in contributing to this project, here are some guidelines for `contributing <https://hbclab.github.io/NiBetaSeries/contributing.html>`_.
 Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>`_.
