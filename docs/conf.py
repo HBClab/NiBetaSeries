@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
-import re
 
 import nibetaseries
 
@@ -31,11 +30,6 @@ sphinx_gallery_conf = {
      # path where to save gallery generated examples
      'gallery_dirs': 'auto_examples',
 }
-
-# setting for sphinx-versioning
-scv_whitelist_branches = ('master', 'latest')
-scv_whitelist_tags = (re.compile(r'^v\d+\.\d+\.\d+$'),)
-scv_priority = 'tags'
 
 source_suffix = '.rst'
 master_doc = 'index'
