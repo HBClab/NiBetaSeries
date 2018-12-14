@@ -4,11 +4,8 @@ Running NiBetaSeries using ds000164 (Stroop Task)
 
 This example runs through a basic call of NiBetaSeries using
 the commandline entry point ``nibs``.
-While this example is using python, typically `nibs` will be
+While this example is using python, typically ``nibs`` will be
 called directly on the commandline.
-
-To run this locally, you also need ``awscli`` installed via
-``pip install awscli``
 """
 
 #############################################################################
@@ -17,30 +14,61 @@ To run this locally, you also need ``awscli`` installed via
 
 import tempfile  # make a temporary directory for files
 import os  # interact with the filesystem
-from subprocess import call, Popen, PIPE, STDOUT  # enable calling commandline
+import urllib.request  # grad data from internet
+import tarfile  # extract files from tar
+from subprocess import Popen, PIPE, STDOUT  # enable calling commandline
 
 import matplotlib.pyplot as plt  # manipulate figures
 import seaborn as sns  # display results
 import pandas as pd   # manipulate tabular data
-from datalad.api import install  # use datalad for file retrieval
 
 #############################################################################
-# Download relevant data from ds000164
-# ====================================
+# Download relevant data from ds000164 (and Atlas Files)
+# ======================================================
+# The subject data came from [openneuro](https://openneuro.org/datasets/ds000164/versions/00001/).
+# The atlas data came from a [recently published parcellation](https://www.ncbi.nlm.nih.gov/pubmed/28981612)
+# in a publically accessible github repository.
 
+# atlas github repo for reference:
+"""https://github.com/ThomasYeoLab/CBIG/raw/master/stable_projects/\
+brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/MNI/"""
 data_dir = tempfile.mkdtemp()
 print('Our working directory: {}'.format(data_dir))
 
-# here on openneuro: https://openneuro.org/datasets/ds000164/versions/00001
-# I'm using openfmri since I'm getting an error with openneuro
-dataset = install(data_dir, "///openfmri/ds000164")
+# download the tar data
+url = "https://www.dropbox.com/s/qoqbiya1ou7vi78/ds000164-test_v1.tar.gz?dl=1"
+tar_file = os.path.join(data_dir, "ds000164.tar.gz")
+u = urllib.request.urlopen(url)
+data = u.read()
+u.close()
 
-# selecting subject that has fmriprep
-bids_data = os.path.join("sub-001", "func")
-dataset.get(bids_data)
-events_file = os.path.join(dataset.path, bids_data,
-                           "sub-001_task-stroop_events.tsv")
-print("the events file: {}".format(events_file))
+# write tar data to file
+with open(tar_file, "wb") as f:
+    f.write(data)
+
+# extract the data
+tar = tarfile.open(tar_file, mode='r|gz')
+tar.extractall(path=data_dir)
+
+os.remove(tar_file)
+
+#############################################################################
+# Display the minimal dataset necessary to run nibs
+# =================================================
+
+
+# https://stackoverflow.com/questions/9727673/list-directory-tree-structure-in-python
+def list_files(startpath):
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = ' ' * 4 * (level)
+        print('{}{}/'.format(indent, os.path.basename(root)))
+        subindent = ' ' * 4 * (level + 1)
+        for f in files:
+            print('{}{}'.format(subindent, f))
+
+
+list_files(data_dir)
 
 #############################################################################
 # Manipulate events file so it satifies assumptions
@@ -48,114 +76,87 @@ print("the events file: {}".format(events_file))
 # 1. the correct column has 1's and 0's corresponding to correct and incorrect,
 # respectively.
 # 2. the condition column is renamed to trial_type
+# nibs currently depends on the "correct" column being binary
+# and the "trial_type" column to contain the trial types of interest.
 
 #############################################################################
 # read the file
 # -------------
+
+events_file = os.path.join(data_dir,
+                           "ds000164",
+                           "sub-001",
+                           "func",
+                           "sub-001_task-stroop_events.tsv")
 events_df = pd.read_csv(events_file, sep='\t', na_values="n/a")
-events_df.head()
+print(events_df.head())
 
 #############################################################################
 # change the Y/N to 1/0
 # ---------------------
+
 events_df['correct'].replace({"Y": 1, "N": 0}, inplace=True)
-events_df.head()
+print(events_df.head())
 
 #############################################################################
 # replace condition with trial_type
 # ---------------------------------
+
 events_df.rename({"condition": "trial_type"}, axis='columns', inplace=True)
-events_df.head()
+print(events_df.head())
 
 #############################################################################
 # save the file
 # -------------
-# files tracked by git-annex need to be unlocked
-dataset.unlock(events_file)
-# save the updated event file
+
 events_df.to_csv(events_file, sep="\t", na_rep="n/a", index=False)
-# git-annex the file
-dataset.save(events_file)
-
-#############################################################################
-# Download the fmriprep results
-# =============================
-
-fmriprep_res = """s3://openneuro.outputs/\
-921294bd5b869b1852ab3ce886583795/4dd151e3-52d1-4fa2-9591-27c16520331c"""
-
-# datalad command currently not working
-# dataset.download_url(fmriprep_res)
-# depends on user having awscli installed: https://pypi.org/project/awscli/
-call([
-      'aws',
-      '--no-sign-request',
-      's3',
-      'sync',
-      fmriprep_res,
-      os.path.join(data_dir, 'derivatives')
-     ])
-
-# path to the downloaded results
-fmriprep_path = os.path.join(dataset.path, "derivatives", "fmriprep", "sub-001", "func")
-# display the files
-os.listdir(fmriprep_path)
-
-#############################################################################
-# Download a parcelation atlas and region order file
-# ==================================================
-
-# Download the schaefer atlas: https://www.ncbi.nlm.nih.gov/pubmed/28981612
-schaefer_base_url = """https://github.com/ThomasYeoLab/CBIG/raw/master/stable_projects/\
-brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/MNI/"""
-schaefer_mni = "Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz"
-schaefer_txt = "Schaefer2018_100Parcels_7Networks_order.txt"
-schaefer_mni_url = schaefer_base_url + schaefer_mni
-schaefer_txt_url = schaefer_base_url + schaefer_txt
-download_dir = os.path.join(dataset.path, "derivatives", "data")
-os.makedirs(download_dir, exist_ok=True)
-dataset.download_url([schaefer_mni_url, schaefer_txt_url],
-                     path=download_dir,
-                     overwrite=True)
-# specify the nifti file
-atlas_mni_file = os.path.join(download_dir, schaefer_mni)
 
 #############################################################################
 # Manipulate the region order file
 # ================================
+# There are several adjustments to the atlas file that need to be completed
+# before we can pass it into nibs.
+# Importantly, the relevant column names **MUST** be named "index" and "regions".
+# "index" refers to which integer within the file corresponds to which region
+# in the atlas nifti file.
+# "regions" refers the name of each region in the atlas nifti file.
 
 #############################################################################
 # read the atlas file
 # -------------------
 
-atlas_txt = os.path.join(download_dir, schaefer_txt)
+atlas_txt = os.path.join(data_dir,
+                         "ds000164",
+                         "derivatives",
+                         "data",
+                         "Schaefer2018_100Parcels_7Networks_order.txt")
 atlas_df = pd.read_csv(atlas_txt, sep="\t", header=None)
-atlas_df.head()
+print(atlas_df.head())
 
 #############################################################################
 # drop coordinate columns
 # -----------------------
 
 atlas_df.drop([2, 3, 4, 5], axis='columns', inplace=True)
-atlas_df.head()
+print(atlas_df.head())
 
 #############################################################################
 # rename columns with the approved headings: "index" and "regions"
 # ----------------------------------------------------------------
 
 atlas_df.rename({0: 'index', 1: 'regions'}, axis='columns', inplace=True)
-atlas_df.head()
+print(atlas_df.head())
 
 #############################################################################
 # remove prefix "7Networks"
 # -------------------------
 
 atlas_df.replace(regex={'7Networks_(.*)': '\\1'}, inplace=True)
-atlas_df.head()
+print(atlas_df.head())
 
 #############################################################################
-# write out the file
-# ------------------
+# write out the file as .tsv
+# --------------------------
 
 atlas_tsv = atlas_txt.replace(".txt", ".tsv")
 atlas_df.to_csv(atlas_tsv, sep="\t", index=False)
@@ -163,10 +164,17 @@ atlas_df.to_csv(atlas_tsv, sep="\t", index=False)
 #############################################################################
 # Run nibs
 # ========
-out_dir = os.path.join(dataset.path, "derivatives")
+out_dir = os.path.join(data_dir, "ds000164", "derivatives")
+work_dir = os.path.join(out_dir, "work")
+atlas_mni_file = os.path.join(data_dir,
+                              "ds000164",
+                              "derivatives",
+                              "data",
+                              "Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
 cmd = """\
 nibs -c WhiteMatter CSF \
 --participant_label 001 \
+-w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
 {bids_dir} \
@@ -175,8 +183,9 @@ fmriprep \
 participant
 """.format(atlas_mni_file=atlas_mni_file,
            atlas_tsv=atlas_tsv,
-           bids_dir=dataset.path,
-           out_dir=out_dir)
+           bids_dir=os.path.join(data_dir, "ds000164"),
+           out_dir=out_dir,
+           work_dir=work_dir)
 # call nibs
 p = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
 
@@ -185,6 +194,12 @@ while True:
     if not line:
         break
     print(line)
+
+#############################################################################
+# Observe generated outputs
+# =========================
+
+list_files(data_dir)
 
 #############################################################################
 # Collect results
@@ -198,7 +213,7 @@ for trial_type in trial_types:
     file_path = os.path.join(corr_mat_path, filename_template.format(trial_type=trial_type))
     pd_dict[trial_type] = pd.read_csv(file_path, sep='\t', na_values="n/a", index_col=0)
 # display example matrix
-pd_dict[trial_type].head()
+print(pd_dict[trial_type].head())
 
 #############################################################################
 # Graph the results
