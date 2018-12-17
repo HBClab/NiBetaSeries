@@ -197,9 +197,9 @@ betaseries correlations
 
 Other Relevant Readings
 -----------------------
-- [Cisler2014]
-- [Gottlich2015]
-- [Abdulrahman2016]
+- [Cisler2014]_
+- [Gottlich2015]_
+- [Abdulrahman2016]_
 
 References
 ----------
