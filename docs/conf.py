@@ -46,12 +46,7 @@ extlinks = {
     'pr': ('https://github.com/HBClab/NiBetaSeries/pull/%s', 'PR #'),
 }
 html_theme = "sphinx_rtd_theme"
-html_theme_options = {
-    'githuburl': 'https://github.com/HBClab/NiBetaSeries/'
-}
 
-html_use_smartypants = True
-html_split_index = False
 html_sidebars = {
    '**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html'],
 }
