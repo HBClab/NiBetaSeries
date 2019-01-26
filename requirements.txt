@@ -3,7 +3,7 @@ pybids==0.6.4
 nibabel==2.3.0
 nistats==0.0.1b
 nilearn==0.4.2
-pandas==0.22.0
+pandas==0.24.0
 numpy==1.14.5
 duecredit==0.6.4
-scikit-learn==0.19.1
+scikit-learn==0.19.2
