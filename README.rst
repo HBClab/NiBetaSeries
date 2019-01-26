@@ -77,7 +77,7 @@ If you would like to contribute, please read our code of conduct
 and contributing page.
 
 This project heavily leverages `nipype <http://nipype.readthedocs.io/en/latest/>`_,
-`nilearn <https://nilearn.github.io/>`_, `pybids <https://incf.github.io/pybids/>`_, and
+`nilearn <https://nilearn.github.io/>`_, `pybids <https://bids-standard.github.io/pybids/>`_, and
 `nistats <https://nistats.github.io/>`_ for development.
 Please check out their pages and support the developers.
 
