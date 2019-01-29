@@ -20,8 +20,8 @@ NiBetaSeries
     :alt: Documentation Status
     :target: https://nibetaseries.readthedocs.io/en/latest/?badge=latest
 
-.. |zenodo| image:: https://zenodo.org/badge/95605121.svg
-   :target: https://zenodo.org/badge/latestdoi/95605121
+.. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2552303.svg
+   :target: https://zenodo.org/record/2552303#.XFBjwN-YU8p
 
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
