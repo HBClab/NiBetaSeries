@@ -71,7 +71,7 @@ The basic workflow of NiBetaSeries follows these steps (the files can be found i
 The correlation matrix from NiBetaSeries can be used for graph theoretical analysis, specific region-region correlations across sessions or across different trial types, and presumably other analytic strategies.
 
 NiBetaSeries is not the first or only piece of software that measures task related correlations in the brain.
-There are two other packages known to the author: BASCO and pybetaseries.
+There are two other packages known to the author: BASCO and pybetaseries [@Gottlich2015; @Poldrack2014].
 BASCO (BetA Series COrrelations) is a matlab toolbox that calculates task correlations, but is designed for slow event related designs (e.g. trials occur more than 10 seconds apart).
 pybetaseries is a python script that is designed for fast event related designs (like NiBetaSeries), but is no longer actively maintained.
 Given the drawbacks of the alternatives, the author believe NiBetaSeries justifies its existance and utility to the neuroscience field.
@@ -80,10 +80,10 @@ Given the drawbacks of the alternatives, the author believe NiBetaSeries justifi
 
 NiBetaSeries is not developed in a vacuum.
 
-Conceptualization of the BetaSeries Method is credited to Jesse Rissman,
-and the LSS method to Jeanette Mumford.
+Conceptualization of the BetaSeries Method is credited to Jesse Rissman [@Rissman2004],
+and the LSS method to Jeanette Mumford [@Mumford2012].
 Additionally, Michelle Voss provided guidence over the entirety of the project.
-The organization of the code is indebted to `fmriprep` and their developers/maintainers for inspiration.
+The organization of the code is indebted to `fmriprep` and their developers/maintainers for inspiration [@Esteban2018a].
 Neurohackademy is to thank for providing the environment to help the project grow with new contributors.
 Finally, all the contributors listed in `zenodo` and `github` have contributed both code and intellectually to NiBetaSeries pushing the project to new heights.
 
