@@ -75,7 +75,7 @@ The basic workflow of NiBetaSeries follows these steps (the files can be found i
 4) `analysis.py`: correlate each region's list of betas with every other region.
 5) `analysis.py`: r-z transform the correlations and output a symmetric correlation matrix in a `tsv` file.
 
-The correlation matrix from NiBetaSeries can be used for graph theoretical analysis, specific region-region correlations across sessions or across different trial types, and other analytic strategies.
+The correlation matrix from NiBetaSeries can be used for graph theoretical analysis, specific region-region correlations across different trial types, and other analytic strategies.
 
 NiBetaSeries is not the first or only piece of software that measures task related correlations in the brain.
 There are two other packages known to the author: BASCO and pybetaseries [@Gottlich2015; @Poldrack2014].
