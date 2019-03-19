@@ -25,8 +25,8 @@ import pandas as pd   # manipulate tabular data
 #############################################################################
 # Download relevant data from ds000164 (and Atlas Files)
 # ======================================================
-# The subject data came from [openneuro](https://openneuro.org/datasets/ds000164/versions/00001/).
-# The atlas data came from a [recently published parcellation](https://www.ncbi.nlm.nih.gov/pubmed/28981612)
+# The subject data came from `openneuro <https://openneuro.org/datasets/ds000164/versions/00001/>`_.
+# The atlas data came from a `recently published parcellation <https://www.ncbi.nlm.nih.gov/pubmed/28981612>`_
 # in a publically accessible github repository.
 
 # atlas github repo for reference:

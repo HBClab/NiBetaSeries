@@ -26,4 +26,5 @@ recursive-include tests *.py
 include versioneer.py
 
 prune .github
+prune .joss
 global-exclude *.py[cod] __pycache__ *.so *.dylib
