@@ -69,7 +69,7 @@ You can use any arbitrary atlas as long as it is in MNI space
 With NiBetaSeries you can receive:
 
 * betaseries images (TODO)
-* correlation matrices
+* symmetric correlation matrices
 
 This is a very young project that still needs some tender loving care to grow.
 That's where you fit in!
@@ -89,7 +89,7 @@ Installation
 
 ::
 
-    pip install nibetaseries
+    pip3 install nibetaseries
 
 Documentation
 =============
