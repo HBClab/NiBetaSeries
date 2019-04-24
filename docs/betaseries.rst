@@ -8,16 +8,16 @@ Betaseries track the event-to-event modelled hemodynamic fluctuations
 that occur within task functional magnetic resonance imaging (task fMRI).
 Betaseries fills an important analytical gap between measuring hemodynamic
 fluctuations in resting state fMRI and measuring regional activations
-via cognitive subtraction in task fMRI.
+via cognitive subtraction in task fMRIs.
 
 Conceptual Background
 ---------------------
 Jesse Rissman [Rissman2004]_ was the first to publish on betaseries
 correlations describing their usage in a working memory task.
 In this task, participants saw a cue, a delay, and a probe, all occurring
-within a short time period.
+within a short time periods.
 A cue was presented for one second, a delay occurred for seven seconds,
-and a probe was presented for one second.
+and a probe was presented for one seconds.
 Given the Blood Oxygen-Level Dependent (BOLD) response
 takes approximately six seconds to reach its peak, and generally takes over
 20 seconds to return to baseline, we can begin to see a problem.
@@ -35,7 +35,7 @@ probe event, the model will have a total of 120 regressors, fitting a beta
 Once you calculate a beta estimate for each event of a given event type
 (e.g. cue), at the end you will have four dimensional dataset where each volume
 represents the beta estimates for a particular event, and each voxel represents
-a specific beta estimate.
+a specific beta estimates.
 
 Having one regressor per event in a single model is known as least squares all.
 This method, however, has limitations in the context of fast event related
@@ -53,7 +53,7 @@ experiment.
 This process reduces the colinearity of the regressors and creates a more valid
 estimate of how each regressor fits the data.
 NiBetaSeries uses least squares separate and is thus optimized
-for fast event related designs.
+for fast event related design.
 
 
 Math Background
