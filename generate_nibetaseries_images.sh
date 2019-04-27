@@ -53,7 +53,7 @@ generate_singularity() {
 }
 
 generate_docker > Dockerfile
-#generate_singularity > Singularity
+generate_singularity > Singularity
 
 docker build -t nibetaseries .
-#singularity build nibetaseries.simg Singularity
+singularity build nibetaseries.simg Singularity
