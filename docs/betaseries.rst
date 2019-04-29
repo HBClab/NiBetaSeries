@@ -4,26 +4,26 @@ Betaseries
 
 Introduction
 ------------
-Betaseries track the event-to-event modelled hemodynamic fluctuations
+Betaseries correlations track the event-to-event modelled hemodynamic fluctuations
 that occur within task functional magnetic resonance imaging (task fMRI).
-Betaseries fills an important analytical gap between measuring hemodynamic
+Betaseries fills an important analytical gap between measuring correlations in hemodynamic
 fluctuations in resting state fMRI and measuring regional activations
-via cognitive subtraction in task fMRI.
+via cognitive subtraction in task fMRI. 
 
 Conceptual Background
 ---------------------
 Jesse Rissman [Rissman2004]_ was the first to publish on betaseries
-correlations describing their usage in a working memory task.
+correlation, describing its usage in a working memory task.
 In this task, participants saw a cue, a delay, and a probe, all occurring
 within a short time period.
 A cue was presented for one second, a delay occurred for seven seconds,
 and a probe was presented for one second.
 Given the Blood Oxygen-Level Dependent (BOLD) response
 takes approximately six seconds to reach its peak, and generally takes over
-20 seconds to return to baseline, we can begin to see a problem.
-The events within the events occur too close to each other to discern what
+20 seconds to return to baseline, we can begin to see a problem if we tried to use traditional analyses with this task.
+The events (cue, delay, probe) within the events occur too close to each other to discern what
 brain responses are related to encoding the cue, the delay, or the probe.
-To discern how the activated brain regions form networks, Rissman
+To discern how the activated brain regions form networks during cognitive functions, Rissman
 created betaseries correlations.
 Instead of having a single regressor to describe all the cue events,
 a single regressor for all the delay events, and a single regressor for all the
@@ -31,11 +31,11 @@ probe events (as is done in traditional task analysis),
 there is an individual regressor for every event in the experiment.
 For example, if your experiment has 40 events, each with a cue, delay, and
 probe event, the model will have a total of 120 regressors, fitting a beta
-(a.k.a. parameter) estimate for each event.
+(a.k.a. parameter) estimate for each event. maybe another sentence to explain what the beta represents? (an estimate of the BOLD response for that event?)
 Once you calculate a beta estimate for each event of a given event type
-(e.g. cue), at the end you will have four dimensional dataset where each volume
-represents the beta estimates for a particular event, and each voxel represents
-a specific beta estimate.
+(e.g. cue), at the end you will have a four dimensional dataset where each volume
+represents the beta estimates for each particular event, and each voxel of the brain is represented by
+a specific beta estimate for each event. 
 
 Having one regressor per event in a single model is known as least squares all.
 This method, however, has limitations in the context of fast event related
@@ -128,8 +128,7 @@ We can correlate, estimate regional homogeneity, perform independent
 components analysis, or perform a number of different analyses
 with the data in each voxel.
 However, betaseries deviates from resting state in two important ways.
-First, you can do cognitive subtraction using betaseries.
-Since there is no explicit task in resting state, there are no
+First, you can do cognitive subtraction using betaseries, whereas since there is no explicit task in resting state, there are no
 cognitive states to compare.
 Second, interpretation of the lists of numbers are different for
 resting state and betaseries.
@@ -155,7 +154,7 @@ The experimenter has a timestamp of exactly when and how long
 a face or house is presented.
 That timestamp information is typically convolved with a hemodynamic
 response function (HRF) to represent how the brain stereotypically responds to
-any stimulus resulting in a model of how we expect the brain to respond
+any stimulus, resulting in a model of how we expect the brain to respond
 to places and/or faces.
 This is where traditional task analysis and betaseries diverge.
 In traditional task analysis all the face events are estimated at once,
@@ -164,7 +163,7 @@ giving one summary measure for how strongly each voxel was activated
 The experimenter can subtract the summary measure of faces from houses
 to see which voxels are more responsive to houses relative to faces
 (i.e. cognitive subtraction).
-In betaseries each event is estimated separately each voxel has as many
+In betaseries each event is estimated separately, and each voxel has as many
 estimates at there are events (which can be labelled as either
 face or house events).
 The experimenter can now reduce the series of estimates (a betaseries)
@@ -181,11 +180,11 @@ regions may communicate with each other during a particular event type
 
 Summary
 -------
-Betaseries is not in opposition to resting state or traditional task analysis,
+Betaseries is not in opposition to resting state or traditional task analysis; rather,
 the methods are complementary.
 For example, network parcelations derived from resting state data can be
 used on betaseries data to ascertain if the networks observed in resting state
-follow a similar pattern with betaseries.
+follow a similar pattern during a task.
 Additionally, regions determined from traditional task analysis
 can be used as regions of interest for betaseries analysis.
 Betaseries straddles the line between traditional task analysis and
