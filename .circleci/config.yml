@@ -53,7 +53,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp
           paths:
-            - src/fmriprep
+            - src/NiBetaSeries
       - save_cache:
           key: docker-v1-{{ .Branch }}-{{ .Revision }}
           paths:
