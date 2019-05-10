@@ -4,56 +4,28 @@ set -e
 
 # Generate Dockerfile.
 generate_docker() {
-  docker run --rm kaczmarj/neurodocker:master generate docker \
+  docker run --rm kaczmarj/neurodocker:0.5.0 generate docker \
     --base=neurodebian:stretch-non-free \
-    --install gcc g++ \
+    --install gcc g++ graphviz \
     --pkg-manager=apt \
     --user=neuro \
     --miniconda \
       conda_install="python=3.6" \
-      pip_install="jupyter seaborn" \
+      pip_install="jupyter seaborn tox" \
       create_env="neuro_py36" \
       activate=true \
-    --copy requirements.txt /src/ \
     --copy . /src/nibetaseries \
-    --workdir /src/ \
     --user=root \
-    --run 'chmod -R 777 requirements.txt && chmod -R 777 /src/nibetaseries/' \
+    --run 'chown -R neuro:users /src/nibetaseries' \
     --user=neuro \
-    --run 'pip install --user --no-cache-dir -r requirements.txt' \
-    --run 'cd /src/nibetaseries && pip install --no-cache-dir .[all]' \
+    --workdir /src/nibetaseries \
+    --run 'pip install --no-cache-dir .' \
     --run 'mkdir -p ~/.jupyter && echo c.NotebookApp.ip = \"0.0.0.0\" > ~/.jupyter/jupyter_notebook_config.py' \
-    --workdir /home
-
-}
-
-# Generate Singularity recipe (does not include last --cmd arg)
-generate_singularity() {
-  docker run --rm kaczmarj/neurodocker:master generate singularity \
-  --base=neurodebian:stretch-non-free \
-  --install gcc g++ \
-  --pkg-manager=apt \
-  --user=neuro \
-  --miniconda \
-    conda_install="python=3.6" \
-    pip_install="jupyter seaborn" \
-    create_env="neuro_py36" \
-    activate=true \
-  --copy requirements.txt /src/ \
-  --copy . /src/nibetaseries \
-  --workdir /src/ \
-  --user=root \
-  --run 'chmod -R 777 requirements.txt && chmod -R 777 /src/nibetaseries/' \
-  --user=neuro \
-  --run 'pip install --user --no-cache-dir -r requirements.txt' \
-  --run 'cd /src/nibetaseries && pip install --no-cache-dir .[all]' \
-  --run 'mkdir -p ~/.jupyter && echo c.NotebookApp.ip = \"0.0.0.0\" > ~/.jupyter/jupyter_notebook_config.py' \
-  --workdir /home
+    --workdir /home/neuro
 
 }
 
 generate_docker > Dockerfile
-generate_singularity > Singularity
 
-docker build -t nibetaseries .
-singularity build nibetaseries.simg Singularity
+docker build -t hbclab/nibetaseries:dev .
+# singularity build hbclab_nibetaseries.simg Singularity
