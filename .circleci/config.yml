@@ -34,11 +34,11 @@ jobs:
           name: Build Docker image
           no_output_timeout: 60m
           command: |
-          docker build \
-            --cache-from=hbclab/nibetaseries \
-            -t hbclab/nibetaseries:latest \
-            --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-            --build-arg VCS_REF=$(git rev-parse --short HEAD) .
+            docker build \
+              --cache-from=hbclab/nibetaseries \
+              -t hbclab/nibetaseries:latest \
+              --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+              --build-arg VCS_REF=$(git rev-parse --short HEAD) .
       - run:
           name: Test Docker image
           command: |
