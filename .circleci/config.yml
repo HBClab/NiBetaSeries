@@ -84,7 +84,7 @@ jobs:
           name: Run NiBetaSeries tests
           command: |
             docker run -it \
-              -w /src/nibetaseries
+              -w /src/nibetaseries \
               hbclab/nibetaseries:latest tox -e py36,docs
 
   deploy_docker:
