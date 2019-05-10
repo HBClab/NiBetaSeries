@@ -62,30 +62,30 @@ jobs:
   tox_docker:
     machine:
       image: circleci/classic:201711-01
-      working_directory: /tmp/src/NiBetaSeries
-      steps:
-        - attach_workspace:
-            at: /tmp
-        - restore_cache:
-            keys:
-              - docker-v1-{{ .Branch }}-{{ .Revision }}
-        - run:
-          name: Load Docker image layer cache
-          no_output_timeout: 30m
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+        name: Load Docker image layer cache
+        no_output_timeout: 30m
+        command: |
+          docker info
+          set +o pipefail
+          if [ -f /tmp/cache/docker.tar.gz ]; then
+            sudo apt update && sudo apt -y install pigz
+            pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+            docker images
+          fi
+      - run:
+          name: Run NiBetaSeries tests
           command: |
-            docker info
-            set +o pipefail
-            if [ -f /tmp/cache/docker.tar.gz ]; then
-              sudo apt update && sudo apt -y install pigz
-              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
-              docker images
-            fi
-        - run:
-            name: Run NiBetaSeries tests
-            command: |
-              docker run -it \
-                -w /src/nibetaseries
-                hbclab/nibetaseries:latest tox -e py36,docs
+            docker run -it \
+              -w /src/nibetaseries
+              hbclab/nibetaseries:latest tox -e py36,docs
 
   deploy_docker:
     machine:
