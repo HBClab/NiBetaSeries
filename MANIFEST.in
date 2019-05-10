@@ -27,8 +27,9 @@ include versioneer.py
 
 prune .github
 prune .joss
+prune .circleci
 global-exclude *.py[cod] __pycache__ *.so *.dylib
 
 exclude *.sh
 exclude Dockerfile
-exclude Singularity
+
