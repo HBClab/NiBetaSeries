@@ -42,7 +42,7 @@ jobs:
       - run:
           name: Test Docker image
           command: |
-            docker run hbclab/nibetaseries:latest --help
+            docker run hbclab/nibetaseries:latest nibs --help
       - run:
           name: Docker save
           no_output_timeout: 30m
