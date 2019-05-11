@@ -50,7 +50,7 @@ NiBetaSeries
 
 .. end-badges
 
-NiBetaSeries is `BIDS <http://bids.neuroimaging.io/>`_ compatible `application <https://bids-apps.neuroimaging.io/>`_
+NiBetaSeries is `BIDS <http://bids.neuroimaging.io/>`_-compatible `application <https://bids-apps.neuroimaging.io/>`_
 that calculates betaseries correlations.
 In brief, a beta coefficient is calculated for each trial
 (or event) resulting in a series of betas
@@ -59,7 +59,7 @@ that can be used to correlate regions of interest with each other.
 NiBetaSeries takes preprocessed data as input that satisfy the
 `BIDS deriviatives specification <http://bit.ly/2vKeKcp>`_.
 In practical terms, NiBetaSeries uses the output of `fmriprep <http://fmriprep.readthedocs.io/en/latest/>`_,
-a great BIDS compatible preprocessing tool.
+a great BIDS-compatible preprocessing tool.
 NiBetaSeries requires the input and the atlas to already
 be in MNI space since currently no
 transformations are applied to the data.
@@ -69,7 +69,7 @@ You can use any arbitrary atlas as long as it is in MNI space
 With NiBetaSeries you can receive:
 
 * betaseries images (TODO)
-* correlation matrices
+* symmetric correlation matrices
 
 This is a very young project that still needs some tender loving care to grow.
 That's where you fit in!
@@ -89,7 +89,7 @@ Installation
 
 ::
 
-    pip install nibetaseries
+    pip3 install nibetaseries
 
 Documentation
 =============
