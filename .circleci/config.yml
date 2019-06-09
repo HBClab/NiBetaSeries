@@ -1,0 +1,140 @@
+version: 2
+jobs:
+
+  build_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - run:
+          name:  Install pigz
+          command: |
+            sudo apt update && sudo apt -y install pigz
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+            - docker-v1-{{ .Branch }}-
+            - docker-v1-master-
+            - docker-v1-
+          paths:
+            - /tmp/cache/docker.tar.gz
+      - checkout
+
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Docker image
+          no_output_timeout: 60m
+          command: |
+            docker build \
+              --cache-from=hbclab/nibetaseries \
+              -t hbclab/nibetaseries:latest \
+              --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+              --build-arg VCS_REF=$(git rev-parse --short HEAD) .
+      - run:
+          name: Test Docker image
+          command: |
+            docker run hbclab/nibetaseries:latest nibs --help
+      - run:
+          name: Docker save
+          no_output_timeout: 30m
+          command: |
+            mkdir -p /tmp/cache
+            docker save hbclab/nibetaseries:latest | pigz -3 > /tmp/cache/docker.tar.gz
+      
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/NiBetaSeries
+      - save_cache:
+          key: docker-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - /tmp/cache/docker.tar.gz
+  
+  tox_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Run NiBetaSeries tests
+          command: |
+            docker run -it \
+              -w /src/nibetaseries \
+              hbclab/nibetaseries:latest tox -e py36,docs
+
+  deploy_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Deploy to Docker Hub
+          no_output_timeout: 40m
+          command: |
+            if [[ -n "$DOCKER_PASS" ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker tag hbclab/nibetaseries hbclab/nibetaseries:unstable
+              docker push hbclab/nibetaseries:unstable
+              if [[ -n "$CIRCLE_TAG" ]]; then
+                docker push hbclab/nibetaseries:latest
+                docker tag hbclab/nibetaseries hbclab/nibetaseries:$CIRCLE_TAG
+                docker push hbclab/nibetaseries:$CIRCLE_TAG
+              fi
+            fi
+    
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build_docker
+      - tox_docker:
+          requires:
+            - build_docker
+      - deploy_docker:
+          context: hbclab
+          requires:
+            - tox_docker
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /.*/

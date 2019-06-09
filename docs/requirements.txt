@@ -2,7 +2,6 @@ sphinx>=1.3
 sphinx_rtd_theme
 sphinx-argparse
 sphinx-gallery
-git+https://github.com/MXWXZ/sphinxcontrib-versioning.git
 matplotlib
 seaborn
 pillow

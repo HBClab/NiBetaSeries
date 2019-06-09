@@ -1,3 +1,5 @@
+.. _readme:
+
 ============
 NiBetaSeries
 ============
@@ -87,14 +89,14 @@ Please check out their pages and support the developers.
 Installation
 ============
 
-::
-
-    pip3 install nibetaseries
+:ref:`installation`
 
 Documentation
 =============
 
-https://nibetaseries.readthedocs.io
+:ref:`index`
+
+.. Note:: All code examples should be run in the command line unless otherwise specified.
 
 If you're interested in contributing to this project, here are some guidelines for `contributing <https://hbclab.github.io/NiBetaSeries/contributing.html>`_.
 Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>`_.
