@@ -1,6 +1,10 @@
+.. _betaseries:
+
 ==========
 Betaseries
 ==========
+
+:ref:`usage`
 
 Introduction
 ------------

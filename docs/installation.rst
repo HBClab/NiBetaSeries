@@ -1,32 +1,33 @@
+.. _installation:
+
 ============
 Installation
 ============
 
-There are two general options to install and run NiBetaSeries: either in its containerized version (Docker or Singularity) or
-manually prepared environment (Python 3.6+).
+There are two general options to install and run NiBetaSeries:
+either in its containerized version (Docker or Singularity) or
+manually prepared environment (Python 3.5+).
 
-Containerized version
----------------------
+Docker Container
+----------------
 
-Running the containerized version of NiBetaSeries, requires the installation of the respective
-software, that is either `Docker <https://docs.docker.com/install/>`_ or `Singularity <https://www.sylabs.io/guides/3.0/user-guide/installation.html>`_.
-Once installed, get either the NiBetaSeries docker image via:
-
-::
-
-  docker pull hbclab/nibetaseries:<version>
-
-or the NiBetaSeries singularity image via:
+If you have administrative privledges on your workstation
+(i.e. are able to install software on your system),
+`Docker <https://docs.docker.com/install/>`_ is a great way to keep
+everything in the code environment constant/reproducible (not just the nibetaseries code).
+Once you have docker, you can download the NiBetaSeries docker image via:
 
 ::
 
-  singularity build /path/to/image/nibetaseries-<version>.simg docker://HBClab/nibetaseries:<version>
+  docker pull hbclab/nibetaseries:vX.Y.Z
 
-Note: both should be run in the command line and *version* be replaced with the specific version of NiBetaSeries you want to run.
+.. Note::
 
-Once the image is completely pulled, the containerized version of NiBetaSeries is evoked from the command line as indicated hereinafter:
+  *X.Y.Z* should replaced with the specific version of
+  NiBetaSeries you want to run (e.g. 0.2.3).
 
-*Docker*:
+Once the image is completely pulled, the containerized version of
+NiBetaSeries is evoked from the command line:
 
 ::
 
@@ -44,7 +45,21 @@ Once the image is completely pulled, the containerized version of NiBetaSeries i
                              {out_dir} \
                              participant
 
-*Singularity*:
+Singularity Container
+---------------------
+
+If you do not have administrative privledges and/or are using a cluster,
+`Singularity <https://www.sylabs.io/guides/3.0/user-guide/installation.html>`_.
+is a good choice to get the same benefits as docker.
+You may have to ask your administrator to install Singularity.
+Once Singularity is installed, you can pull the nibetaseries image via:
+
+::
+
+  singularity build /path/to/image/nibetaseries-vX.Y.Z.simg docker://HBClab/nibetaseries:vX.Y.Z
+
+Once the image is completely pulled, the containerized version of
+NiBetaSeries is evoked from the command line:
 
 ::
 
@@ -62,19 +77,22 @@ Once the image is completely pulled, the containerized version of NiBetaSeries i
                                     {out_dir} \
                                     participant
 
-Note: the Singularity example depicted above assumes that Singularity is configured in such a way
-that folders on your host are not automatically bound (mounted or exposed). In case they are, the
-*-B* lines can be neglected and paths on your host should be indicated regarding *-w*, *bids_dir* and *out_dir*.
+.. Note::
+
+  the Singularity example depicted above assumes that Singularity is configured 
+  in such a way that folders on your host are not automatically bound (mounted or exposed).
+  In case they are, the *-B* lines can be neglected and paths on your host should be
+  indicated regarding *-w*, *bids_dir* and *out_dir*.
 
 
-Manually prepared environment (Python 3.6+)
+Manually prepared environment (Python 3.5+)
 -------------------------------------------
 
 In order to install the NiBetaSeries python module type the following in the command line:
 
 ::
 
-    pip install nibetaseries
+    pip3 install "nibetaseries==X.Y.Z"
 
 Afterwards, NiBetaSeries can be run as follows from the command line:
 
