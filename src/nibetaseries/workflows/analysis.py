@@ -48,6 +48,8 @@ def init_correlation_wf(name="correlation_wf"):
 
         correlation_matrix
             a matrix (tsv) file denoting all roi-roi correlations
+        correlation_fig
+            a jpg file of a circular connectivity plot showing all roi-roi correlations
     """
     workflow = pe.Workflow(name=name)
 
@@ -70,7 +72,8 @@ def init_correlation_wf(name="correlation_wf"):
                             iterfield=['betaseries_files'],
                             name='input_node')
 
-    output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix']),
+    output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix',
+                                                        'correlation_fig']),
                           name='output_node')
 
     atlas_corr_node = pe.MapNode(AtlasConnectivity(), name='atlas_corr_node', iterfield=['timeseries_file'])
@@ -86,6 +89,7 @@ def init_correlation_wf(name="correlation_wf"):
         (input_node, rename_matrix_node, [('betaseries_files', 'betaseries_file')]),
         (atlas_corr_node, rename_matrix_node, [('correlation_matrix', 'correlation_matrix')]),
         (rename_matrix_node, output_node, [('correlation_matrix_trialtype', 'correlation_matrix')]),
+        (atlas_corr_node, output_node, [('correlation_fig', 'correlation_fig')])
     ])
 
     return workflow
