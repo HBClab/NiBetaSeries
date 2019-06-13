@@ -2,6 +2,7 @@ import nibabel as nib
 import numpy as np
 import pandas as pd
 import json
+import warnings
 from nistats.hemodynamic_models import spm_hrf
 from scipy.stats import pearsonr
 from scipy.optimize import minimize
@@ -171,3 +172,15 @@ def betaseries_file(tmpdir_factory):
     bs_img.to_filename(str(bfile))
 
     return bfile
+
+# enforce matplotlib settings
+@pytest.fixture(scope='session')
+def matplotlib_config():
+    """Configure matplotlib for viz tests."""
+    import matplotlib
+    # "force" should not really be necessary but should not hurt
+    kwargs = dict()
+    with warnings.catch_warnings(record=True):  # ignore warning
+        matplotlib.use('agg', force=True, **kwargs)  # don't pop up windows
+    import matplotlib.pyplot as plt
+    assert plt.get_backend() == 'agg'
