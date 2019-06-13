@@ -197,7 +197,7 @@ def init_single_subject_wf(atlas_img, atlas_lut, bold_metadata_list, brainmask_l
         correlation_matrix
             a matrix (tsv) file denoting all roi-roi correlations
         correlation_fig
-            a jpg file of a circular connectivity plot showing all roi-roi correlations
+            a svg file of a circular connectivity plot showing all roi-roi correlations
     """
     workflow = pe.Workflow(name=name)
 
@@ -221,7 +221,8 @@ def init_single_subject_wf(atlas_img, atlas_lut, bold_metadata_list, brainmask_l
     input_node.inputs.atlas_img = atlas_img
     input_node.inputs.atlas_lut = atlas_lut
 
-    output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix']),
+    output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix',
+                                                        'correlation_fig']),
                           name='output_node')
 
     # initialize the betaseries workflow
@@ -255,10 +256,11 @@ def init_single_subject_wf(atlas_img, atlas_lut, bold_metadata_list, brainmask_l
         (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
                                       ('atlas_lut', 'input_node.atlas_lut')]),
 
-        (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrices')]),
+        (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrix'),
+                                       ('output_node.correlation_fig', 'correlation_fig')]),
         (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
         (betaseries_wf, ds_correlation_matrix, [('output_node.betaseries_files', 'betaseries_file')]),
-        (output_node, ds_correlation_matrix, [('correlation_matrices', 'in_file')]),
+        (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
 
         (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
         (betaseries_wf, ds_correlation_fig, [('output_node.betaseries_files', 'betaseries_file')]),
