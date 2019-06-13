@@ -41,6 +41,8 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         from mne.viz import plot_connectivity_circle
         import re
 
+        plt.switch_backend('Agg')
+
         # extract timeseries from every label
         masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
                                    standardize=True, verbose=1)
