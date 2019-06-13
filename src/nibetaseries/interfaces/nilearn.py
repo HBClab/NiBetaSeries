@@ -80,7 +80,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
 
         plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10,
                                  facecolor='white', textcolor='black', colormap='jet', colorbar=1,
-                                 node_colors=['black'], node_edgecolor=['white'], show=False)
+                                 node_colors=['black'], node_edgecolor=['white'], show=False, interactive=False)
 
         fig.savefig(outfile, dpi=300)
         self._results['correlation_fig'] = outfile
