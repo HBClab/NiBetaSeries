@@ -9,6 +9,7 @@ generate_docker() {
     --install gcc g++ graphviz \
     --pkg-manager=apt \
     --user=neuro \
+    --workdir="/home/neuro" \
     --miniconda \
       conda_install="python=3.6" \
       pip_install="jupyter seaborn tox" \
