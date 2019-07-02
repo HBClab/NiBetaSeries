@@ -94,7 +94,7 @@ Installation
 Documentation
 =============
 
-:ref:`index`
+:ref:`contents`
 
 .. Note:: All code examples should be run in the command line unless otherwise specified.
 
