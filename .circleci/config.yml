@@ -113,14 +113,14 @@ jobs:
           command: |
             mkdir -p /tmp/docBuild
             docker run -it \
-              --rm false \
-              --name doc_builder
+              --rm=false \
+              --name=doc_builder \
               -w /src/nibetaseries \
               hbclab/nibetaseries:latest \
               tox -e docs
             docker cp doc_builder:/src/nibetaseries/docs/_build/html/ /tmp/docBuild
       - store_artifacts:
-          path: /tmp/docBuild
+          path: /tmp/docBuild/html
 
   deploy_docker:
     machine:
