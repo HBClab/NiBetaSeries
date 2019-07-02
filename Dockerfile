@@ -65,8 +65,7 @@ RUN export PATH="/opt/miniconda-latest/bin:$PATH" \
     && conda config --system --set show_channel_urls true \
     && sync && conda clean --all && sync \
     && conda create -y -q --name neuro_py36 \
-    && conda install -y -q --name neuro_py36 \
-           'python=3.6' \
+    && (conda install -y -q --name neuro_py36 'python=3.6' || true) \
     && sync && conda clean --all && sync \
     && bash -c "source activate neuro_py36 \
     &&   pip install --no-cache-dir  \
