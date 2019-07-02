@@ -85,7 +85,42 @@ jobs:
           command: |
             docker run -it \
               -w /src/nibetaseries \
-              hbclab/nibetaseries:latest tox -e py36,docs
+              hbclab/nibetaseries:latest tox -e py36
+    
+  build_docs:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Documentation
+          command: |
+            mkdir -p /tmp/docBuild
+            docker run -it \
+              --rm=false \
+              --name=doc_builder \
+              -w /src/nibetaseries \
+              hbclab/nibetaseries:latest \
+              tox -e docs
+            docker cp doc_builder:/src/nibetaseries/docs/_build/html/ /tmp/docBuild
+      - store_artifacts:
+          path: /tmp/docBuild/html
 
   deploy_docker:
     machine:
@@ -129,10 +164,14 @@ workflows:
       - tox_docker:
           requires:
             - build_docker
+      - build_docs:
+          requires:
+            - build_docker
       - deploy_docker:
           context: hbclab
           requires:
             - tox_docker
+            - build_docs
           filters:
             branches:
               only: master
