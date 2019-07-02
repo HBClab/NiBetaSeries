@@ -198,10 +198,12 @@ resting state, observing task data through a network lens.
 
 Relevent Software
 -----------------
-BASCO_ (BetA Series COrrelations) is a matlab program that also performs
+- BASCO_ (BetA Series COrrelations) is a matlab program that also performs
 betaseries correlations
+- pybetaseries_ is a python script that runs on files that have been processed by FSL's FEAT.
 
 .. _BASCO: https://www.nitrc.org/projects/basco/
+.. _pybetaseries: https://github.com/poldrack/pybetaseries
 
 Other Relevant Readings
 -----------------------
