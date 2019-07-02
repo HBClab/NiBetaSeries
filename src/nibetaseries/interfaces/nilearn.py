@@ -21,6 +21,7 @@ class AtlasConnectivityInputSpec(BaseInterfaceInputSpec):
 
 class AtlasConnectivityOutputSpec(TraitedSpec):
     correlation_matrix = File(exists=True, desc='roi-roi fisher z transformed correlation matrix')
+    correlation_fig = File(exists=True, desc='svg of roi-roi fisher z transformed correlation matrix')
 
 
 class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
@@ -36,6 +37,11 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         import numpy as np
         import pandas as pd
         import os
+        import matplotlib.pyplot as plt
+        from mne.viz import plot_connectivity_circle
+        import re
+
+        plt.switch_backend('Agg')
 
         # extract timeseries from every label
         masker = NiftiLabelsMasker(labels_img=self.inputs.atlas_file,
@@ -61,5 +67,24 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
 
         # save the filename in the outputs
         self._results['correlation_matrix'] = out_file
+
+        # visualizations with mne
+        connmat = fisher_z_matrix_df.values
+        labels = list(fisher_z_matrix_df.index)
+
+        # define title and outfile names:
+        trial_regex = re.compile(r'.*trialtype-(?P<trial>[A-Za-z0-9]+)')
+        title = re.search(trial_regex, self.inputs.timeseries_file).groupdict()['trial']
+        outfile = os.path.join(runtime.cwd, ".".join([title, "svg"]))
+
+        n_lines = int(np.sum(connmat > 0) / 2)
+        fig = plt.figure(figsize=(5, 5))
+
+        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10,
+                                 facecolor='white', textcolor='black', colormap='jet', colorbar=1,
+                                 node_colors=['black'], node_edgecolor=['white'], show=False, interactive=False)
+
+        fig.savefig(outfile, dpi=300)
+        self._results['correlation_fig'] = outfile
 
         return runtime
