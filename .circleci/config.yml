@@ -162,10 +162,14 @@ workflows:
       - tox_docker:
           requires:
             - build_docker
+      - build_docs:
+          requires:
+            - build_docker
       - deploy_docker:
           context: hbclab
           requires:
             - tox_docker
+            - build_docs
           filters:
             branches:
               only: master
