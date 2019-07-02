@@ -7,3 +7,5 @@ pandas==0.24.0
 numpy==1.14.5
 duecredit==0.6.4
 scikit-learn==0.19.2
+matplotlib==2.2.4
+mne==0.18.1
