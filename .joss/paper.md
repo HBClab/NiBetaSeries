@@ -88,7 +88,7 @@ Given the drawbacks of the alternatives, NiBetaSeries justifies its existence an
 NiBetaSeries is not developed in a vacuum.
 
 Conceptualization of the BetaSeries Method is credited to Jesse Rissman [@Rissman2004],
-and the LSS method to Jeanette Mumford [@Mumford2012].
+and the LSS method to Benjamin Turner [@Turner2012a] with validation by Jeanette Mumford [@Mumford2012] and Hunar Abdulrahman [@Abdulrahman2016].
 Additionally, Michelle Voss provided guidance over the entirety of the project.
 The organization of the code is indebted to `fmriprep` and their developers/maintainers for inspiration [@Esteban2018a].
 Neurohackademy is to thank for providing the environment to help the project grow with new contributors.
