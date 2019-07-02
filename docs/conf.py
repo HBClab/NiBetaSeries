@@ -18,6 +18,7 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinxarg.ext',
     'sphinx.ext.mathjax',
+    'sphinxcontrib.bibtex',
 ]
 if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',

@@ -231,3 +231,11 @@ for trial_type, df in pd_dict.items():
     # iterate over rows
     r += 1
 plt.tight_layout()
+
+#############################################################################
+# References
+# ==========
+#
+# Verstynen, T. D. (2014). The organization and dynamics of corticostriatal pathways
+# link the medial orbitofrontal cortex to future behavioral responses.
+# Journal of Neurophysiology, 112(10), 2457–2469. https://doi.org/10.1152/jn.00221.2014
