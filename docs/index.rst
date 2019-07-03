@@ -12,7 +12,6 @@ Contents
    workflows
    betaseries
    code_of_conduct
-   reference/index
    contributing
    authors
    changelog
