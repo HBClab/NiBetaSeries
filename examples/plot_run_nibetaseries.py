@@ -1,6 +1,6 @@
 """
-Running NiBetaSeries using ds000164 (Stroop Task)
-===============================================================
+Running NiBetaSeries
+====================
 
 This example runs through a basic call of NiBetaSeries using
 the commandline entry point ``nibs``.
@@ -25,7 +25,8 @@ import pandas as pd   # manipulate tabular data
 #############################################################################
 # Download relevant data from ds000164 (and Atlas Files)
 # ======================================================
-# The subject data came from `openneuro <https://openneuro.org/datasets/ds000164/versions/00001/>`_.
+# The subject data came from `openneuro <https://openneuro.org/datasets/ds000164/versions/00001/>`_
+# :cite:`n-Verstynen2014`.
 # The atlas data came from a `recently published parcellation <https://www.ncbi.nlm.nih.gov/pubmed/28981612>`_
 # in a publically accessible github repository.
 
@@ -164,6 +165,7 @@ atlas_df.to_csv(atlas_tsv, sep="\t", index=False)
 #############################################################################
 # Run nibs
 # ========
+
 out_dir = os.path.join(data_dir, "ds000164", "derivatives")
 work_dir = os.path.join(out_dir, "work")
 atlas_mni_file = os.path.join(data_dir,
@@ -186,6 +188,12 @@ participant
            bids_dir=os.path.join(data_dir, "ds000164"),
            out_dir=out_dir,
            work_dir=work_dir)
+
+# Since we cannot run bash commands inside this tutorial
+# we are printing the actual bash command so you can see it
+# in the output
+print("The Example Command:\n", cmd)
+
 # call nibs
 p = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
 
@@ -235,7 +243,8 @@ plt.tight_layout()
 #############################################################################
 # References
 # ==========
+# .. bibliography:: ../references.bib
+#    :style: plain
+#    :labelprefix: notebook-
+#    :keyprefix: n-
 #
-# Verstynen, T. D. (2014). The organization and dynamics of corticostriatal pathways
-# link the medial orbitofrontal cortex to future behavioral responses.
-# Journal of Neurophysiology, 112(10), 2457–2469. https://doi.org/10.1152/jn.00221.2014

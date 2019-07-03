@@ -4,6 +4,9 @@
 Betaseries
 ==========
 
+This covers the conceptual background of betaseries,
+did you mean to check out usage which talks more about
+how to use NiBetaSeries?
 :ref:`usage`
 
 Introduction
@@ -16,7 +19,7 @@ via cognitive subtraction in task fMRI.
 
 Conceptual Background
 ---------------------
-Jesse Rissman :cite:`Rissman2004` was the first to publish on betaseries
+Jesse Rissman :cite:`d-Rissman2004` was the first to publish on betaseries
 correlations describing their usage in a working memory task.
 In this task, participants saw a cue, a delay, and a probe, all occurring
 within a short time period.
@@ -47,7 +50,7 @@ designs (e.g. designs where the events occur between 3-6
 seconds apart on average).
 Since each event has its own regressor, events that occur very close in time
 are colinear (e.g. are very overlapping).
-Benjamin Turner :cite:`Turner2012a` derived a solution for
+Benjamin Turner :cite:`d-Turner2012a` derived a solution for
 the high colinearity observed in least sqaures all by using another
 type of regression known as least squares separate.
 Instead of having one General Linear Model (GLM) with a regressor per event,
@@ -208,9 +211,10 @@ Relevent Software
 
 Other Relevant Readings
 -----------------------
-- :cite:`Cisler2012`: A comparison of psychophysiological interactions and LSS
-- :cite:`Gottlich2015`: The BASCO paper
-- :cite:`Abdulrahman2016`: evaluation of LSS (and other methods)
+- :cite:`d-Cisler2012`: A comparison of psychophysiological
+  interactions and LSS
+- :cite:`d-Gottlich2015`: The BASCO paper
+- :cite:`d-Abdulrahman2016`: evaluation of LSS (and other methods)
 
 
 References
@@ -218,3 +222,5 @@ References
 
 .. bibliography:: references.bib
     :style: plain
+    :labelprefix: docs-
+    :keyprefix: d-
