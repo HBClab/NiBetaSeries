@@ -16,7 +16,8 @@ Docker Container
 If you have administrative privledges on your workstation
 (i.e. are able to install software on your system),
 `Docker <https://docs.docker.com/install/>`_ is a great way to keep
-everything in the code environment constant/reproducible (not just the nibetaseries code).
+everything in the code environment constant/reproducible
+(not just the nibetaseries code).
 Once you have docker, you can download the NiBetaSeries docker image via:
 
 ::
@@ -81,7 +82,7 @@ NiBetaSeries is evoked from the command line:
 
 .. Note::
 
-  the Singularity example depicted above assumes that Singularity is configured 
+  the Singularity example depicted above assumes that Singularity is configured
   in such a way that folders on your host are not automatically bound (mounted or exposed).
   In case they are, the *-B* lines can be neglected and paths on your host should be
   indicated regarding *-w*, *bids_dir* and *out_dir*.
@@ -90,7 +91,8 @@ NiBetaSeries is evoked from the command line:
 Manually prepared environment (Python 3.5+)
 -------------------------------------------
 
-In order to install the NiBetaSeries python module type the following in the command line:
+In order to install the NiBetaSeries python module type the
+following in the command line:
 
 ::
 
