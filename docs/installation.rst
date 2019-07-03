@@ -39,7 +39,7 @@ NiBetaSeries is evoked from the command line:
                        -v /path/to/work_dir:/work_dir \
                        HBClab/nibetaseries:<version> \
                        nibs -c WhiteMatter CSF \
-                             --participant_label 001 \
+                             --participant-label 001 \
                              -w {work_dir} \
                              -a {atlas_mni_file} \
                              -l {atlas_tsv} \
@@ -71,7 +71,7 @@ NiBetaSeries is evoked from the command line:
                               -B /path/to/work_dir:/work_dir \
                               path/to/image/nibetaseries-<version>.simg \
                               nibs -c WhiteMatter CSF \
-                                    --participant_label 001 \
+                                    --participant-label 001 \
                                     -w {work_dir} \
                                     -a {atlas_mni_file} \
                                     -l {atlas_tsv} \
@@ -103,7 +103,7 @@ Afterwards, NiBetaSeries can be run as follows from the command line:
 ::
 
   nibs -c WhiteMatter CSF \
-        --participant_label 001 \
+        --participant-label 001 \
         -w {work_dir} \
         -a {atlas_mni_file} \
         -l {atlas_tsv} \
