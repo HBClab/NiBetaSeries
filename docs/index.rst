@@ -11,6 +11,7 @@ Contents
    auto_examples/index
    workflows
    betaseries
+   FAQ
    code_of_conduct
    contributing
    authors
