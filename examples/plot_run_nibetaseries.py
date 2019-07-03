@@ -175,7 +175,7 @@ atlas_mni_file = os.path.join(data_dir,
                               "Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
 cmd = """\
 nibs -c WhiteMatter CSF \
---participant_label 001 \
+--participant-label 001 \
 -w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
