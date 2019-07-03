@@ -4,6 +4,9 @@
 Betaseries
 ==========
 
+This covers the conceptual background of betaseries,
+did you mean to check out usage which talks more about
+how to use NiBetaSeries?
 :ref:`usage`
 
 Introduction
@@ -16,7 +19,7 @@ via cognitive subtraction in task fMRI.
 
 Conceptual Background
 ---------------------
-Jesse Rissman [Rissman2004]_ was the first to publish on betaseries
+Jesse Rissman :cite:`d-Rissman2004` was the first to publish on betaseries
 correlations describing their usage in a working memory task.
 In this task, participants saw a cue, a delay, and a probe, all occurring
 within a short time period.
@@ -47,7 +50,7 @@ designs (e.g. designs where the events occur between 3-6
 seconds apart on average).
 Since each event has its own regressor, events that occur very close in time
 are colinear (e.g. are very overlapping).
-Jeanette Mumford et al. [Mumford2012]_ derived a solution for
+Benjamin Turner :cite:`d-Turner2012a` derived a solution for
 the high colinearity observed in least sqaures all by using another
 type of regression known as least squares separate.
 Instead of having one General Linear Model (GLM) with a regressor per event,
@@ -198,27 +201,26 @@ resting state, observing task data through a network lens.
 
 Relevent Software
 -----------------
-BASCO_ (BetA Series COrrelations) is a matlab program that also performs
-betaseries correlations
+- BASCO_ (BetA Series COrrelations) is a matlab program that also performs
+  betaseries correlations
+- pybetaseries_ is a python script that runs on files that have
+  been processed by FSL's FEAT
 
+.. _BASCO: https://www.nitrc.org/projects/basco/
+.. _pybetaseries: https://github.com/poldrack/pybetaseries
 
 Other Relevant Readings
 -----------------------
-- [Cisler2014]_
-- [Gottlich2015]_
-- [Abdulrahman2016]_
+- :cite:`d-Cisler2012`: A comparison of psychophysiological
+  interactions and LSS
+- :cite:`d-Gottlich2015`: The BASCO paper
+- :cite:`d-Abdulrahman2016`: evaluation of LSS (and other methods)
+
 
 References
 ----------
 
-.. [Rissman2004] https://www.ncbi.nlm.nih.gov/pubmed/15488425
-
-.. [Mumford2012] https://www.ncbi.nlm.nih.gov/pubmed/21924359
-
-.. [Cisler2014] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4019671/
-
-.. [Gottlich2015] https://www.frontiersin.org/articles/10.3389/fnsys.2015.00126/full
-
-.. [Abdulrahman2016] https://www.ncbi.nlm.nih.gov/pubmed/26549299
-
-.. _BASCO: https://www.nitrc.org/projects/basco/
+.. bibliography:: references.bib
+    :style: plain
+    :labelprefix: docs-
+    :keyprefix: d-
