@@ -58,7 +58,9 @@ def get_parser():
                            'write the confounds you wish to include separated by a space',
                            nargs="+")
     proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
-                           'are stored')
+                           'are stored (i.e. non-essential files). '
+                           'This directory can be deleted once you are reasonably '
+                           'certain nibs finished as expected.')
 
     # Image Selection options
     image_opts = parser.add_argument_group('Options for selecting images')
