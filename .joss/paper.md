@@ -29,7 +29,7 @@ That is to say if region A and region B both show high activity on trial 1, low 
 
 # Background
 
-To understand NiBetaSeries we need to answer two questions: what is a "beta" and what is an "atlas parcellation"?
+To understand NiBetaSeries we need to answer two questions: what is a "beta" (or parameter estimate) and what is an "atlas parcellation"?
 We have already mentioned betas by another name, activation/deactivation.
 The term beta comes from its use in the Generalized Linear Model (GLM), a family of statistical models that is used to fit non-normal/non-gaussian data.
 fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modelled with a double-gamma function (e.g. not a gaussian/normal function).
@@ -66,7 +66,7 @@ The correlation matrix can then be used for downstream analysis.
 
 # Overview
 
-NiBetaSeries presents as a command line utility written in python.
+NiBetaSeries presents as a command line utility written in python following the template of a BIDS-App [@Gorgolewski2017].
 The primary way for users to interact with NiBetaSeries is by typing `nibs` in the command line.
 The basic workflow of NiBetaSeries follows these steps (the files can be found in the `workflows` directory):
 1) `base.py`: read and validate necessary inputs (a minimally processed fMRI file, a brain mask, an events file specifying the onsets, duration, and the trial type, an atlas parcellation, and a table connecting the numbers in the atlas parcellation with names of the regions).
@@ -90,7 +90,7 @@ NiBetaSeries is not developed in a vacuum.
 Conceptualization of the BetaSeries Method is credited to Jesse Rissman [@Rissman2004],
 and the LSS method to Benjamin Turner [@Turner2012a] with validation by Jeanette Mumford [@Mumford2012] and Hunar Abdulrahman [@Abdulrahman2016].
 Additionally, Michelle Voss provided guidance over the entirety of the project.
-The organization of the code is indebted to `fmriprep` and their developers/maintainers for inspiration [@Esteban2018a].
+The organization of the code is indebted to `fmriprep` and their developers/maintainers for inspiration [@Esteban2019].
 Neurohackademy is to thank for providing the environment to help the project grow with new contributors.
 Finally, all the contributors listed in `zenodo` and `github` have contributed both code and intellectually to NiBetaSeries pushing the project to new heights.
 
