@@ -38,7 +38,7 @@ probe events (as is done in traditional task analysis),
 there is an individual regressor for every event in the experiment.
 For example, if your experiment has 40 events, each with a cue, delay, and
 probe event, the model will have a total of 120 regressors, fitting a beta
-(a.k.a. parameter) estimate for each event.
+(i.e. parameter) estimate for each event.
 Once you calculate a beta estimate for each event of a given event type
 (e.g. cue), at the end you will have four dimensional dataset where each volume
 represents the beta estimates for a particular event, and each voxel represents

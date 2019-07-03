@@ -93,13 +93,6 @@ events_df = pd.read_csv(events_file, sep='\t', na_values="n/a")
 print(events_df.head())
 
 #############################################################################
-# change the Y/N to 1/0
-# ---------------------
-
-events_df['correct'].replace({"Y": 1, "N": 0}, inplace=True)
-print(events_df.head())
-
-#############################################################################
 # replace condition with trial_type
 # ---------------------------------
 

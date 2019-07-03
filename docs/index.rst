@@ -6,12 +6,13 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   betaseries
    installation
    usage
    auto_examples/index
    workflows
-   reference/index
+   betaseries
+   FAQ
+   code_of_conduct
    contributing
    authors
    changelog
