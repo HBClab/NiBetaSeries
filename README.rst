@@ -12,8 +12,9 @@ NiBetaSeries
     * - docs
       - |docs|
     * - tests
-      - | |travis|
+      - | |travis| |circleci|
         | |codecov|
+
     * - package
       - | |version| |wheel| |supported-versions|
         | |supported-implementations| |zenodo|
@@ -32,6 +33,10 @@ NiBetaSeries
 .. |codecov| image:: https://codecov.io/github/HBClab/NiBetaSeries/coverage.svg?branch=master
     :alt: Coverage Status
     :target: https://codecov.io/github/HBClab/NiBetaSeries
+
+.. |circleci| image:: https://circleci.com/gh/HBClab/NiBetaSeries.svg?style=svg
+    :alt: Circleci Build Status
+    :target: https://circleci.com/gh/HBClab/NiBetaSeries
 
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
@@ -91,10 +96,14 @@ Installation
 
 :ref:`installation`
 
+Tutorial
+========
+
+Checkout the NiBetaSeries Tutorial:
+:ref:`sphx_glr_auto_examples_plot_run_nibetaseries.py`!
+
 Documentation
 =============
-
-:ref:`contents`
 
 .. Note:: All code examples should be run in the command line unless otherwise specified.
 
