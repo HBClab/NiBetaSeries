@@ -47,8 +47,21 @@ def get_parser():
     parser.add_argument('-v', '--version', action='version',
                         version=verstr)
 
+    # Atlas Arguments (Required Options)
+    atlas_args = parser.add_argument_group('Required Atlas Arguments')
+    atlas_args.add_argument('-a', '--atlas-img', action='store', required=True,
+                            help='input atlas nifti where each voxel within a "region" '
+                                 'is labeled with the same integer and there is a unique '
+                                 'integer associated with each region of interest. '
+                                 'THIS OPTION IS REQUIRED.')
+    atlas_args.add_argument('-l', '--atlas-lut', action='store', required=True,
+                            help='atlas look up table (tsv) formatted with the columns: '
+                                  'index, regions which correspond to the regions in the '
+                                  'nifti file specified by --atlas-img. '
+                                  'THIS OPTION IS REQUIRED.')
+
     # preprocessing options
-    proc_opts = parser.add_argument_group('Options for preprocessing')
+    proc_opts = parser.add_argument_group('Options for processing')
     proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
     proc_opts.add_argument('-lp', '--low-pass', action='store', type=float,
@@ -57,6 +70,14 @@ def get_parser():
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
                            nargs="+")
+    proc_opts.add_argument('--hrf-model', default='glover',
+                           choices=['glover', 'spm', 'fir',
+                                    'glover + derivative',
+                                    'glover + derivative + dispersion',
+                                    'spm + derivative',
+                                    'spm + derivative + dispersion'],
+                           help='convolve your regressors '
+                                'with one of the following hemodynamic response functions')
     proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
@@ -84,25 +105,6 @@ def get_parser():
                             default=None, help='select a variant bold to process')
     image_opts.add_argument('--exclude-variant-label', action='store_true',
                             default=False, help='exclude the variant from FMRIPREP')
-
-    # BetaSeries Specific Options
-    beta_series = parser.add_argument_group('Options for processing beta_series')
-    beta_series.add_argument('--hrf-model', default='glover',
-                             choices=['glover', 'spm', 'fir',
-                                      'glover + derivative',
-                                      'glover + derivative + dispersion',
-                                      'spm + derivative',
-                                      'spm + derivative + dispersion'],
-                             help='convolve your regressors '
-                                  'with one of the following hemodynamic response functions')
-    beta_series.add_argument('-a', '--atlas-img', action='store',
-                             help='input atlas nifti where each voxel within a "region" '
-                                  'is labeled with the same integer and there is a unique '
-                                  'integer associated with each region of interest')
-    beta_series.add_argument('-l', '--atlas-lut', action='store', required=True,
-                             help='atlas look up table (tsv) formatted with the columns: '
-                                  'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img')
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
