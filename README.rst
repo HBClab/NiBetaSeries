@@ -65,8 +65,8 @@ What is NiBetaSeries?
 ---------------------
 NiBetaSeries is BIDS_-compatible `application <https://bids-apps.neuroimaging.io/>`_
 that calculates betaseries correlations.
-In brief, a beta coefficient is calculated for each trial
-(or event) resulting in a series of betas
+In brief, a beta coefficient (i.e. parameter estimate) is calculated
+for each trial (or event) resulting in a series of betas
 that can be used to correlate regions of interest with each other.
 
 Why should I use it?
@@ -87,6 +87,10 @@ Currently NiBetaSeries returns symmetric r-z transformed correlation
 matrices, with an entry for each parcel defined in the atlas.
 Soon, NiBetaSeries will also return the betaseries images themselves,
 so you can take them and flexibly apply another analysis method.
+
+.. note:: The betas (i.e. parameter estimates) are generated using Least Squares Separate.
+    Please read the :ref:`betaseries` page for more background information.
+    There are plans to support Least Squares All in future iterations.
 
 What do I need to run NiBetaSeries?
 -----------------------------------
