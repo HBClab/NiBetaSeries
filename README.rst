@@ -96,6 +96,12 @@ Installation
 
 :ref:`installation`
 
+Tutorial
+========
+
+Checkout the NiBetaSeries Tutorial:
+:ref:`sphx_glr_auto_examples_plot_run_nibetaseries.py`!
+
 Documentation
 =============
 
