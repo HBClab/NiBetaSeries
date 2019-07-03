@@ -18,6 +18,7 @@ Why does this file exist, and why not put this in __main__?
 from __future__ import absolute_import
 import os
 import argparse
+from argparse import RawTextHelpFormatter
 from glob import glob
 from multiprocessing import cpu_count
 from nipype import config as ncfg
@@ -29,7 +30,8 @@ def get_parser():
 
     verstr = 'nibs v{}'.format(__version__)
 
-    parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments')
+    parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments',
+                                     formatter_class=RawTextHelpFormatter)
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
     parser.add_argument('derivatives_pipeline', help='The pipeline that contains '
@@ -47,43 +49,43 @@ def get_parser():
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for preprocessing')
-    proc_opts.add_argument('-sm', '--smoothing_kernel', action='store', type=float, default=6.0,
+    proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
-    proc_opts.add_argument('-lp', '--low_pass', action='store', type=float,
+    proc_opts.add_argument('-lp', '--low-pass', action='store', type=float,
                            default=None, help='low pass filter (Hz)')
     proc_opts.add_argument('-c', '--confounds', help='The confound column names '
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
                            nargs="+")
-    proc_opts.add_argument('-w', '--work_dir', help='directory where temporary files '
+    proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
                            'are stored')
 
     # Image Selection options
     image_opts = parser.add_argument_group('Options for selecting images')
-    parser.add_argument('--participant_label', nargs="+",
+    parser.add_argument('--participant-label', nargs="+",
                         help='The label(s) of the participant(s) '
                              'that should be analyzed. The label '
                              'corresponds to sub-<participant_label> from the BIDS spec '
                              '(so it does not include "sub-"). If this parameter is not '
                              'provided all subjects should be analyzed. Multiple '
                              'participants can be specified with a space separated list.')
-    image_opts.add_argument('--session_label', action='store',
+    image_opts.add_argument('--session-label', action='store',
                             default=None, help='select a session to analyze')
-    image_opts.add_argument('-t', '--task_label', action='store',
+    image_opts.add_argument('-t', '--task-label', action='store',
                             default=None, help='select a specific task to be processed')
-    image_opts.add_argument('--run_label', action='store',
+    image_opts.add_argument('--run-label', action='store',
                             default=None, help='select a run to analyze')
-    image_opts.add_argument('-sp', '--space_label', action='store', default='MNI152NLin2009cAsym',
+    image_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
                             choices=['MNI152NLin2009cAsym'],
                             help='select a bold derivative in a specific space to be used')
-    image_opts.add_argument('--variant_label', action='store',
+    image_opts.add_argument('--variant-label', action='store',
                             default=None, help='select a variant bold to process')
-    image_opts.add_argument('--exclude_variant_label', action='store_true',
+    image_opts.add_argument('--exclude-variant-label', action='store_true',
                             default=False, help='exclude the variant from FMRIPREP')
 
     # BetaSeries Specific Options
     beta_series = parser.add_argument_group('Options for processing beta_series')
-    beta_series.add_argument('--hrf_model', default='glover',
+    beta_series.add_argument('--hrf-model', default='glover',
                              choices=['glover', 'spm', 'fir',
                                       'glover + derivative',
                                       'glover + derivative + dispersion',
@@ -102,7 +104,7 @@ def get_parser():
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
-    g_perfm.add_argument('--nthreads', '--n_cpus', '-n-cpus', action='store', type=int,
+    g_perfm.add_argument('--nthreads', '-n-cpus', action='store', type=int,
                          help='maximum number of threads across all processes')
     g_perfm.add_argument('--use-plugin', action='store', default=None,
                          help='nipype plugin configuration file')
