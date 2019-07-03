@@ -4,6 +4,8 @@
 Installation
 ============
 
+.. Note:: All code examples should be run in the command line.
+
 There are two general options to install and run NiBetaSeries:
 either in its containerized version (Docker or Singularity) or
 manually prepared environment (Python 3.5+).
