@@ -49,7 +49,7 @@ BetaSeries Workflow
         selected_confounds=[''])
 
 The bold file is optionally temporally filtered (low pass)
-and smoothedby nilearn before being passed into nistats for
+and smoothed by nilearn before being passed into nistats for
 modelling by least squares separate (LSS).
 
 
