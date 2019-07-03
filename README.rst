@@ -4,6 +4,10 @@
 NiBetaSeries
 ============
 
+If you are viewing this file through github, please see our
+`readthedocs page <https://nibetaseries.readthedocs.io>`_
+for links to render properly.
+
 .. start-badges
 
 .. list-table::
@@ -57,79 +61,59 @@ NiBetaSeries
 
 .. end-badges
 
-NiBetaSeries is `BIDS <http://bids.neuroimaging.io/>`_-compatible `application <https://bids-apps.neuroimaging.io/>`_
+What is NiBetaSeries?
+---------------------
+NiBetaSeries is BIDS_-compatible `application <https://bids-apps.neuroimaging.io/>`_
 that calculates betaseries correlations.
 In brief, a beta coefficient is calculated for each trial
 (or event) resulting in a series of betas
 that can be used to correlate regions of interest with each other.
 
-NiBetaSeries takes preprocessed data as input that satisfy the
+Why should I use it?
+--------------------
+There are potential insights hidden in your task fMRI data.
+Rest fMRI enjoys a multitude of toolboxes which can be applied to task fMRI
+with some effort, but there are not many toolboxes that focus on making
+betaseries.
+Betaseries can then be used for correlations/classifications and
+a multitude of other analyses.
+While a couple alternatives exist (pybetaseries_ and BASCO_), NiBetaSeries
+is the only application to interface with BIDS_ organized data with the goal
+of providing a commandline application experience like fmriprep_.
+
+What does NiBetaSeries give me?
+-------------------------------
+Currently NiBetaSeries returns symmetric r-z transformed correlation
+matrices, with an entry for each parcel defined in the atlas.
+Soon, NiBetaSeries will also return the betaseries images themselves,
+so you can take them and flexibly apply another analysis method.
+
+What do I need to run NiBetaSeries?
+-----------------------------------
+NiBetaSeries takes BIDS_ and preprocessed data as input that satisfy the
 `BIDS deriviatives specification <http://bit.ly/2vKeKcp>`_.
-In practical terms, NiBetaSeries uses the output of `fmriprep <http://fmriprep.readthedocs.io/en/latest/>`_,
+In practical terms, NiBetaSeries uses the output of fmriprep_,
 a great BIDS-compatible preprocessing tool.
 NiBetaSeries requires the input and the atlas to already
-be in MNI space since currently no
-transformations are applied to the data.
-You can use any arbitrary atlas as long as it is in MNI space
-(the same space as the preprocessed data).
+be in the same space (e.g. MNI space).
+For more details, see :ref:`usage` and the tutorial
+(:ref:`sphx_glr_auto_examples_plot_run_nibetaseries.py`)
 
-With NiBetaSeries you can receive:
-
-* betaseries images (TODO)
-* symmetric correlation matrices
-
+Get Involved
+------------
 This is a very young project that still needs some tender loving care to grow.
 That's where you fit in!
-If you would like to contribute, please read our code of conduct
-and contributing page.
+If you would like to contribute, please read our :ref:`code_of_conduct`
+and contributing page (:ref:`contributing`).
 
+Thanks!
+-------
 This project heavily leverages `nipype <http://nipype.readthedocs.io/en/latest/>`_,
 `nilearn <https://nilearn.github.io/>`_, `pybids <https://bids-standard.github.io/pybids/>`_, and
 `nistats <https://nistats.github.io/>`_ for development.
 Please check out their pages and support the developers.
 
-
-* Free software: MIT license
-
-Installation
-============
-
-:ref:`installation`
-
-Tutorial
-========
-
-Checkout the NiBetaSeries Tutorial:
-:ref:`sphx_glr_auto_examples_plot_run_nibetaseries.py`!
-
-Documentation
-=============
-
-.. Note:: All code examples should be run in the command line unless otherwise specified.
-
-If you're interested in contributing to this project, here are some guidelines for `contributing <https://hbclab.github.io/NiBetaSeries/contributing.html>`_.
-Another good place to start is by checking out the open `issues <https://github.com/HBClab/NiBetaSeries/issues>`_.
-
-Development
-===========
-
-To run the all tests run::
-
-    tox
-
-Note, to combine the coverage data from all the tox environments run:
-
-.. list-table::
-    :widths: 10 90
-    :stub-columns: 1
-
-    - - Windows
-      - ::
-
-            set PYTEST_ADDOPTS=--cov-append
-            tox
-
-    - - Other
-      - ::
-
-            PYTEST_ADDOPTS=--cov-append tox
+.. _BASCO: https://www.nitrc.org/projects/basco/
+.. _pybetaseries: https://github.com/poldrack/pybetaseries
+.. _BIDS: http://bids.neuroimaging.io/
+.. _fmriprep: http://fmriprep.readthedocs.io/en/latest/
