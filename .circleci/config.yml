@@ -87,6 +87,7 @@ jobs:
       - run:
           name: build binder
           command: |
+            # setup git configuration for pushing to binder branch
             cd ~/binderBuild
             git config user.email "binder@binder.com"
             git config user.name "binder bot"
@@ -94,9 +95,12 @@ jobs:
             git checkout -b binder
             git pull . ${CIRCLE_BRANCH}
 
+            # make directory to place requirements.txt to install nibetaseries
+            # inside binder
             mkdir -p ~/binderBuild/binder
             echo ".[nb]" > ~/binderBuild/binder/requirements.txt
 
+            # make the .ipynb file for binder
             docker run -it \
               --rm=false \
               --name binder \
@@ -105,9 +109,9 @@ jobs:
               bash -c "source activate neuro_py36 && \
                        pip install .[doc] && \
                        sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
-
+            # copy the ipynb into the binder folder of the repository
             docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/binder
-
+            # push the notebook to the binder branch
             git add binder/*
             git commit -m 'add binder files'
             git push -fq upstream binder
@@ -227,7 +231,6 @@ workflows:
             branches:
               only:
                 - master
-                - add_binder
       - deploy_docker:
           context: hbclab
           requires:
