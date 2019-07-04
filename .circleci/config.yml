@@ -87,11 +87,14 @@ jobs:
       - run:
           name: build binder
           command: |
-            cd ~/buildBinder/NiBetaSeries
+            cd ~/buildBinder
             git config user.email "binder@binder.com"
             git config user.name "binder bot"
-            git checkout binder
-            git pull . master
+            git remote add upstream https://github.com/HBClab/NiBetaSeries.git
+            git checkout -b binder
+            git pull . ${CIRCLE_BRANCH}
+
+            echo ".[nb]" > ~/buildBinder/requirements.txt
 
             docker run -it \
               --rm=false \
@@ -101,11 +104,11 @@ jobs:
               bash -c "source activate neuro_py36 && \
                        pip install .[doc] && \
                        sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
-            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/NiBetaSeries/binder
+            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/binder
 
-            git add binder/plot_run_nibetaseries.ipynb
-            git commit -m 'add ipynb notebook'
-            git push -q origin binder
+            git add binder/*
+            git commit -m 'add binder files'
+            git push -q upstream binder
 
   tox_docker:
     machine:
