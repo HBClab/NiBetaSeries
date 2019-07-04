@@ -35,7 +35,7 @@ jobs:
           no_output_timeout: 60m
           command: |
             docker build \
-              --cache-from=hbclab/nibetaseries \
+              --cache-from=hbclab/nibetaseries:unstable \
               -t hbclab/nibetaseries:unstable \
               --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
               --build-arg VCS_REF=$(git rev-parse --short HEAD) .
@@ -94,6 +94,7 @@ jobs:
             git checkout -b binder
             git pull . ${CIRCLE_BRANCH}
 
+            mkdir -p ~/binderBuild/binder
             echo ".[nb]" > ~/binderBuild/binder/requirements.txt
 
             docker run -it \
