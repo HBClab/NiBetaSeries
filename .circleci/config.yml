@@ -62,7 +62,7 @@ jobs:
   build_binder:
     machine:
       image: circleci/classic:201711-01
-    working_directory: /binderBuild
+    working_directory: ~/binderBuild
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -87,7 +87,7 @@ jobs:
       - run:
           name: build binder
           command: |
-            cd /buildBinder/NiBetaSeries
+            cd ~/buildBinder/NiBetaSeries
             git config user.email "binder@binder.com"
             git config user.name "binder bot"
             git checkout binder
@@ -101,7 +101,7 @@ jobs:
               bash -c "source activate neuro_py36 && \
                        pip install .[doc] && \
                        sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
-            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb /binderBuild/NiBetaSeries/binder
+            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/NiBetaSeries/binder
 
             git add binder/plot_run_nibetaseries.ipynb
             git commit -m 'add ipynb notebook'
