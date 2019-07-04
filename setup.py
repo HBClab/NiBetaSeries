@@ -6,7 +6,7 @@ from __future__ import print_function
 import io
 import re
 from glob import glob
-from os.path import dirname, abspath, join, basename, splitext
+from os.path import dirname, join, basename, splitext
 from setuptools import find_packages
 from setuptools import setup
 import versioneer
@@ -17,6 +17,7 @@ def read(*names, **kwargs):
         join(dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')
     ).read()
+
 
 setup(
     name='nibetaseries',
@@ -63,7 +64,7 @@ setup(
         'nistats~=0.0.1b',
         'nilearn~=0.4.2',
         'pandas~=0.24.0',
-        'numpy~=1.14.5',
+        'numpy',
         'duecredit~=0.6.4',
         'scikit-learn~=0.19.2',
         'matplotlib~=2.2.4',
