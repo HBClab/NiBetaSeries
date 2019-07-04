@@ -113,7 +113,7 @@ jobs:
             docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/binder
             # push the notebook to the binder branch
             git add binder/*
-            git commit -m 'add binder files'
+            git commit -m 'add binder files[ci skip]'
             git push -fq upstream binder
 
   tox_docker:
