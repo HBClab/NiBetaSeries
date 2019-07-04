@@ -12,8 +12,6 @@ include *.md
 include *.json
 
 include *.enc
-include requirements.txt
-include requirements-dev.txt
 include LICENSE
 include *.rst
 
