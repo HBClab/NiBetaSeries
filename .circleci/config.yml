@@ -100,11 +100,12 @@ jobs:
             docker run -it \
               --rm=false \
               --name binder \
-              -w /src/nibetaseries
+              -w /src/nibetaseries \
               hbclab/nibetaseries:unstable \
               bash -c "source activate neuro_py36 && \
                        pip install .[doc] && \
                        sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
+
             docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/binder
 
             git add binder/*
