@@ -204,11 +204,9 @@ jobs:
           command: |
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag hbclab/nibetaseries hbclab/nibetaseries:unstable
               docker push hbclab/nibetaseries:unstable
               if [[ -n "$CIRCLE_TAG" ]]; then
-                docker push hbclab/nibetaseries:unstable
-                docker tag hbclab/nibetaseries hbclab/nibetaseries:$CIRCLE_TAG
+                docker tag hbclab/nibetaseries:unstable hbclab/nibetaseries:$CIRCLE_TAG
                 docker push hbclab/nibetaseries:$CIRCLE_TAG
               fi
             fi
