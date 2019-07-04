@@ -6,7 +6,7 @@ from __future__ import print_function
 import io
 import re
 from glob import glob
-from os.path import dirname, abspath, join, basename, splitext
+from os.path import dirname, join, basename, splitext
 from setuptools import find_packages
 from setuptools import setup
 import versioneer
@@ -18,13 +18,6 @@ def read(*names, **kwargs):
         encoding=kwargs.get('encoding', 'utf8')
     ).read()
 
-
-here = abspath(dirname(__file__))
-
-with open(join(here, 'requirements.txt')) as requirements_file:
-    # Parse requirements.txt, ignoring any commented-out lines.
-    requirements = [line for line in requirements_file.read().splitlines()
-                    if not line.startswith('#')]
 
 setup(
     name='nibetaseries',
@@ -64,8 +57,36 @@ setup(
         'fmri',
         'neuroimaging',
     ],
-    install_requires=requirements,
+    install_requires=[
+        'nipype~=1.1.5',
+        'pybids~=0.6.4',
+        'nibabel~=2.3.0',
+        'nistats~=0.0.1b',
+        'nilearn~=0.4.2',
+        'pandas~=0.24.0',
+        'numpy',
+        'duecredit~=0.6.4',
+        'scikit-learn~=0.19.2',
+        'matplotlib~=2.2.4',
+        'mne~=0.18.1',
+    ],
     extras_require={
+        'test': ['tox',
+                 'pytest',
+                 'pytest-travis-fold',
+                 'pytest-cov'],
+        'dev': ['check-manifest',
+                'flake8',
+                'codecov',
+                'coverage'],
+        'doc': ['sphinx>=1.3',
+                'sphinx_rtd_theme',
+                'sphinx-argparse',
+                'sphinx-gallery',
+                'sphinxcontrib-bibtex'],
+        'nb': ['matplotlib',
+               'seaborn',
+               'pillow']
         # eg:
         #   'rst': ['docutils>=0.11'],
         #   ':python_version=="2.6"': ['argparse'],
