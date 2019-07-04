@@ -87,14 +87,14 @@ jobs:
       - run:
           name: build binder
           command: |
-            cd ~/buildBinder
+            cd ~/binderBuild
             git config user.email "binder@binder.com"
             git config user.name "binder bot"
             git remote add upstream https://github.com/HBClab/NiBetaSeries.git
             git checkout -b binder
             git pull . ${CIRCLE_BRANCH}
 
-            echo ".[nb]" > ~/buildBinder/requirements.txt
+            echo ".[nb]" > ~/binderBuild/binder/requirements.txt
 
             docker run -it \
               --rm=false \
@@ -108,7 +108,7 @@ jobs:
 
             git add binder/*
             git commit -m 'add binder files'
-            git push -q upstream binder
+            git push -fq upstream binder
 
   tox_docker:
     machine:
