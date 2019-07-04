@@ -36,19 +36,19 @@ jobs:
           command: |
             docker build \
               --cache-from=hbclab/nibetaseries \
-              -t hbclab/nibetaseries:latest \
+              -t hbclab/nibetaseries:unstable \
               --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
               --build-arg VCS_REF=$(git rev-parse --short HEAD) .
       - run:
           name: Test Docker image
           command: |
-            docker run hbclab/nibetaseries:latest nibs --help
+            docker run hbclab/nibetaseries:unstable nibs --help
       - run:
           name: Docker save
           no_output_timeout: 30m
           command: |
             mkdir -p /tmp/cache
-            docker save hbclab/nibetaseries:latest | pigz -3 > /tmp/cache/docker.tar.gz
+            docker save hbclab/nibetaseries:unstable | pigz -3 > /tmp/cache/docker.tar.gz
       
       - persist_to_workspace:
           root: /tmp
@@ -58,7 +58,55 @@ jobs:
           key: docker-v1-{{ .Branch }}-{{ .Revision }}
           paths:
             - /tmp/cache/docker.tar.gz
-  
+
+  build_binder:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /binderBuild
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "b9:b2:c0:2a:28:53:25:bb:b9:c0:4b:ca:13:96:b1:19"
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: build binder
+          command: |
+            cd /buildBinder/NiBetaSeries
+            git config user.email "binder@binder.com"
+            git config user.name "binder bot"
+            git checkout binder
+            git pull . master
+
+            docker run -it \
+              --rm=false \
+              --name binder \
+              -w /src/nibetaseries
+              hbclab/nibetaseries:unstable \
+              bash -c "source activate neuro_py36 && \
+                       pip install .[doc] && \
+                       sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
+            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb /binderBuild/NiBetaSeries/binder
+
+            git add binder/plot_run_nibetaseries.ipynb
+            git commit -m 'add ipynb notebook'
+            git push -q origin binder
+
   tox_docker:
     machine:
       image: circleci/classic:201711-01
@@ -85,7 +133,7 @@ jobs:
           command: |
             docker run -it \
               -w /src/nibetaseries \
-              hbclab/nibetaseries:latest tox -e py36
+              hbclab/nibetaseries:unstable tox -e py36
     
   build_docs:
     machine:
@@ -116,7 +164,7 @@ jobs:
               --rm=false \
               --name=doc_builder \
               -w /src/nibetaseries \
-              hbclab/nibetaseries:latest \
+              hbclab/nibetaseries:unstable \
               tox -e docs
             docker cp doc_builder:/src/nibetaseries/docs/_build/html/ /tmp/docBuild
       - store_artifacts:
@@ -150,7 +198,7 @@ jobs:
               docker tag hbclab/nibetaseries hbclab/nibetaseries:unstable
               docker push hbclab/nibetaseries:unstable
               if [[ -n "$CIRCLE_TAG" ]]; then
-                docker push hbclab/nibetaseries:latest
+                docker push hbclab/nibetaseries:unstable
                 docker tag hbclab/nibetaseries hbclab/nibetaseries:$CIRCLE_TAG
                 docker push hbclab/nibetaseries:$CIRCLE_TAG
               fi
@@ -167,6 +215,14 @@ workflows:
       - build_docs:
           requires:
             - build_docker
+      - build_binder:
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only:
+                - master
+                - add_binder
       - deploy_docker:
           context: hbclab
           requires:
