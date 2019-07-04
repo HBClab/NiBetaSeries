@@ -18,7 +18,8 @@ for links to render properly.
     * - tests
       - | |travis| |circleci|
         | |codecov|
-
+    * - binder
+      - | |binder|
     * - package
       - | |version| |wheel| |supported-versions|
         | |supported-implementations| |zenodo|
@@ -41,6 +42,9 @@ for links to render properly.
 .. |circleci| image:: https://circleci.com/gh/HBClab/NiBetaSeries.svg?style=svg
     :alt: Circleci Build Status
     :target: https://circleci.com/gh/HBClab/NiBetaSeries
+
+.. |binder| image:: https://mybinder.org/badge_logo.svg
+    :target: https://mybinder.org/v2/gh/HBClab/NiBetaSeries.git/binder?filepath=%2Fbinder%2Fplot_run_nibetaseries.ipynb
 
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
