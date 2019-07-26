@@ -27,12 +27,12 @@ Participant Workflow
         smoothing_kernel=None)
 
 The general workflow for a participant models the betaseries
-for each trial type for each bold file associated with the participant.
+for each trial type for each BOLD file associated with the participant.
 Then betas within an atlas parcel are averaged together.
 This occurs as many times as there are trials for that particular trial type,
-resulting in a psuedo-timeseries (e.g. each point in "time" represents an
+resulting in a psuedo-time series (i.e., each point in "time" represents an
 occurrence of that trial).
-All the psuedo time-series within a trial type are correlated with each other,
+All the psuedo-time series within a trial type are correlated with each other,
 resulting in a final correlation (adjacency) matrix for each trial type.
 
 BetaSeries Workflow
@@ -48,9 +48,9 @@ BetaSeries Workflow
         smoothing_kernel=0.0,
         selected_confounds=[''])
 
-The bold file is optionally temporally filtered (low pass)
+The BOLD file is optionally temporally filtered (low-pass)
 and smoothed by nilearn before being passed into nistats for
-modelling by least squares separate (LSS).
+modeling using the "least squares separate" (LSS) procedure.
 
 
 Correlation Workflow
