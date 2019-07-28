@@ -13,11 +13,11 @@ manually prepared environment (Python 3.5+).
 Docker Container
 ----------------
 
-If you have administrative privledges on your workstation
-(i.e. are able to install software on your system),
+If you have administrative privileges on your workstation
+(i.e., are able to install software on your system),
 `Docker <https://docs.docker.com/install/>`_ is a great way to keep
 everything in the code environment constant/reproducible
-(not just the nibetaseries code).
+(not just the NiBetaSeries code).
 Once you have docker, you can download the NiBetaSeries docker image via:
 
 ::
@@ -51,11 +51,11 @@ NiBetaSeries is evoked from the command line:
 Singularity Container
 ---------------------
 
-If you do not have administrative privledges and/or are using a cluster,
-`Singularity <https://www.sylabs.io/guides/3.0/user-guide/installation.html>`_.
-is a good choice to get the same benefits as docker.
+If you do not have administrative privileges and/or are using a cluster,
+`Singularity <https://www.sylabs.io/guides/3.0/user-guide/installation.html>`_
+is a good choice to get the same benefits as Docker.
 You may have to ask your administrator to install Singularity.
-Once Singularity is installed, you can pull the nibetaseries image via:
+Once Singularity is installed, you can pull the NiBetaSeries image via:
 
 ::
 
@@ -82,7 +82,7 @@ NiBetaSeries is evoked from the command line:
 
 .. Note::
 
-  the Singularity example depicted above assumes that Singularity is configured
+  The Singularity example depicted above assumes that Singularity is configured
   in such a way that folders on your host are not automatically bound (mounted or exposed).
   In case they are, the *-B* lines can be neglected and paths on your host should be
   indicated regarding *-w*, *bids_dir* and *out_dir*.
@@ -91,7 +91,7 @@ NiBetaSeries is evoked from the command line:
 Manually prepared environment (Python 3.5+)
 -------------------------------------------
 
-In order to install the NiBetaSeries python module type the
+In order to install the NiBetaSeries Python module type the
 following in the command line:
 
 ::
