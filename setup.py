@@ -69,6 +69,7 @@ setup(
         'scikit-learn~=0.19.2',
         'matplotlib~=2.2.4',
         'mne~=0.18.1',
+        'pypiwin32; platform_system=="Windows"',
     ],
     extras_require={
         'test': ['tox',
