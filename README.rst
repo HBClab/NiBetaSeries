@@ -44,7 +44,7 @@ for links to render properly.
     :target: https://circleci.com/gh/HBClab/NiBetaSeries
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/HBClab/NiBetaSeries.git/binder?filepath=%2Fbinder%2Fplot_run_nibetaseries.ipynb
+    :target: https://mybinder.org/v2/gh/HBClab/NiBetaSeries/binder?filepath=%2Fbinder%2Fplot_run_nibetaseries.ipynb
 
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
