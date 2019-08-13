@@ -14,6 +14,7 @@ include *.json
 include *.enc
 include LICENSE
 include *.rst
+include *.yml
 
 include tox.ini .travis.yml
 recursive-include tests *.py
