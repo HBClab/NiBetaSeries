@@ -31,13 +31,13 @@ That is to say if region A and region B both show high activity on trial 1, low 
 
 To understand NiBetaSeries we need to answer two questions: what is a "beta" (or parameter estimate) and how can we analyze a series of betas?
 We have already mentioned betas by another name, activation/deactivation.
-The term beta comes from its use in the General Linear Model (GLM), an extension of regression.
-fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modelled with a double-gamma function.
+The term beta comes from its use in the General Linear Model (GLM), an extension of linear regression.
+fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modeled with a double-gamma function.
 The overall amplitude (i.e. activation/deactivation) of the double gamma function is determined by the beta coefficient.
 Thus larger betas mean greater activation, and smaller or negative betas mean less activation or deactivation relative to a baseline.
 Traditional fMRI analysis will group together all the relevant trial types and give them all one beta estimate, where variance between trials is treated as noise.
 NiBetaSeries, on the other hand, gives each trial its own beta estimate treating the variance between trials as the signal of interest.
-The final complication to understand betas is the multiple methods we can use to derive individual beta estimates.
+With the concept of a beta under our belt, The final complication is the multiple methods we can use to derive individual beta estimates.
 Two common methods are least squares all (LSA) and least squares separate (LSS).
 LSA places all the trials in the same GLM, where each trial is a separate predictor.
 LSA works well when the trials are far apart in time since the BOLD response takes a long time to return to baseline.
@@ -47,33 +47,33 @@ For each trial, a GLM is created where one predictor is the trial of interest an
 This reduces the amount of overlap (or more accurately correlation) between predictors, leading to more reliable individual beta estimates.
 NiBetaSeries currently implements LSS making it a more reasonable analysis choice for
 experiments with trials that occur closer together (e.g. 3-7 seconds apart on average).
-The output of LSS is a beta series for each voxel in our dataset.
+The output of LSA or LSS is a beta series for each voxel in our dataset.
 
 There is a wealth of analysis methods we can apply to beta series datasets.
-To summarize our data, we have a beta estimate for each trial within each voxel of the brain,
+To summarize our data, we have a beta estimate for each trial within every voxel in the brain,
 resulting in a 4-dimensional dataset.
 Three dimensions make up the brain voxels, and the 4th dimension represents the number of trials.
-For many intents and purposes, the ``4D`` beta series can analyzed similarly to a ``4D``
+For many intents and purposes, the `4D` beta series can analyzed similarly to a `4D`
 resting state dataset where the 4th dimension represents time.
 Traditional analysis strategies applied to resting state such as seed based correlation,
-independent components analysis, regional homogeniety, and graph theory can be applied to
+independent components analysis, regional homogeneity, and graph theory can be applied to
 beta series [@Cole2010;vanWijk2010].
 Recycling these methods for beta series provides a new lens to observe the organization of the brain during a task and may lead to additional insights.
 Graph theoretical and seed based correlation measures often depend on voxels
-being grouped into homogenous "parcels".
+being grouped into homogeneous "parcels".
 That is, the betas from several voxels in close spatial proximity are averaged together
 to reduce the 20,000 voxels to a couple 100 or fewer parcels.
-Each parcel is labelled with a unique integer in a 3-dimensional parcellation atlas
+Each parcel is labeled with a unique integer in a 3-dimensional parcellation atlas
 (e.g. the voxels within the left insula may all be labelled with the integer 12).
 The collection of parcels--a parcellation--identifies all the unique brain areas of interest and that image is used in NiBetaSeries to provide usable output.
 
 Putting betas and atlas parcellations together, we have a recipe to create betaseries correlations in NiBetaSeries.
 Applying the GLM to the fMRI data results in voxelwise beta estimates for each trial.
-Voxels are averaged together within each parcel separately for all trials, resulting in a ``2D`` dataset.
+Voxels are averaged together within each parcel separately for all trials, resulting in a `2D` dataset.
 One dimension represents the parcel and the other represents the trial.
 As mentioned above, many graph theoretical measures could be applied, but currently
 NiBetaSeries only performs correlations between parcels.
-Other analysis methods are on the roadmap for NiBetaSeries, which will make the tool
+Other analysis methods are on the road-map for NiBetaSeries, which will make the tool
 useful for a variety of scientific questions.
 
 # Overview
