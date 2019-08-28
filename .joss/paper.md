@@ -29,7 +29,7 @@ That is to say if region A and region B both show high activity on trial 1, low 
 
 # Background
 
-To understand NiBetaSeries we need to answer two questions: what is a "beta" (or parameter estimate) and what is an "atlas parcellation"?
+To understand NiBetaSeries we need to answer two questions: what is a "beta" (or parameter estimate) and how can we analyze a series of betas?
 We have already mentioned betas by another name, activation/deactivation.
 The term beta comes from its use in the Generalized Linear Model (GLM), a family of statistical models that is used to fit non-normal/non-gaussian data.
 fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modelled with a double-gamma function (e.g. not a gaussian/normal function).
@@ -45,30 +45,43 @@ When the trials are close together, however, the bold responses start to overlap
 LSS tackles this problem by making as many GLMs as there are trials.
 For each trial, a GLM is created where one predictor is the trial of interest and the other predictor is the combination of the other trials.
 This reduces the amount of overlap (or more accurately correlation) between predictors, leading to more reliable individual beta estimates.
-NiBetaSeries currently implements LSS making it an ideal candidate for experiments with trials that occur closer together (e.g. 3-7 seconds apart on average).
+NiBetaSeries currently implements LSS making it a more reasonable analysis choice for
+experiments with trials that occur closer together (e.g. 3-7 seconds apart on average).
+The output of LSS is a beta series for each voxel in our dataset.
 
-The second question of what an atlas parcellation is will hopefully be easier to explain.
-The brain can be cut up in many ways, either via anatomical landmarks, by which regions are activated by a task of theoretical interest, by how the brain organizes itself when not engaged in any external task, or any number of other creative methods.
-Once we have selected our parcellation method, we need to label which voxels belongs to which parcel.
-A voxel is shortened from the term volumetric pixel, unlike typical pictures our brain images are 3 dimensional, so in order to account for the volume we use 3D voxels instead of 2D pixels.
-A parcel is a collection of voxels that are designated to be a part of the same group.
-Group membership is decided based on the parcellation method.
-We label group membership by giving each voxel within a parcel the same integer (e.g. the voxels within the left insula may all be labelled with the integer 12).
-The collection of parcels (i.e. a parcellation) identifies all the unique brain areas of interest and that image is used in NiBetaSeries.
+There is a wealth of analysis methods we can apply to beta series datasets.
+To summarize our data, we have a beta estimate for each trial within each voxel of the brain,
+resulting in a 4-dimensional dataset.
+Three dimensions make up the brain voxels, and the 4th dimension represents the number of trials.
+For many intents and purposes, the ``4D`` beta series can analyzed similarly to a ``4D``
+resting state dataset where the 4th dimension represents time.
+Traditional analysis strategies applied to resting state such as seed based correlation,
+independent components analysis, regional homogeniety, and graph theory can be applied to
+beta series [@Cole2010;vanWijk2010].
+Recycling these methods for beta series provides a new lens to observe the organization of the brain during a task and may lead to additional insights.
+Graph theoretical and seed based correlation measures often depend on voxels
+being grouped into homogenous "parcels".
+That is, the betas from several voxels in close spatial proximity are averaged together
+to reduce the 20,000 voxels to a couple 100 or fewer parcels.
+Each parcel is labelled with a unique integer in a 3-dimensional parcellation atlas
+(e.g. the voxels within the left insula may all be labelled with the integer 12).
+The collection of parcels--a parcellation--identifies all the unique brain areas of interest and that image is used in NiBetaSeries to provide usable output.
 
 Putting betas and atlas parcellations together, we have a recipe to create betaseries correlations in NiBetaSeries.
-Applying the GLM to the fMRI data outputs voxelwise beta estimates for each trial.
-Then each parcel's voxels (containing the beta estimates) are averaged together in each trial.
-The averaging of beta estimates within each parcel is repeated over all the trials resulting in a list of averaged beta estimates for every parcel.
-Each entry in the list represents a trial.
-The list of betas for each parcel can then be correlated with every other parcel to measure the degree of synchrony between them.
-The correlation matrix can then be used for downstream analysis.
+Applying the GLM to the fMRI data results in voxelwise beta estimates for each trial.
+Voxels are averaged together within each parcel separately for all trials, resulting in a ``2D`` dataset.
+One dimension represents the parcel and the other represents the trial.
+As mentioned above, many graph theoretical measures could be applied, but currently
+NiBetaSeries only performs correlations between parcels.
+Other analysis methods are on the roadmap for NiBetaSeries, which will make the tool
+useful for a variety of scientific questions.
 
 # Overview
 
 NiBetaSeries presents as a command line utility written in python following the template of a BIDS-App [@Gorgolewski2017].
 The primary way for users to interact with NiBetaSeries is by typing `nibs` in the command line.
 The basic workflow of NiBetaSeries follows these steps (the files can be found in the `workflows` directory):
+
 1) `base.py`: read and validate necessary inputs (a minimally processed fMRI file, a brain mask, an events file specifying the onsets, duration, and the trial type, an atlas parcellation, and a table connecting the numbers in the atlas parcellation with names of the regions).
 2) `model.py`: construct and execute GLMs using LSS (with additional confound predictors optionally added) generating a betaseries (a list of betas for each voxel).
 3) `analysis.py`: apply atlas parcellation to data averaging betas within regions for each trial.
