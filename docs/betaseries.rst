@@ -61,15 +61,23 @@ for fast event related designs.
 
 
 Mathematical Background
----------------
+-----------------------
+
 .. math::
+   :label: glm
+
    \begin{equation}
         Y = X\beta + \epsilon
     \end{equation}
 
 The above equation is the general linear model (GLM) presented using
 matrix notation.
-:math:`Y` represents the time-series we are attempting to explain (for a given voxel).
+:math:`Y` represents the time-series we are attempting to explain
+(for a given voxel).
+:math:`X` typically represents the trial(s) of interest that you would like
+to have an estimate.
+For example, I would like to know how the brain responds to red squares, so
+:math:`X` represents the brain response at all time points when a red square was presented.
 The :math:`\beta` assumes any value that minimizes the squared error between
 the modeled data and the actual data, :math:`Y`.
 Finally, :math:`\epsilon` (epsilon) refers to the error that is not captured
@@ -82,9 +90,12 @@ With a couple modifications to the above equation, we arrive at calculating a
 betaseries.
 
 .. math::
+    :label: lsa
+
     \begin{equation}
         Y = X_1\beta_1 + X_2\beta_2 + . . . + X_n\beta_n + \epsilon
     \end{equation}
+
 
 With the betaseries equation, a beta is estimated for every event, instead of
 for each event type (or whatever logical grouping).
@@ -96,13 +107,15 @@ Essentially, this returns a ``4-D`` dataset where the fourth dimension
 represents the number of events instead of time (as the fourth dimension is
 represented in resting state).
 Analogous to resting state data, we can perform correlations between the
-voxels to discern which voxels (or which aggregation of voxels) covary with other voxels.
+voxels to discern which voxels (or which aggregation of voxels)
+covary with other voxels.
 
 There is one final concept to cover in order to understand how the betas are
 estimated in ``NiBetaSeries``.
 You can model individual betas using a couple different strategies;
-"least squares all" (LSA) estimation represented in the above equation,
-or "least squares separate" (LSS) estimatation, in which each event receives its own GLM.
+"least squares all" (LSA) estimation represented in the above equation :eq:`lsa`,
+or "least squares separate" (LSS) estimatation, in which each event receives
+its own GLM.
 The advantage of LSS comes from reducing the colinearity between closely spaced
 events.
 In LSA, if events occurred close in time, it would be difficult to model
@@ -112,24 +125,73 @@ of interest and another for every other event.
 This reduces the colinearity between regressors and makes each beta estimate
 more reliable.
 
+.. highlight:: python
+   :linenothreshold: 5
+
 .. code-block:: python
+    :emphasize-lines: 20,37
 
-   for event, beta in zip(events, betas):
-       data = X[event] * beta + error
+    import numpy as np
 
-This python pseudocode demonstrates LSS where each event
-is given its own model.
+    # the design of the brain response.
+    # each row represents a time point.
+    # each column represents a trial.
+    # the trials overlap each other.
+    X = np.array([[1, 0, 0, 0],
+                  [1, 1, 0, 0],
+                  [0, 1, 1, 0],
+                  [0, 0, 1, 1]])
+
+    # the trial in the order they were seen
+    trial_types = ["red", "blue", "red", "blue"]
+
+    # the observed brain data (transposed so data points are in one column)
+    Y = np.array([[2, 1, 5, 3]]).T
+
+    # least squares all (LSA)
+    # there is one beta estimate per trial
+    lsa_betas, _, _, _ = np.linalg.lstsq(X, Y)
+
+    # least square separate (LSS)
+    lss_betas = []
+    # for each trial...
+    for index, _ in enumerate(trial_types):
+        # select the trial (column) of interest
+        X_interest = X[:,index]
+
+        # select all the other trials (columns) and sum over them to create a single column
+        X_other = np.delete(X, index, axis=1).sum(axis=1)
+
+        # combine the two columns such that:
+        # the first column is the trial of interest
+        # the second column represents all other trials
+        X_trial = np.vstack([X_interest, X_other]).T
+        # solve for the beta estimates
+        betas, _, _, _ = np.linalg.lstsq(X_trial, Y)
+        # add the beta for the trial of interest to the list
+        lss_betas.append(betas[0][0])
+
+
+This python code demonstrates LSA (line 20) and LSS where each event is given its own GLM model.
+Note the GLM model written in python (line 37) has the form as the equation at the
+beginning of "Mathematical Background" :eq:`glm`, but ``X`` (specifically ``X_trial``)
+has the particular representation of one column being the trial of interest and the
+other column being all remaining trials.
+
 
 Relationship to Resting-State Functional Connectivity
------------------------------
-Betaseries is similar to resting-state functional connectivity (time-series correlations) because the same analyses
-typically applied to resting-state data can ostensibly be applied to betaseries.
+-----------------------------------------------------
+
+Betaseries is similar to resting-state functional connectivity (time-series correlations)
+because the same analyses typically applied to resting-state data can ostensibly be applied
+to betaseries.
 At the core of both resting-state functional connectivity and betaseries we are working with
 a vector of numbers at each voxel.
 We can correlate, estimate regional homogeneity, perform independent
 components analysis, or perform a number of different analyses
 with the data in each voxel.
-However, betaseries deviates from the time-series correlations used for resting-state analysis in two important ways.
+However, betaseries deviates from the time-series correlations used for resting-state
+analysis in two important ways.
 First, you can do cognitive subtraction using betaseries.
 Since there is no explicit task in resting state, there are no
 cognitive states to compare.

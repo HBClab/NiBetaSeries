@@ -25,7 +25,8 @@ def test_derivatives_data_sink(base_dir, betaseries_file, corr_csv, preproc_file
         'sub-01',
         'ses-pre',
         'func',
-        'sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym_bold_preproc_trialtype-testCond_matrix.csv')
+        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+         '_bold_preproc_trialtype-testCond_matrix.csv'))
 
     # create and run instance of the interface
     dds = DerivativesDataSink(base_directory=str(base_dir),
