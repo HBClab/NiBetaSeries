@@ -214,7 +214,9 @@ def main():
         )
 
         if opts.graph:
-            nibetaseries_participant_wf.write_graph(graph2use='colored', format='svg', simple_form=True)
+            nibetaseries_participant_wf.write_graph(graph2use='colored',
+                                                    format='svg',
+                                                    simple_form=True)
         try:
             nibetaseries_participant_wf.run(**plugin_settings)
         except RuntimeError as e:

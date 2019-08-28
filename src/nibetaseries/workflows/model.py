@@ -44,7 +44,8 @@ def init_betaseries_wf(name="betaseries_wf",
     hrf_model : str
         hemodynamic response function used to model the data (default: ``glover``)
     low_pass : float or None
-        low pass filter to apply to bold (in Hertz). Reminder - frequencies _lower_ than this number are kept.
+        low pass filter to apply to bold (in Hertz).
+        Reminder - frequencies _lower_ than this number are kept.
     smoothing_kernel : float or None
         The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
     selected_confounds : list or None
@@ -68,7 +69,8 @@ def init_betaseries_wf(name="betaseries_wf",
     -------
 
     betaseries_files
-        One file per trial type, with each file being as long as the number of events for that trial type.
+        One file per trial type, with each file being
+        as long as the number of events for that trial type.
         (assuming the number of trials for any trial type is above 2)
 
     """
