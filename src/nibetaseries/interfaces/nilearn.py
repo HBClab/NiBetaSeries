@@ -20,8 +20,10 @@ class AtlasConnectivityInputSpec(BaseInterfaceInputSpec):
 
 
 class AtlasConnectivityOutputSpec(TraitedSpec):
-    correlation_matrix = File(exists=True, desc='roi-roi fisher z transformed correlation matrix')
-    correlation_fig = File(exists=True, desc='svg of roi-roi fisher z transformed correlation matrix')
+    correlation_matrix = File(exists=True,
+                              desc='roi-roi fisher z transformed correlation matrix')
+    correlation_fig = File(exists=True,
+                           desc='svg of roi-roi fisher z transformed correlation matrix')
 
 
 class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
@@ -59,7 +61,8 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         correlation_matrix_df = pd.DataFrame(correlation_matrix, index=regions, columns=regions)
 
         # do a fisher's r -> z transform
-        fisher_z_matrix_df = correlation_matrix_df.apply(lambda x: (np.log(1 + x) - np.log(1 - x)) * 0.5)
+        fisher_z_matrix_df = correlation_matrix_df.apply(
+            lambda x: (np.log(1 + x) - np.log(1 - x)) * 0.5)
 
         # write out the file.
         out_file = os.path.join(runtime.cwd, 'fisher_z_correlation.tsv')
@@ -80,9 +83,10 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         n_lines = int(np.sum(connmat > 0) / 2)
         fig = plt.figure(figsize=(5, 5))
 
-        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title, fontsize_title=10,
-                                 facecolor='white', textcolor='black', colormap='jet', colorbar=1,
-                                 node_colors=['black'], node_edgecolor=['white'], show=False, interactive=False)
+        plot_connectivity_circle(connmat, labels, n_lines=n_lines, fig=fig, title=title,
+                                 fontsize_title=10, facecolor='white', textcolor='black',
+                                 colormap='jet', colorbar=1, node_colors=['black'],
+                                 node_edgecolor=['white'], show=False, interactive=False)
 
         fig.savefig(outfile, dpi=300)
         self._results['correlation_fig'] = outfile

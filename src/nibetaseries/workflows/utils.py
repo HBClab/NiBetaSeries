@@ -54,9 +54,12 @@ def collect_data(layout, participant_label, ses=None,
         preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
 
         file_queries = {
-            'brainmask': _combine_dict(preproc_dict, {'type': 'brainmask', 'extensions': ['nii', 'nii.gz']}),
-            'confounds': _combine_dict(preproc_dict_ns, {'type': 'confounds', 'extensions': '.tsv'}),
-            'events': _combine_dict(preproc_dict_ns, {'type': 'events',  'extensions': '.tsv'}),
+            'brainmask': _combine_dict(preproc_dict, {'type': 'brainmask',
+                                                      'extensions': ['nii', 'nii.gz']}),
+            'confounds': _combine_dict(preproc_dict_ns, {'type': 'confounds',
+                                                         'extensions': '.tsv'}),
+            'events': _combine_dict(preproc_dict_ns, {'type': 'events',
+                                                      'extensions': '.tsv'}),
         }
 
         try:
@@ -69,7 +72,8 @@ def collect_data(layout, participant_label, ses=None,
         query_res['preproc'] = preproc.filename
 
         # get metadata for the preproc
-        bold_query = _combine_dict(preproc_dict_ns, {'type': 'bold', 'extensions': ['nii', 'nii.gz']})
+        bold_query = _combine_dict(preproc_dict_ns, {'type': 'bold',
+                                                     'extensions': ['nii', 'nii.gz']})
         bold_file = layout.get(**bold_query)[0].filename
 
         query_res['metadata'] = layout.get_metadata(bold_file)
