@@ -31,10 +31,10 @@ That is to say if region A and region B both show high activity on trial 1, low 
 
 To understand NiBetaSeries we need to answer two questions: what is a "beta" (or parameter estimate) and what is an "atlas parcellation"?
 We have already mentioned betas by another name, activation/deactivation.
-The term beta comes from its use in the Generalized Linear Model (GLM), a family of statistical models that is used to fit non-normal/non-gaussian data.
-fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modelled with a double-gamma function (e.g. not a gaussian/normal function).
-The peak of the gamma curve (i.e. activation/deactivation) is determined by the beta coefficient.
-Thus larger betas mean greater activation, and smaller or negative betas mean less activation or deactivation.
+The term beta comes from its use in the General Linear Model (GLM), an extension of regression.
+fMRI signal evoked by a stimulus follows a relatively stereotyped shape from the Blood Oxygen Level Dependent (BOLD) response, which is best modelled with a double-gamma function.
+The overall amplitude (i.e. activation/deactivation) of the double gamma function is determined by the beta coefficient.
+Thus larger betas mean greater activation, and smaller or negative betas mean less activation or deactivation relative to a baseline.
 Traditional fMRI analysis will group together all the relevant trial types and give them all one beta estimate, where variance between trials is treated as noise.
 NiBetaSeries, on the other hand, gives each trial its own beta estimate treating the variance between trials as the signal of interest.
 The final complication to understand betas is the multiple methods we can use to derive individual beta estimates.
