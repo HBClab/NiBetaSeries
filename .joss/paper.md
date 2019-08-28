@@ -47,7 +47,7 @@ For each trial, a GLM is created where one predictor is the trial of interest an
 This reduces the amount of overlap (or more accurately correlation) between predictors, leading to more reliable individual beta estimates.
 NiBetaSeries currently implements LSS making it an ideal candidate for experiments with trials that occur closer together (e.g. 3-7 seconds apart on average).
 
-The second question of what an atlas parcellation is will hopefully be easier to explain.
+The second question of what an atlas parcellation will hopefully be easier to explain.
 The brain can be cut up in many ways, either via anatomical landmarks, by which regions are activated by a task of theoretical interest, by how the brain organizes itself when not engaged in any external task, or any number of other creative methods.
 Once we have selected our parcellation method, we need to label which voxels belongs to which parcel.
 A voxel is shortened from the term volumetric pixel, unlike typical pictures our brain images are 3 dimensional, so in order to account for the volume we use 3D voxels instead of 2D pixels.
