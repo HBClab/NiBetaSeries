@@ -61,15 +61,23 @@ for fast event related designs.
 
 
 Mathematical Background
----------------
+-----------------------
+
 .. math::
+   :label: glm
+
    \begin{equation}
         Y = X\beta + \epsilon
     \end{equation}
 
 The above equation is the general linear model (GLM) presented using
 matrix notation.
-:math:`Y` represents the time-series we are attempting to explain (for a given voxel).
+:math:`Y` represents the time-series we are attempting to explain
+(for a given voxel).
+:math:`X` typically represents the trial(s) of interest that you would like
+to have an estimate.
+For example, I would like to know how the brain responds to red squares, so
+:math:`X` represents the brain response at all time points when a red square was presented.
 The :math:`\beta` assumes any value that minimizes the squared error between
 the modeled data and the actual data, :math:`Y`.
 Finally, :math:`\epsilon` (epsilon) refers to the error that is not captured
@@ -82,9 +90,12 @@ With a couple modifications to the above equation, we arrive at calculating a
 betaseries.
 
 .. math::
+    :label: lsa
+
     \begin{equation}
         Y = X_1\beta_1 + X_2\beta_2 + . . . + X_n\beta_n + \epsilon
     \end{equation}
+
 
 With the betaseries equation, a beta is estimated for every event, instead of
 for each event type (or whatever logical grouping).
@@ -96,13 +107,15 @@ Essentially, this returns a ``4-D`` dataset where the fourth dimension
 represents the number of events instead of time (as the fourth dimension is
 represented in resting state).
 Analogous to resting state data, we can perform correlations between the
-voxels to discern which voxels (or which aggregation of voxels) covary with other voxels.
+voxels to discern which voxels (or which aggregation of voxels)
+covary with other voxels.
 
 There is one final concept to cover in order to understand how the betas are
 estimated in ``NiBetaSeries``.
 You can model individual betas using a couple different strategies;
-"least squares all" (LSA) estimation represented in the above equation,
-or "least squares separate" (LSS) estimatation, in which each event receives its own GLM.
+"least squares all" (LSA) estimation represented in the above equation :eq:`lsa`,
+or "least squares separate" (LSS) estimatation, in which each event receives
+its own GLM.
 The advantage of LSS comes from reducing the colinearity between closely spaced
 events.
 In LSA, if events occurred close in time, it would be difficult to model
