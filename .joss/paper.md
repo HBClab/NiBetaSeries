@@ -10,9 +10,14 @@ authors:
   - name: James D. Kent
     orcid: 0000-0002-4892-2659
     affiliation: 1
+  - name: Peer Herholz
+    orcid: 0000-0002-9840-6257
+    affiliation: 2
 affiliations:
  - name: Neuroscience Program, University of Iowa
    index: 1
+ - name: Montréal Neurological Institute
+   index: 2
 date: 30 January 2019
 bibliography: paper.bib
 ---
