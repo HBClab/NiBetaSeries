@@ -28,7 +28,7 @@ You may not be aware of it, but your brain is orchestrating a complex ballet of 
 Whether it is following a dot, reading a sentence, interpreting what response is required when presented with a red square; the brain is evaluating input and sending motoric output to perform optimally/efficiently.
 We can measure and analyze this flurry of activity using functional Magnetic Resonance Imaging (fMRI).
 Traditional fMRI analysis emphasizes what regions are "activated/deactivated" during a task, but does not provide information on which regions are acting in synchrony or are being segregated.
-Knowing the synchronous/segregated regions during a task gives insights on the potential organization of the brain.
+Knowing the synchronous/segregated brain regions during a task gives insights on the potential organization of the brain.
 NiBetaSeries seeks to fill this gap by providing a method to measure how activation/deactivation
 patterns between brain regions are correlated across trials.
 That is to say if region A and region B both show high activity on trial 1, low activity on trial 2, medium activity on trial 3, and so on, then these two regions are highly correlated.
