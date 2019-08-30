@@ -10,9 +10,14 @@ authors:
   - name: James D. Kent
     orcid: 0000-0002-4892-2659
     affiliation: 1
+  - name: Peer Herholz
+    orcid: 0000-0002-9840-6257
+    affiliation: 2
 affiliations:
  - name: Neuroscience Program, University of Iowa
    index: 1
+ - name: Montréal Neurological Institute
+   index: 2
 date: 30 January 2019
 bibliography: paper.bib
 ---
@@ -22,9 +27,10 @@ bibliography: paper.bib
 You may not be aware of it, but your brain is orchestrating a complex ballet of activity while reading this sentence.
 Whether it is following a dot, reading a sentence, interpreting what response is required when presented with a red square; the brain is evaluating input and sending motoric output to perform optimally/efficiently.
 We can measure and analyze this flurry of activity using functional Magnetic Resonance Imaging (fMRI).
-Traditional fMRI analysis emphasizes what regions are "activated/deactivated" during a task, but does not provide information on which regions are acting in synchrony.
-Knowing what regions are synchronous during a task gives insights on the potential organization of the brain.
-NiBetaSeries seeks to fill this gap by providing a method to measure how activation patterns between brain regions are correlated across trials.
+Traditional fMRI analysis emphasizes what regions are "activated/deactivated" during a task, but does not provide information on which regions are acting in synchrony or are being segregated.
+Knowing the synchronous/segregated brain regions during a task gives insights on the potential organization of the brain.
+NiBetaSeries seeks to fill this gap by providing a method to measure how activation/deactivation
+patterns between brain regions are correlated across trials.
 That is to say if region A and region B both show high activity on trial 1, low activity on trial 2, medium activity on trial 3, and so on, then these two regions are highly correlated.
 
 # Background
@@ -38,7 +44,7 @@ Thus larger betas mean greater activation, and smaller or negative betas mean le
 Traditional fMRI analysis will group together all the relevant trial types and give them all one beta estimate, where variance between trials is treated as noise.
 NiBetaSeries, on the other hand, gives each trial its own beta estimate treating the variance between trials as the signal of interest.
 With the concept of a beta under our belt, The final complication is the multiple methods we can use to derive individual beta estimates.
-Two common methods are least squares all (LSA) and least squares separate (LSS).
+Two common methods are least squares all (LSA) and least squares separate (LSS) [@Mumford2012;@Turner2012a].
 LSA places all the trials in the same GLM, where each trial is a separate predictor.
 LSA works well when the trials are far apart in time since the BOLD response takes a long time to return to baseline.
 When the trials are close together, however, the bold responses start to overlap and the GLM cannot accurately attribute the variance in the fMRI data to trial 1 or trial 2, leading to unreliable beta estimates.
@@ -79,6 +85,8 @@ useful for a variety of scientific questions.
 # Overview
 
 NiBetaSeries presents as a command line utility written in python following the template of a BIDS-App [@Gorgolewski2017].
+NiBetaSeries is available on [pypi](https://pypi.org/project/nibetaseries/) and as an container
+on [dockerhub](https://hub.docker.com/r/hbclab/nibetaseries) with [comprehensive documentation](https://nibetaseries.readthedocs.io/en/latest/) complete with interactive examples.
 The primary way for users to interact with NiBetaSeries is by typing `nibs` in the command line.
 The basic workflow of NiBetaSeries follows these steps (the files can be found in the `workflows` directory):
 

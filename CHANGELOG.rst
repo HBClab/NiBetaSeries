@@ -1,9 +1,45 @@
 .. _changelog:
 
+0.3.0 (August 29, 2019)
+=======================
+
+Thanks to @PeerHerholz and @njvack for their contributions on this release.
+Special thanks to @snastase for being a great reviewer and improving the project
+overall.
+This release is special because it will be published in the
+Journal of Open Source Software (JOSS).
+One condition of this is that the authors on the paper be the only authors in the zenodo file.
+I will modify the authors listed on the zenodo file for this release,
+but I will add all contributors back on for the subsequent release.
+
+* [ENH] reduce focus on parcellations (#179) @jdkent
+* [FIX] generalized -> general linear model description (#178) @jdkent
+* [DOC] Add math (#177) @jdkent
+* [FIX] remove .git from the binder url (#175) @jdkent
+* [FIX] add pypiwin32 as conditional dependency (#173) @jdkent
+* [FIX] add readthedocs config file (#174) @jdkent
+* [DOC] Minor changes to documentation text (#163) @snastase
+* [MAINT] fix tagging/pushing docker images (#160) @jdkent
+* [FIX] binder ci triggers (#159) @jdkent
+* [ENH] add binder (#158) @jdkent
+* [MAINT] Change Install Strategy (#157) @jdkent
+* [DOC] Clarify Documentation (#156) @jdkent
+* [FIX] Only hyphens for commandline parameters (#155) @jdkent
+* [DOC] add concrete example of nibs (#154) @jdkent
+* [DOC] add references (#153) @jdkent
+* [MAINT] build docs on circleci (#152) @jdkent
+* [MAINT] temporary fix to dockerfile (#150) @jdkent
+* [MAINT] require python3 (#147) @jdkent
+* [ENH] add visualizations (#148) @jdkent
+* [ENH] Add Docker and Singularity Support (#140) @PeerHerholz
+* [DOC] edit docs (#142) @jdkent
+* [DOC] Tiny tweak to README (#141) @njvack
+* [WIP] JOSS Paper (#122) @jdkent
+
 0.2.3 (January 29, 2019)
 ========================
 
-Various documentation and testing changes. 
+Various documentation and testing changes.
 We will be using readthedocs going forward and not doctr.
 
 * [FIX] Remove high_pass references from documentation (#90) @RaginSagan
@@ -48,7 +84,7 @@ my workflow for making releases.
 * [FIX] connect derivative outputs (#61) @jdkent
 * [FIX] add CODEOWNERS file (#63) @jdkent
 * [FIX] Fix pull request template (#65) @kristianeschenburg
-* [ENH]Update CONTRIBUTING.rst (#66) @PeerHerholz
+* [ENH] Update CONTRIBUTING.rst (#66) @PeerHerholz
 * [FIX] ignore sourcedata and derivatives directories in layout (#69) @jdkent
 * [DOC] Added zenodo file (#70) @ctoroserey
 * [FIX] file logic (#71) @jdkent
@@ -66,39 +102,39 @@ my workflow for making releases.
 * [MGT] simplify and create deployment (#79)
 * [TST] Add more tests (#78)
 * [ENH] Reword docs (#77)
-* [ENH]: allow confounds to be none (#76)
-* various fixes for a real dataset (#75)
-* [FIX]: Find metadata (#74)
+* [ENH] allow confounds to be none (#76)
+* [FIX] various fixes for a real dataset (#75)
+* [FIX] Find metadata (#74)
 * [FIX] confound removal (#72)
-* [WIP, FIX]: file logic (#71)
+* [WIP,FIX]: file logic (#71)
 * [DOC] Added zenodo file (#70)
-* [FIX]: ignore sourcedata and derivatives directories in layout (#69)
-* Update CONTRIBUTING.rst (#66)
-* Fix pull request template (#65)
-* FIX: add CODEOWNERS file (#63)
-* FIX: connect derivative outputs (#61)
-* run versioneer install (#60)
-* Fix issue #29: Add link to Zenodo DOI (#57)
-* Fix issue #45: conform colors of labels (#56)
-* fix links in readme.rst (#55)
-* Added code of conduct (#53)
-* Add link to contributing in README (#52)
-* removed acknowledgments section of pull request template (#50)
-* [TST]: Add functional test (#49)
-* [FIX]: remove references to bootstrap (#48)
-* FIX: test remove base .travis.yml (#47)
-* removed data directory (#40)
-* Add pull request template (#41)
-* Update issue templates (#44)
-* Update contributing (#43)
-* README (where's the beef?) (#37)
-* change jdkent to HBClab (#38)
-* [FIX]: pass tests (#14)
-* [ENH]: improve docs (#13)
-* add documentation (#11)
-* FIX: add graph (#10)
-* Refactor NiBetaSeries (#9)
-* Refactor (#2)
+* [FIX] ignore sourcedata and derivatives directories in layout (#69)
+* [DOC] Update CONTRIBUTING.rst (#66)
+* [FIX] Fix pull request template (#65)
+* [FIX] add CODEOWNERS file (#63)
+* [FIX] connect derivative outputs (#61)
+* [MAINT] run versioneer install (#60)
+* [FIX] Fix issue #29: Add link to Zenodo DOI (#57)
+* [FIX] Fix issue #45: conform colors of labels (#56)
+* [DOC] fix links in readme.rst (#55)
+* [DOC] Added code of conduct (#53)
+* [DOC] Add link to contributing in README (#52)
+* [DOC] removed acknowledgments section of pull request template (#50)
+* [TST] Add functional test (#49)
+* [FIX] remove references to bootstrap (#48)
+* [FIX] test remove base .travis.yml (#47)
+* [ENH] removed data directory (#40)
+* [ENH] Add pull request template (#41)
+* [ENH] Update issue templates (#44)
+* [DOC] Update contributing (#43)
+* [DOC] README (where's the beef?) (#37)
+* [MAINT] change jdkent to HBClab (#38)
+* [FIX] pass tests (#14)
+* [ENH] improve docs (#13)
+* [DOC] add documentation (#11)
+* [FIX] add graph (#10)
+* [ENH] Refactor NiBetaSeries (#9)
+* [ENH] Refactor (#2)
 
 
 0.1.0 (2018-06-08)
