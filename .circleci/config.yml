@@ -217,6 +217,8 @@ workflows:
     jobs:
       - build_docker:
           filters:
+            branches:
+              only: /.*/
             tags:
               only: /^v.*/
 
@@ -224,6 +226,8 @@ workflows:
           requires:
             - build_docker
           filters:
+            branches:
+              only: /.*/
             tags:
               only: /^v.*/    
         
@@ -231,6 +235,8 @@ workflows:
           requires:
             - build_docker
           filters:
+            branches:
+              only: /.*/
             tags:
               only: /^v.*/
 
