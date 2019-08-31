@@ -24,8 +24,11 @@ include versioneer.py
 prune .github
 prune .joss
 prune .circleci
+prune .vscode
 global-exclude *.py[cod] __pycache__ *.so *.dylib
 
 exclude *.sh
 exclude Dockerfile
+exclude .dockerignore
+exclude Dockerfile_devel
 
