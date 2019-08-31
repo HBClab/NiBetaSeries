@@ -73,7 +73,7 @@ setup(
     ],
     extras_require={
         'test': ['tox',
-                 'pytest',
+                 'pytest~=5.0.1',
                  'pytest-travis-fold',
                  'pytest-cov'],
         'dev': ['check-manifest',
