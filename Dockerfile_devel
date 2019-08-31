@@ -1,0 +1,50 @@
+FROM hbclab/nibetaseries:unstable
+
+USER root
+
+ARG DEBIAN_FRONTEND="noninteractive"
+
+# net-tools needed for code-server
+RUN apt-get update &&\
+    apt-get install -y \
+        net-tools \
+        git
+
+ENV SHELL=/bin/bash
+
+# necessary to find nibetaseries in /src/nibetaseries
+ENV PYTHONNOUSERSITE=0
+
+USER neuro
+
+RUN /bin/bash -c "cd /src/nibetaseries &&\
+    conda init bash &&\
+    source /home/neuro/.bashrc &&\
+    source activate neuro_py36 &&\
+    pip install --no-use-pep517 -e .[test,dev,doc,nb]"
+
+USER root
+
+RUN cp -R /src/nibetaseries/src/nibetaseries.egg-info /src/
+
+# set up code-server (need net-tools for initialization)
+RUN curl -o /tmp/code-server.tar.gz -SL https://github.com/cdr/code-server/releases/download/2.preview.11-vsc1.37.0/code-server2.preview.11-vsc1.37.0-linux-x86_64.tar.gz
+
+RUN mkdir /src/codeserver &&\
+    tar -xvf /tmp/code-server.tar.gz -C /src/codeserver --strip-components=1 
+
+USER neuro
+
+RUN /src/codeserver/code-server --install-extension eamodio.gitlens &&\
+    /src/codeserver/code-server --install-extension ms-python.python 
+
+ENTRYPOINT ["/src/codeserver/code-server", "/src/nibetaseries"]
+
+# usage example (assuming in local nibetaseries directory):
+#
+# docker run -it \
+# -p 127.0.0.1:8445:8080 \
+# -v ${PWD}:/src/nibetaseries \
+# nibetaseries_devel:latest
+#
+# then type 127.0.0.1:8445 in your browser address bar
