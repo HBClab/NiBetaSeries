@@ -215,22 +215,25 @@ workflows:
   version: 2
   build_test_deploy:
     jobs:
-      - build_docker
+      - build_docker:
           filters:
             tags:
               only: /^v.*/
+
       - tox_docker:
           requires:
             - build_docker
           filters:
             tags:
-              only: /^v.*/            
+              only: /^v.*/    
+        
       - build_docs:
           requires:
             - build_docker
           filters:
             tags:
               only: /^v.*/
+
       - build_binder:
           requires:
             - build_docker
@@ -240,6 +243,7 @@ workflows:
                 - master
             tags:
               only: /^v.*/
+
       - deploy_docker:
           context: hbclab
           requires:
