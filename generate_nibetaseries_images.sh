@@ -20,7 +20,7 @@ generate_docker() {
     --run 'chown -R neuro:users /src/nibetaseries' \
     --user=neuro \
     --workdir /src/nibetaseries \
-    --run 'pip install --no-cache-dir .' \
+    --run '. activate neuro_py36 && pip install --no-cache-dir .[test,dev,doc,nb]' \
     --run 'mkdir -p ~/.jupyter && echo c.NotebookApp.ip = \"0.0.0.0\" > ~/.jupyter/jupyter_notebook_config.py' \
     --workdir /home/neuro
 
