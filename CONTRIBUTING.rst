@@ -447,7 +447,7 @@ Code-Server Development Environment Features
   - see `vscode debugging python <https://code.visualstudio.com/docs/python/debugging>`_
     for details.
 
-- The ``gitlens`` and ``python`` extensions are preinstalled to improve
+- The ``gitlens``, ``python``, and ``restructuredtext`` extensions are preinstalled to improve
   the development experience in vscode.
 
 Docker Toolbox Instructions
