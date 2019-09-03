@@ -267,7 +267,7 @@ When you're done making changes, run all the checks, doc builder and spell check
 First you will install all the development requirements
 for the project with pip::
 
-    pip install .[test]
+    pip install -e .[test]
 
 Then you can run tox by simply typing::
 
