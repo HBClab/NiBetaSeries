@@ -15,12 +15,14 @@ include *.enc
 include LICENSE
 include *.rst
 include *.yml
+include *.toml
 
 include tox.ini .travis.yml
 recursive-include tests *.py
 
 include versioneer.py
 
+prune scripts
 prune .github
 prune .joss
 prune .circleci
