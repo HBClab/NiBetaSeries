@@ -39,6 +39,14 @@ jobs:
               -t hbclab/nibetaseries:unstable \
               --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
               --build-arg VCS_REF=$(git rev-parse --short HEAD) .
+            # test if development image should be built
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[build[ _]?devel\]' )" != "" ]]; then
+              echo "building development container"
+              docker build \
+                --rm=false \
+                -t hbclab/nibetaseries_devel \
+                -f Dockerfile_devel .
+            fi
       - run:
           name: Test Docker image
           command: |
