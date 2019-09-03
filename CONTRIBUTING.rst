@@ -257,7 +257,8 @@ Example::
 
 If you are making significant changes to the code, you may wish
 to setup a local development environment.
-Checkout the `code-server <#code-server-development>`__ section for details.
+Checkout the `code-server <#code-server-development>`__ section for one
+option on setting up a local development environment.
 
 5. Run the tests
 ~~~~~~~~~~~~~~~~
@@ -378,11 +379,17 @@ our development docker image::
 ~~~~~~~~~~~~~~~~~~~~~~~
 We can start a docker container using the image we built (``nibetaseries_devel``)::
 
-    $ docker run -it -p 127.0.0.1:8445:8080 -v ${PWD}:/src/nibetaseries nibetaseries_devel:latest
+    $ docker run -it \
+      -p 127.0.0.1:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      nibetaseries_devel:latest
 
 or with Docker Toolbox, we can start a docker container with the command::
 
-    $ docker run -it -p 192.168.99.100:8445:8080 -v ${PWD}:/src/nibetaseries
+    $ docker run -it \
+      -p 192.168.99.100:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      nibetaseries_devel:latest
 
 .. Note::
     If you are using windows shell, ${PWD} may not be defined, instead use the absolute
@@ -391,6 +398,34 @@ or with Docker Toolbox, we can start a docker container with the command::
 .. Note::
     If you are using Docker Toolbox, you will need to change your virtualbox settings
     using `these steps as a guide <#docker-toolbox-instructions>`_.
+
+If you want your git configurations inside the container, so you do not need to specify
+your email or username, you can add the following option to your Docker command: 
+``-v ${HOME}/.gitconfig:/home/neuro/.gitconfig``.
+
+Furthermore, if you do not want to type your password everytime you push changes to
+Github, you can store your credentials in a file named ``.git-credentials``.
+Github has wonderful `instructions to create a personal access token
+<https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line>`_ to store
+in credentials. 
+The token just needs access to the ``repo``.
+Once you have your ``API-TOKEN``, you can create a file named ``.git-credentials``
+with contents that would look like this:
+``https://jdkent:API-TOKEN@github.com``, where ``API-TOKEN`` is replaced with your string
+of letters and numbers and ``jdkent`` is replaced with your github user name.
+Finally, to pass ``.git-credentials`` to the Docker container, you will add the following option
+to your Docker command:
+``-v ${HOME}/.git-credentials:/home/neuro/.git-credentials``
+
+Thus a fully featured Docker command may look like this::
+
+    $ docker run -it \
+      -p 127.0.0.1:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      -v ${HOME}/.gitconfig:/home/neuro/.gitconfig \
+      -v ${HOME}/.git-credentials:/home/neuro/.git-credentials \
+      nibetaseries_devel:latest
+
 
 If the container started correctly, you should see the following on your console::
 
