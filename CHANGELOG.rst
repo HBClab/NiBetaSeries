@@ -1,16 +1,27 @@
 .. _changelog:
 
+0.3.1 (September 04, 2019)
+==========================
+
+Changes to installation and documentation, but no functional code changes.
+This release is special because it will be published in the
+Journal of Open Source Software (JOSS).
+One condition of this is that the authors on the paper be the only authors in the zenodo file.
+I will modify the authors listed on the zenodo file for this release,
+but I will add all contributors back on for the subsequent release.
+
+* [DOC] address review comments (#185) @jdkent
+* [DOC] add everyone to contributors in the zenodo file (#188) @jdkent
+* [MAINT] Change Installation Method (#187) @jdkent
+* [ENH] add code server (#182) @jdkent
+* [MAINT] build tags (#183) @jdkent
+
 0.3.0 (August 29, 2019)
 =======================
 
 Thanks to @PeerHerholz and @njvack for their contributions on this release.
 Special thanks to @snastase for being a great reviewer and improving the project
 overall.
-This release is special because it will be published in the
-Journal of Open Source Software (JOSS).
-One condition of this is that the authors on the paper be the only authors in the zenodo file.
-I will modify the authors listed on the zenodo file for this release,
-but I will add all contributors back on for the subsequent release.
 
 * [ENH] reduce focus on parcellations (#179) @jdkent
 * [FIX] generalized -> general linear model description (#178) @jdkent
@@ -137,7 +148,7 @@ my workflow for making releases.
 * [ENH] Refactor (#2)
 
 
-0.1.0 (2018-06-08)
-==================
+0.1.0 (June 08, 2018)
+=====================
 
 * First release on PyPI.
