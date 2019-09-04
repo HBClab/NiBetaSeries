@@ -52,7 +52,7 @@ experiments with trials that occur closer together (e.g., 3-7 seconds apart on a
 The output of LSA or LSS is a beta series for each voxel in our dataset.
 
 There is a wealth of analysis methods applicable to beta series datasets.
-To recap the structure of our data, we have a beta estimate for each trial within every voxel in the brain, resulting in a 4-dimensional dataset.
+To recap the structure of our data, we have a beta estimate for each trial within every voxel in the brain, resulting in a 4-dimensional (`4D`) dataset.
 Three dimensions are brain voxels, and the 4th dimension represents the number of trials.
 For many intents and purposes, the `4D` beta series can analyzed similarly to a `4D`
 resting state dataset where the 4th dimension represents time.
