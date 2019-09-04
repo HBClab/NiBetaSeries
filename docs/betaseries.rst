@@ -1,23 +1,23 @@
 .. _betaseries:
 
-==========
-Betaseries
-==========
+===========
+Beta series
+===========
 
-This covers the conceptual background of betaseries analysis;
+This covers the conceptual background of beta series analysis;
 check out :ref:`usage` for more on how to use NiBetaSeries.
 
 Introduction
 ------------
-Betaseries track the event-to-event hemodynamic fluctuations
+Beta series track the event-to-event hemodynamic fluctuations
 modeled in task functional magnetic resonance imaging (task fMRI).
-Betaseries fills an important analytical gap between measuring hemodynamic
+Beta series fills an important analytical gap between measuring hemodynamic
 fluctuations in resting-state fMRI and measuring regional activations
 via cognitive subtraction in task fMRI.
 
 Conceptual Background
 ---------------------
-Jesse Rissman :cite:`d-Rissman2004` was the first to publish on betaseries
+Jesse Rissman :cite:`d-Rissman2004` was the first to publish on beta series
 correlations, describing their usage in a working memory task.
 In this task, participants saw a cue, a delay, and a probe, all occurring
 within a short time period.
@@ -29,7 +29,7 @@ takes approximately six seconds to reach its peak, and generally takes over
 The events within the events occur too close to each other to discern what
 brain responses are related to encoding the cue, the delay, or the probe.
 To discern how the activated brain regions form networks, Rissman
-computed betaseries correlations.
+computed beta series correlations.
 Instead of having a single regressor to describe all the cue events,
 a single regressor for all the delay events, and a single regressor for all the
 probe events (as is done in traditional task analysis),
@@ -41,23 +41,31 @@ Once you calculate a beta estimate for each event of a given type
 (e.g., cue), you will have a four-dimensional dataset where each volume
 represents the beta estimates for a particular event.
 
-Having one regressor per event in a single model is known as "least squares all".
-This method, however, has limitations in the context of fast event related
+Having one regressor per event in a single model is known as "least squares all" (LSA).
+This method, however, has limitations in the context of fast event-related
 designs (e.g., designs where the events occur between 3-6
 seconds apart on average).
 Since each event has its own regressor, events that occur very close in time
-are colinear (e.g. are very overlapping).
-Benjamin Turner :cite:`d-Turner2012a` derived a solution for
-the high colinearity observed in least sqaures all by using another
-type of regression known as "least squares separate".
+are collinear (e.g. are very overlapping).
+
+Jeanette Mumford :cit:`d-Mumford2012` derived a solution for
+the high collinearity observed in least squares all by using another
+type of regression known as "least squares separate" (LSS).
 Instead of having one general linear model (GLM) with a regressor per event,
 least squares separate implements a GLM per event with only two regressors:
 1) one for the event of interest, and 2) one for every other event in the
 experiment.
-This process reduces the colinearity of the regressors and creates a more valid
-estimate of how each regressor fits the data.
-NiBetaSeries uses "least squares separate" and is thus optimized
-for fast event related designs.
+This process reduces the collinearity of the regressors and creates a more valid
+estimate for each trial, but also combines all other conditions
+within the design matrix, which will reduce model fit.
+
+Benjamin Turner :cite:`d-Turner2012a` improved upon the LSS method by retaining
+the original conditions in the design matrix.
+In this updated version, the individual trial's design matrix is almost the same
+as the original design matrix, except that the trial is separated out into its
+own regressor.
+NiBetaSeries uses this updated "least squares separate" method and is thus optimized
+for fast event-related designs.
 
 
 Mathematical Background
@@ -74,7 +82,7 @@ The above equation is the general linear model (GLM) presented using
 matrix notation.
 :math:`Y` represents the time-series we are attempting to explain
 (for a given voxel).
-:math:`X` typically represents the trial(s) of interest that you would like
+:math:`X` typically represents the trial(s) of interest for which you would like
 to have an estimate.
 For example, I would like to know how the brain responds to red squares, so
 :math:`X` represents the brain response at all time points when a red square was presented.
@@ -82,12 +90,12 @@ The :math:`\beta` assumes any value that minimizes the squared error between
 the modeled data and the actual data, :math:`Y`.
 Finally, :math:`\epsilon` (epsilon) refers to the error that is not captured
 by the model.
-In a typical a GLM, event-to-event betas may be averaged for a given event type
+In a typical GLM, event-to-event betas may be averaged for a given event type
 and the variance is treated as noise.
 However, those event-to-event fluctuations may also contain important
 information the typical GLM will ignore/penalize.
 With a couple modifications to the above equation, we arrive at calculating a
-betaseries.
+beta series.
 
 .. math::
     :label: lsa
@@ -97,10 +105,9 @@ betaseries.
     \end{equation}
 
 
-With the betaseries equation, a beta is estimated for every event, instead of
+With the beta series equation, a beta is estimated for every event, instead of
 for each event type (or whatever logical grouping).
-This yields a series of event betas for a single event
-type.
+This yields a series of event betas for a single event type.
 This operation is completed for all voxels, giving us as many lists of betas
 as there are voxels in the data.
 Essentially, this returns a ``4-D`` dataset where the fourth dimension
@@ -114,15 +121,15 @@ There is one final concept to cover in order to understand how the betas are
 estimated in ``NiBetaSeries``.
 You can model individual betas using a couple different strategies;
 "least squares all" (LSA) estimation represented in the above equation :eq:`lsa`,
-or "least squares separate" (LSS) estimatation, in which each event receives
+or "least squares separate" (LSS) estimation, in which each event receives
 its own GLM.
-The advantage of LSS comes from reducing the colinearity between closely spaced
+The advantage of LSS comes from reducing the collinearity between closely spaced
 events.
 In LSA, if events occurred close in time, it would be difficult to model
 whether the fluctuations should be attributed to one event or the other.
 LSS reduces this ambiguity by only having two regressors: one for the event
 of interest and another for every other event.
-This reduces the colinearity between regressors and makes each beta estimate
+This reduces the collinearity between regressors and makes each beta estimate
 more reliable.
 
 .. highlight:: python
@@ -182,36 +189,36 @@ other column being all remaining trials.
 Relationship to Resting-State Functional Connectivity
 -----------------------------------------------------
 
-Betaseries is similar to resting-state functional connectivity (time-series correlations)
+Beta series connectivity analysis is similar to resting-state functional
+connectivity (time-series correlations)
 because the same analyses typically applied to resting-state data can ostensibly be applied
-to betaseries.
-At the core of both resting-state functional connectivity and betaseries we are working with
+to beta series.
+At the core of both resting-state functional connectivity and beta series we are working with
 a vector of numbers at each voxel.
 We can correlate, estimate regional homogeneity, perform independent
 components analysis, or perform a number of different analyses
 with the data in each voxel.
-However, betaseries deviates from the time-series correlations used for resting-state
+However, beta series deviates from the time-series correlations used for resting-state
 analysis in two important ways.
-First, you can do cognitive subtraction using betaseries.
+First, you can do cognitive subtraction using beta series.
 Since there is no explicit task in resting state, there are no
 cognitive states to compare.
-Second, the interpretations of
-resting-state connectivity and betaseries differ.
+Second, the interpretations of resting-state connectivity and beta series differ.
 Resting state measures the unmodelled hemodynamic fluctuations that occur
 without explicit stimuli or task.
-Betaseries, on the other hand, measures the modelled hemodynamic fluctuations
+Beta series, on the other hand, measures the modelled hemodynamic fluctuations
 that occur in response to an explicit stimulus.
-Both resting-state analyses and betaseries may measure intrinsic connectivity
+Both resting-state analyses and beta series may measure intrinsic connectivity
 (e.g., the functional structure of the brain independent of task),
-but betaseries may also measure the task evoked connectivity
+but beta series may also measure the task-evoked connectivity
 (e.g., connectivity between regions that is increased during some
 cognitive process).
 
 Relationship to Traditional Task Analysis
 -----------------------------------------
-Betaseries is also similar to traditional task analysis because
+Beta series is also similar to traditional task analysis because
 cognitive subtraction can be used in both.
-As with resting-state analysis, betaseries deviates from traditional task analysis
+As with resting-state analysis, beta series deviates from traditional task analysis
 in several important ways.
 Say we are interested in observing how the brain responds to faces
 versus houses.
@@ -221,17 +228,17 @@ That timestamp information is typically convolved with a hemodynamic
 response function (HRF) to represent how the brain stereotypically responds to
 any stimulus resulting in a model of how we expect the brain to respond
 to places and/or faces.
-This is where traditional task analysis and betaseries diverge.
+This is where traditional task analysis and beta series diverge.
 In traditional task analysis all the face events are estimated at once,
 giving one summary measure for how strongly each voxel was activated
 (same for house events).
 The experimenter can subtract the summary measure of faces from houses
 to see which voxels are more responsive to houses relative to faces
 (i.e., cognitive subtraction).
-In betaseries analysis, each event is estimated separately and each voxel has as many
+In beta series analysis, each event is estimated separately and each voxel has as many
 estimates at there are events (which can be labelled as either
 face or house events).
-The experimenter can now reduce the series of estimates (a betaseries)
+The experimenter can now reduce the series of estimates (a beta series)
 for each voxel into a summary measure such as correlations among
 regions of interest.
 The correlation map for faces can be subtracted from houses, giving
@@ -239,27 +246,27 @@ voxels that are more correlated with the region of interest for houses
 relative to faces.
 Whereas traditional task analysis treats the variance of brain responses
 between events of the same type (e.g. face or house) as noise,
-betaseries leverages this variance to make conclusions about which brain
+beta series leverages this variance to make conclusions about which brain
 regions may communicate with each other during a particular event type
 (e.g. faces or houses).
 
 Summary
 -------
-Betaseries is not in opposition to resting state or traditional task analysis;
+Beta series is not in opposition to resting state or traditional task analysis;
 the methods are complementary.
 For example, network parcelations derived from resting state data can be
-used on betaseries data to ascertain if the networks observed in resting state
-follow a similar pattern with betaseries.
+used on beta series data to ascertain if the networks observed in resting state
+follow a similar pattern with beta series.
 Additionally, regions determined from traditional task analysis
-can be used as regions of interest for betaseries analysis.
-Betaseries straddles the line between traditional task analysis and
+can be used as regions of interest for beta series analysis.
+Beta series straddles the line between traditional task analysis and
 resting-state functional connectivity, observing task data through a network lens.
 
 
-Relevent Software
+Relevant Software
 -----------------
 - BASCO_ (BetA Series COrrelations) is a MATLAB program that also performs
-  betaseries correlations
+  beta series correlations
 - pybetaseries_ is a python script that runs on files that have
   been processed by FSL's FEAT
 
