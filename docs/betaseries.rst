@@ -48,7 +48,7 @@ seconds apart on average).
 Since each event has its own regressor, events that occur very close in time
 are collinear (e.g. are very overlapping).
 
-Jeanette Mumford :cit:`d-Mumford2012` derived a solution for
+Jeanette Mumford :cite:`d-Mumford2012` derived a solution for
 the high collinearity observed in least squares all by using another
 type of regression known as "least squares separate" (LSS).
 Instead of having one general linear model (GLM) with a regressor per event,
