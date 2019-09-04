@@ -78,9 +78,9 @@ The basic workflow of NiBetaSeries follows these steps (the files can be found i
 The correlation matrix from NiBetaSeries can be used for graph theoretical analysis, specific region-region correlations across different trial types, and other analyses.
 
 NiBetaSeries is not the first or only piece of software that measures task related correlations in the brain.
-There are two other packages known to the authors: BASCO and pybetaseries [@Gottlich2015; @Poldrack2014].
+There are two other packages known to the authors: BASCO and Pybetaseries [@Gottlich2015; @Poldrack2014].
 BASCO (BetA Series COrrelations) is a Matlab toolbox that calculates task correlations, but is designed for slow event related designs (e.g., trials occur more than 10 seconds apart).
-pybetaseries is a Python script that is designed for fast event related designs (like NiBetaSeries), but is no longer actively maintained.
+Pybetaseries is a Python script that is designed for fast event related designs (like NiBetaSeries), but is no longer actively maintained.
 Given the drawbacks of the alternatives, NiBetaSeries justifies its existence and utility to the neuroscience field.
 
 # Acknowledgements
