@@ -58,7 +58,7 @@ For many intents and purposes, the `4D` beta series can analyzed similarly to a 
 resting state dataset where the 4th dimension represents time.
 Traditional analysis strategies applied to resting state such as seed based correlation,
 independent components analysis, regional homogeneity, and graph theory can be applied to
-beta series [@Cole2010;vanWijk2010].
+beta series [@Cole2010;@vanWijk2010].
 Recycling these methods for beta series provides a new lens to observe the organization of the brain during a task and may lead to additional insights.
 
 # Software Overview
