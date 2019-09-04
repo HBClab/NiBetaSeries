@@ -70,7 +70,7 @@ The primary way to interact with NiBetaSeries is typing `nibs` in the command li
 The basic workflow of NiBetaSeries follows these steps (the files can be found in the `workflows` directory):
 
 1) `base.py`: Read and validate necessary inputs (a minimally processed fMRI file, a brain mask, an events file specifying the onsets, duration, and the trial type, an atlas parcellation, and a table connecting the numbers in the atlas parcellation with names of the regions).
-2) `model.py`: Construct and execute GLMs using LSS (with additional confound predictors optionally added) generating a betaseries (a list of betas for each voxel).
+2) `model.py`: Construct and execute GLMs using LSS (with additional confound predictors optionally added) generating a beta series (a list of betas for each voxel).
 3) `analysis.py`: Apply atlas parcellation to data averaging betas within regions for each trial.
 4) `analysis.py`: Correlate each region's list of betas with every other region.
 5) `analysis.py`: r-z transform the correlations and output a symmetric correlation matrix in a `tsv` file.
