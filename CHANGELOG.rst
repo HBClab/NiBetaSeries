@@ -1,14 +1,20 @@
 .. _changelog:
 
-0.3.1 (September 04, 2019)
+0.3.2 (September 04, 2019)
 ==========================
 
-Changes to installation and documentation, but no functional code changes.
 This release is special because it will be published in the
 Journal of Open Source Software (JOSS).
 One condition of this is that the authors on the paper be the only authors in the zenodo file.
 I will modify the authors listed on the zenodo file for this release,
 but I will add all contributors back on for the subsequent release.
+
+* [MAINT] fix zenodo file
+
+0.3.1 (September 04, 2019)
+==========================
+
+Changes to installation and documentation, but no functional code changes.
 
 * [DOC] address review comments (#185) @jdkent
 * [DOC] add everyone to contributors in the zenodo file (#188) @jdkent
