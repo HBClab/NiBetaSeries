@@ -46,7 +46,7 @@ This method, however, has limitations in the context of fast event-related
 designs (e.g., designs where the events occur between 3-6
 seconds apart on average).
 Since each event has its own regressor, events that occur very close in time
-are collinear (e.g. are very overlapping).
+are collinear (e.g., are very overlapping).
 
 Jeanette Mumford :cite:`d-Mumford2012` derived a solution for
 the high collinearity observed in least squares all by using another
@@ -67,10 +67,8 @@ own regressor.
 NiBetaSeries uses this updated "least squares separate" method and is thus optimized
 for fast event-related designs.
 
-
 Mathematical Background
 -----------------------
-
 .. math::
    :label: glm
 
@@ -136,7 +134,7 @@ more reliable.
    :linenothreshold: 5
 
 .. code-block:: python
-    :emphasize-lines: 20,37
+    :emphasize-lines: 24, 55
 
     import numpy as np
 
@@ -150,7 +148,11 @@ more reliable.
                   [0, 0, 1, 1]])
 
     # the trial in the order they were seen
-    trial_types = ["red", "blue", "red", "blue"]
+    trial_types = np.array(["red", "blue", "red", "blue"])
+
+    # the indices of the blue and red trials
+    blue_idxs = np.where(trial_types == 'blue')[0]
+    red_idxs = np.where(trial_types == 'red')[0]
 
     # the observed brain data (transposed so data points are in one column)
     Y = np.array([[2, 1, 5, 3]]).T
@@ -162,12 +164,26 @@ more reliable.
     # least square separate (LSS)
     lss_betas = []
     # for each trial...
-    for index, _ in enumerate(trial_types):
+    for index, trial_type in enumerate(trial_types):
         # select the trial (column) of interest
-        X_interest = X[:,index]
+        X_interest = X[:, index]
 
-        # select all the other trials (columns) and sum over them to create a single column
-        X_other = np.delete(X, index, axis=1).sum(axis=1)
+        # find the indices of the "rest" of the trials of the same type
+        # and the indices of the other trial type
+        if trial_type == "blue":
+            idxs = blue_idxs
+            other_idxs = red_idxs
+        elif trial_type == "red":
+            idxs = red_idxs
+            other_idxs = red_idxs
+
+        # the "rest" of the trials of the same type
+        non_target_idx = np.delete(idxs, np.where(idxs != index))[0]
+        X_nontarget = X[:, non_target_idx]
+
+        # select all the other trials (columns)
+        # and sum over them to create a single column
+        X_other = X[:, other_idxs].sum(axis=1)
 
         # combine the two columns such that:
         # the first column is the trial of interest
@@ -179,16 +195,17 @@ more reliable.
         lss_betas.append(betas[0][0])
 
 
-This python code demonstrates LSA (line 20) and LSS where each event is given its own GLM model.
-Note the GLM model written in python (line 37) has the form as the equation at the
+This python code demonstrates LSA (line 24) and LSS where each event is given its own GLM model.
+Note the GLM model written in python (line 55) has the form as the equation at the
 beginning of "Mathematical Background" :eq:`glm`, but ``X`` (specifically ``X_trial``)
-has the particular representation of one column being the trial of interest and the
-other column being all remaining trials.
-
+has the particular representation of one column being the trial of interest (``X_interest``),
+another column where the trials are the same type as the trial of interest (``X_nontarget``),
+and finally a column with the other trial type (``X_other``).
+Generally, there will be as many columns as there are trial types plus
+a column for the trial of interest.
 
 Relationship to Resting-State Functional Connectivity
 -----------------------------------------------------
-
 Beta series connectivity analysis is similar to resting-state functional
 connectivity (time-series correlations)
 because the same analyses typically applied to resting-state data can ostensibly be applied
@@ -245,10 +262,10 @@ The correlation map for faces can be subtracted from houses, giving
 voxels that are more correlated with the region of interest for houses
 relative to faces.
 Whereas traditional task analysis treats the variance of brain responses
-between events of the same type (e.g. face or house) as noise,
+between events of the same type (e.g., face or house) as noise,
 beta series leverages this variance to make conclusions about which brain
 regions may communicate with each other during a particular event type
-(e.g. faces or houses).
+(e.g., faces or houses).
 
 Summary
 -------
@@ -261,7 +278,6 @@ Additionally, regions determined from traditional task analysis
 can be used as regions of interest for beta series analysis.
 Beta series straddles the line between traditional task analysis and
 resting-state functional connectivity, observing task data through a network lens.
-
 
 Relevant Software
 -----------------
