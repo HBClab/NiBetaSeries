@@ -1,0 +1,8 @@
+{
+    "fmriprep_path_patterns": [
+        "sub-{subject}[/ses-{session}]/{datatype<anat>}/sub-{subject}[_ses-{session}][_acq-{acquisition}][_ce-{contrast}][_rec-{reconstruction}][_space-{space}][_label-{label}][_desc-{description}]_{suffix<T1w|T2w|T1rho|T1map|T2map|T2star|FLAIR|FLASH|PDmap|PD|PDT2|inplaneT[12]|angio|mask|dseg|probseg>}.{extension<nii|nii.gz|json>}",
+        "sub-{subject}[/ses-{session}]/{datatype<anat>}/sub-{subject}[_ses-{session}]_from-{space1}_to-{space2}_mode-{mode}_{suffix<xfm>}.{extension<h5>|h5}",
+        "sub-{subject}[/ses-{session}]/{datatype<figures>}/sub-{subject}[_ses-{session}][_task-{task}][_acq-{acquisition}][_ce-{contrast}][_dir-{direction}][_rec-{reconstruction}][_mod-{modality}][_run-{run}][_echo-{echo}][_space-{space}]_{suffix<dseg|T1w|bold>}.{extension<svg>}",
+        "sub-{subject}[/ses-{session}]/{datatype<func>}/sub-{subject}[_ses-{session}][_task-{task}][_acq-{acquisition}][_ce-{contrast}][_dir-{direction}][_rec-{reconstruction}][_run-{run}][_echo-{echo}][_space-{space}][_hemi-{hemi<L|R>}][_desc-{description}]_{suffix<bold|cbv|phase|sbref|regressors|boldref|mask|mixing|AROMAnoiseICs|betaseries|correlation>}.{extension<json|tsv|nii.gz|csv|svg|func.gii|dtseries.nii|dtseries.json>}"
+    ]
+}
