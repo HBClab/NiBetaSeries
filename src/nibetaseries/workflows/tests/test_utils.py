@@ -8,7 +8,7 @@ def test_collect_data(bids_dir, deriv_dir, sub_fmriprep,
                       sub_metadata, bold_file, preproc_file,
                       sub_events, confounds_file, brainmask_file):
 
-    with open(sub_metadata, "r") as sm:
+    with open(str(sub_metadata), "r") as sm:
         metadata = json.load(sm)
 
     expected_out = {
