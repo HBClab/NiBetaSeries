@@ -40,7 +40,8 @@ class DerivativesDataSink(SimpleInterface):
         from bids.layout import parse_file_entities
         from bids.layout.writing import build_path
 
-        deriv_cfg = pkg_resources.resource_string("nibetaseries", op.join("data", "derivatives.json"))
+        deriv_cfg = pkg_resources.resource_string("nibetaseries",
+                                                  op.join("data", "derivatives.json"))
         deriv_patterns = json.loads(deriv_cfg.decode('utf-8'))['fmriprep_path_patterns']
 
         subject_entities = parse_file_entities(self.inputs.source_file)
