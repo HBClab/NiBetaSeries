@@ -13,10 +13,20 @@ def base_dir(tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def corr_csv(base_dir):
-    return base_dir.ensure("mytsv.csv")
+    return base_dir.ensure("desc-condTest_correlation.tsv")
 
 
-def test_derivatives_data_sink(base_dir, betaseries_file, corr_csv, preproc_file):
+@pytest.fixture(scope='session')
+def corr_fig(base_dir):
+    return base_dir.ensure("desc-condTest_correlation.svg")
+
+
+@pytest.fixture(scope='session')
+def bs_out(base_dir):
+    return base_dir.ensure("desc-condTest_betaseries.nii.gz")
+
+
+def test_derivatives_data_sink_tsv(base_dir, betaseries_file, corr_csv, preproc_file):
 
     # the expected output
     expected_out = os.path.join(
@@ -26,14 +36,54 @@ def test_derivatives_data_sink(base_dir, betaseries_file, corr_csv, preproc_file
         'ses-pre',
         'func',
         ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
-         '_bold_preproc_trialtype-testCond_matrix.csv'))
+         '_desc-condTest_correlation.tsv'))
 
     # create and run instance of the interface
     dds = DerivativesDataSink(base_directory=str(base_dir),
-                              betaseries_file=str(betaseries_file),
                               in_file=str(corr_csv),
-                              source_file=str(preproc_file),
-                              suffix='matrix')
+                              source_file=str(preproc_file))
+    res = dds.run()
+
+    assert res.outputs.out_file == expected_out
+
+
+def test_derivatives_data_sink_svg(base_dir, betaseries_file, corr_fig, preproc_file):
+
+    # the expected output
+    expected_out = os.path.join(
+        str(base_dir),
+        'nibetaseries',
+        'sub-01',
+        'ses-pre',
+        'func',
+        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+         '_desc-condTest_correlation.svg'))
+
+    # create and run instance of the interface
+    dds = DerivativesDataSink(base_directory=str(base_dir),
+                              in_file=str(corr_fig),
+                              source_file=str(preproc_file))
+    res = dds.run()
+
+    assert res.outputs.out_file == expected_out
+
+
+def test_derivatives_data_sink_bs(base_dir, betaseries_file, bs_out, preproc_file):
+
+    # the expected output
+    expected_out = os.path.join(
+        str(base_dir),
+        'nibetaseries',
+        'sub-01',
+        'ses-pre',
+        'func',
+        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+         '_desc-condTest_betaseries.nii.gz'))
+
+    # create and run instance of the interface
+    dds = DerivativesDataSink(base_directory=str(base_dir),
+                              in_file=str(bs_out),
+                              source_file=str(preproc_file))
     res = dds.run()
 
     assert res.outputs.out_file == expected_out

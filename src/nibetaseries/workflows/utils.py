@@ -11,16 +11,18 @@ from __future__ import print_function, division, absolute_import, unicode_litera
 
 
 def collect_data(layout, participant_label, ses=None,
-                 task=None, run=None, space=None, variant=None):
+                 task=None, run=None, space=None, description=None):
     """
-    Uses grabbids to retrieve the input data for a given participant
+    Uses pybids to retrieve the input data for a given participant
     """
     # get all the preprocessed fmri images.
     preproc_query = {
         'subject': participant_label,
-        'modality': 'func',
-        'type': 'preproc',
-        'extensions': ['nii', 'nii.gz']
+        'datatype': 'func',
+        'suffix': 'bold',
+        'extension': ['nii', 'nii.gz'],
+        'desc': '.+',
+        'regex_search': True,
     }
 
     if task:
@@ -31,15 +33,15 @@ def collect_data(layout, participant_label, ses=None,
         preproc_query['session'] = ses
     if space:
         preproc_query['space'] = space
-    if variant:
-        preproc_query['variant'] = variant
+    if description:
+        preproc_query['description'] = description
 
     preprocs = layout.get(**preproc_query)
 
     # get the relevant files for each preproc
     preproc_collector = []
     # common across all queries
-    preproc_dict = {'modality': 'func', 'subject': participant_label}
+    preproc_dict = {'datatype': 'func', 'subject': participant_label}
     for preproc in preprocs:
         preproc_dict['task'] = getattr(preproc, 'task', None)
         preproc_dict['run'] = getattr(preproc, 'run', None)
@@ -50,33 +52,36 @@ def collect_data(layout, participant_label, ses=None,
             print('Found resting state bold run, skipping')
             continue
 
-        # can't use space when looking up the events file
+        # event files and confounds are the same regardless of space
         preproc_dict_ns = {k: v for k, v in preproc_dict.items() if k != 'space'}
 
         file_queries = {
-            'brainmask': _combine_dict(preproc_dict, {'type': 'brainmask',
-                                                      'extensions': ['nii', 'nii.gz']}),
-            'confounds': _combine_dict(preproc_dict_ns, {'type': 'confounds',
-                                                         'extensions': '.tsv'}),
-            'events': _combine_dict(preproc_dict_ns, {'type': 'events',
-                                                      'extensions': '.tsv'}),
+            'brainmask': _combine_dict(preproc_dict, {'suffix': 'mask',
+                                                      'desc': 'brain',
+                                                      'extension': ['nii', 'nii.gz']}),
+            'confounds': _combine_dict(preproc_dict_ns, {'suffix': 'regressors',
+                                                         'desc': 'confounds',
+                                                         'extension': '.tsv'}),
+            'events': _combine_dict(preproc_dict_ns, {'suffix': 'events',
+                                                      'extension': '.tsv'}),
         }
 
         try:
-            query_res = {modality: [x.filename for x in layout.get(**query)][0]
+            query_res = {modality: [x.path for x in layout.get(**query)][0]
                          for modality, query in file_queries.items()}
         except Exception as e:
             raise type(e)('Could not find required files, check BIDS structure')
 
         # add the preprocessed file
-        query_res['preproc'] = preproc.filename
+        query_res['preproc'] = preproc.path
 
         # get metadata for the preproc
-        bold_query = _combine_dict(preproc_dict_ns, {'type': 'bold',
-                                                     'extensions': ['nii', 'nii.gz']})
-        bold_file = layout.get(**bold_query)[0].filename
+        bold_query = _combine_dict(preproc_dict_ns, {'suffix': 'bold',
+                                                     'extension': ['nii', 'nii.gz'],
+                                                     'desc': None})
+        bold_file = layout.get(**bold_query)[0]
 
-        query_res['metadata'] = layout.get_metadata(bold_file)
+        query_res['metadata'] = bold_file.get_metadata()
         preproc_collector.append(query_res)
 
     return preproc_collector

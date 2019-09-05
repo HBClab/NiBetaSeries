@@ -48,9 +48,9 @@ BetaSeries Workflow
         smoothing_kernel=0.0,
         selected_confounds=[''])
 
-The BOLD file is optionally temporally filtered (low-pass)
-and smoothed by nilearn before being passed into nistats for
-modeling using the "least squares separate" (LSS) procedure.
+nistats is used for modeling using the 
+"least squares separate" (LSS) procedure with the option
+for low pass filtering and smoothing.
 
 
 Correlation Workflow
