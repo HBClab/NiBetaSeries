@@ -55,15 +55,15 @@ def init_betaseries_wf(name="betaseries_wf",
     ------
 
     bold_file
-        The bold file from the derivatives (e.g. fmriprep) dataset.
+        The bold file from the derivatives (e.g., fmriprep) dataset.
     events_file
         The events tsv from the BIDS dataset.
     bold_mask_file
-        The mask file from the derivatives (e.g. fmriprep) dataset.
+        The mask file from the derivatives (e.g., fmriprep) dataset.
     bold_metadata
         dictionary of relevant metadata of bold sequence
     confounds_file
-        The tsv file from the derivatives (e.g. fmriprep) dataset.
+        The tsv file from the derivatives (e.g., fmriprep) dataset.
 
     Outputs
     -------
