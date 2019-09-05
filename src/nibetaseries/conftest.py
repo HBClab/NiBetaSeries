@@ -11,13 +11,11 @@ import pkg_resources
 import os.path as op
 
 # read in filename patterns to create valid filenames
-with pkg_resources.resource_stream("nibetaseries",
-                                   op.join("data", "bids.json")) as bids_cfg:
-    bids_patterns = json.load(bids_cfg)['default_path_patterns']
+bids_cfg = pkg_resources.resource_string("nibetaseries", op.join("data", "bids.json"))
+bids_patterns = json.loads(bids_cfg.decode('utf-8'))['default_path_patterns']
 
-with pkg_resources.resource_stream("nibetaseries",
-                                   op.join("data", "derivatives.json")) as deriv_cfg:
-    deriv_patterns = json.load(deriv_cfg)['fmriprep_path_patterns']
+deriv_cfg = pkg_resources.resource_string("nibetaseries", op.join("data", "derivatives.json"))
+deriv_patterns = json.loads(deriv_cfg.decode('utf-8'))['fmriprep_path_patterns']
 
 # building blocks for generating valid file names
 subject_entities = {
