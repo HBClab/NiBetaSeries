@@ -65,20 +65,23 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
             lambda x: (np.log(1 + x) - np.log(1 - x)) * 0.5)
 
         # write out the file.
-        out_file = os.path.join(runtime.cwd, 'fisher_z_correlation.tsv')
-        fisher_z_matrix_df.to_csv(out_file, sep='\t', na_rep='n/a')
+        trial_regex = re.compile(r'.*desc-(?P<trial>[A-Za-z0-9]+)')
+        title = re.search(trial_regex, self.inputs.timeseries_file).groupdict()['trial']
+        template_name = 'desc-{trial}_correlation.{ext}'
+        corr_mat_fname = template_name.format(trial=title, ext="tsv")
+        corr_mat_path = os.path.join(runtime.cwd, corr_mat_fname)
+        fisher_z_matrix_df.to_csv(corr_mat_path, sep='\t', na_rep='n/a')
 
         # save the filename in the outputs
-        self._results['correlation_matrix'] = out_file
+        self._results['correlation_matrix'] = corr_mat_path
 
         # visualizations with mne
         connmat = fisher_z_matrix_df.values
         labels = list(fisher_z_matrix_df.index)
 
-        # define title and outfile names:
-        trial_regex = re.compile(r'.*trialtype-(?P<trial>[A-Za-z0-9]+)')
-        title = re.search(trial_regex, self.inputs.timeseries_file).groupdict()['trial']
-        outfile = os.path.join(runtime.cwd, ".".join([title, "svg"]))
+        # plot a circle visualization of the correlation matrix
+        viz_mat_fname = template_name.format(trial=title, ext="svg")
+        viz_mat_path = os.path.join(runtime.cwd, viz_mat_fname)
 
         n_lines = int(np.sum(connmat > 0) / 2)
         fig = plt.figure(figsize=(5, 5))
@@ -88,7 +91,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
                                  colormap='jet', colorbar=1, node_colors=['black'],
                                  node_edgecolor=['white'], show=False, interactive=False)
 
-        fig.savefig(outfile, dpi=300)
-        self._results['correlation_fig'] = outfile
+        fig.savefig(viz_mat_path, dpi=300)
+        self._results['correlation_fig'] = viz_mat_path
 
         return runtime
