@@ -34,7 +34,7 @@ Example 1
     -w /home/james/bids/derivatives/betaSeries/work_n17 \
     -c WhiteMatter CSF Cosine01 Cosine02 Cosine03 Cosine04 Cosine05 Cosine06 Cosine07 \
     --nthreads 32 \
-    --variant AROMAnonaggr \
+    --description AROMAnonaggr \
     --hrf-model 'glover + derivative + dispersion'
 
 In this example we have our top-level BIDS directory ``/home/james/bids``,
