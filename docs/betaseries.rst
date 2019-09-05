@@ -188,7 +188,7 @@ more reliable.
         # combine the two columns such that:
         # the first column is the trial of interest
         # the second column represents all other trials
-        X_trial = np.vstack([X_interest, X_other]).T
+        X_trial = np.vstack([X_interest, X_nontarget, X_other]).T
         # solve for the beta estimates
         betas, _, _, _ = np.linalg.lstsq(X_trial, Y)
         # add the beta for the trial of interest to the list
