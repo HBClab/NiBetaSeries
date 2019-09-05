@@ -101,10 +101,11 @@ def get_parser():
     image_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
                             choices=['MNI152NLin2009cAsym'],
                             help='select a bold derivative in a specific space to be used')
-    image_opts.add_argument('--variant-label', action='store',
-                            default=None, help='select a variant bold to process')
-    image_opts.add_argument('--exclude-variant-label', action='store_true',
-                            default=False, help='exclude the variant from FMRIPREP')
+    image_opts.add_argument('--description-label', action='store',
+                            default=None, help='select a bold file with particular '
+                                               '`desc` label to process')
+    image_opts.add_argument('--exclude-description-label', action='store_true',
+                            default=False, help='exclude this `desc` label from nibetaseries')
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
@@ -133,7 +134,7 @@ def main():
 
     derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
 
-    output_dir = os.path.abspath(os.path.join(opts.output_dir, 'NiBetaSeries'))
+    output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
     log_dir = os.path.join(output_dir, 'logs')
@@ -198,7 +199,7 @@ def main():
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
-            exclude_variant_label=opts.exclude_variant_label,
+            exclude_description_label=opts.exclude_description_label,
             hrf_model=opts.hrf_model,
             low_pass=opts.low_pass,
             output_dir=output_dir,
@@ -209,7 +210,7 @@ def main():
             space_label=opts.space_label,
             subject_list=subject_list,
             task_label=opts.task_label,
-            variant_label=opts.variant_label,
+            description_label=opts.description_label,
             work_dir=work_dir,
         )
 
