@@ -3,33 +3,18 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 import os
-import re
 from shutil import copy
 from nipype.interfaces.base import (
     traits, isdefined, TraitedSpec, BaseInterfaceInputSpec,
     File, SimpleInterface
 )
 
-BIDS_NAME = re.compile(
-    r'^(.*\/)?(?P<subject_id>sub-[a-zA-Z0-9]+)(_(?P<session_id>ses-[a-zA-Z0-9]+))?'
-    r'(_(?P<task_id>task-[a-zA-Z0-9]+))?(_(?P<acq_id>acq-[a-zA-Z0-9]+))?'
-    r'(_(?P<rec_id>rec-[a-zA-Z0-9]+))?(_(?P<run_id>run-[a-zA-Z0-9]+))?'
-    r'(_(?P<space_id>space-[a-zA-Z0-9]+))?(_(?P<variant_id>variant-[a-zA-Z0-9]+))?')
-
-BETASERIES_NAME = re.compile(
-    r'^(.*\/)?betaseries(_(?P<trialtype_id>trialtype-[a-zA-Z0-9]+))?'
-)
-
 
 class DerivativesDataSinkInputSpec(BaseInterfaceInputSpec):
     base_directory = traits.Directory(
         desc='Path to the base directory for storing data.')
-    betaseries_file = File(exists=True, mandatory=True,
-                           desc='the betaseries file')
     in_file = File(exists=True, mandatory=True)
     source_file = File(exists=False, mandatory=True, desc='the input func file')
-    suffix = traits.Str('', mandatory=True, desc='suffix appended to source_file')
-    extra_values = traits.List(traits.Str)
 
 
 class DerivativesDataSinkOutputSpec(TraitedSpec):
@@ -49,58 +34,39 @@ class DerivativesDataSink(SimpleInterface):
             self.out_path_base = out_path_base
 
     def _run_interface(self, runtime):
-        src_fname, _ = _splitext(self.inputs.source_file)
-        betaseries_fname, _ = _splitext(self.inputs.betaseries_file)
-        _, ext = _splitext(self.inputs.in_file)
+        import json
+        import os.path as op
+        import pkg_resources
+        from bids.layout import parse_file_entities
+        from bids.layout.writing import build_path
 
-        bids_dict = BIDS_NAME.search(src_fname).groupdict()
-        bids_dict = {key: value for key, value in bids_dict.items() if value is not None}
-        betaseries_dict = BETASERIES_NAME.search(betaseries_fname).groupdict()
+        with pkg_resources.resource_stream("nibetaseries",
+                                           op.join("data", "derivatives.json")) as deriv_cfg:
+            deriv_patterns = json.load(deriv_cfg)['fmriprep_path_patterns']
 
-        # TODO: this quick and dirty modality detection needs to be implemented
-        # correctly
-        mod = 'func'
-        if 'anat' in os.path.dirname(self.inputs.source_file):
-            mod = 'anat'
-        elif 'dwi' in os.path.dirname(self.inputs.source_file):
-            mod = 'dwi'
-        elif 'fmap' in os.path.dirname(self.inputs.source_file):
-            mod = 'fmap'
+        subject_entities = parse_file_entities(self.inputs.source_file)
+        betaseries_entities = parse_file_entities(self.inputs.in_file)
+        # hotfix
+        betaseries_entities['description'] = betaseries_entities['desc']
+
+        subject_entities.update(betaseries_entities)
+
+        out_file = build_path(subject_entities, deriv_patterns)
+
+        if not out_file:
+            raise ValueError("the provided entities do not make a valid file")
 
         base_directory = runtime.cwd
         if isdefined(self.inputs.base_directory):
             base_directory = os.path.abspath(self.inputs.base_directory)
 
-        out_path = '{}/{subject_id}'.format(self.out_path_base, **bids_dict)
-        if bids_dict.get('session_id', None) is not None:
-            out_path += '/{session_id}'.format(**bids_dict)
-        out_path += '/{}'.format(mod)
+        out_path = op.join(base_directory, self.out_path_base, out_file)
 
-        out_path = os.path.join(base_directory, out_path)
-
-        os.makedirs(out_path, exist_ok=True)
-
-        base_fname = os.path.join(out_path, src_fname)
-
-        formatstr = '{bname}_{trialtype}_{suffix}{ext}'
-
-        out_file = formatstr.format(
-            bname=base_fname,
-            trialtype=betaseries_dict['trialtype_id'],
-            suffix=self.inputs.suffix,
-            ext=ext)
+        os.makedirs(op.dirname(out_path), exist_ok=True)
 
         # copy the file to the output directory
-        copy(self.inputs.in_file, out_file)
+        copy(self.inputs.in_file, out_path)
 
-        self._results['out_file'] = out_file
+        self._results['out_file'] = out_path
 
         return runtime
-
-
-def _splitext(fname):
-    fname, ext = os.path.splitext(os.path.basename(fname))
-    if ext == '.gz':
-        fname, ext2 = os.path.splitext(fname)
-        ext = ext2 + ext
-    return fname, ext
