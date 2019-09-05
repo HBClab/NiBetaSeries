@@ -34,7 +34,7 @@ Example 1
     -w /home/james/bids/derivatives/betaSeries/work_n17 \
     -c WhiteMatter CSF Cosine01 Cosine02 Cosine03 Cosine04 Cosine05 Cosine06 Cosine07 \
     --nthreads 32 \
-    --description AROMAnonaggr \
+    --description-label AROMAnonaggr \
     --hrf-model 'glover + derivative + dispersion'
 
 In this example we have our top-level BIDS directory ``/home/james/bids``,
@@ -69,6 +69,6 @@ the top-level BIDS directory.
 - If there were multiple types of derivatives output from a preprocessing
   application (like ``fmriprep``), you may only be interested in analyzing
   one variant; in this scenerio, we are only interested in analyzing images denoised
-  by ``ICA-AROMA``.
+  by ``ICA-AROMA``, denoted by ``--description-label``.
 - The HRF model argument (``--hrf-model``) passes all the available options
   from `nistats <https://nistats.github.io/index.html>`_.
