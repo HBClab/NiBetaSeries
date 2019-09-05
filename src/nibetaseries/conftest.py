@@ -11,8 +11,8 @@ import pkg_resources
 import os.path as op
 
 # read in filename patterns to create valid filenames
-with pkg_resources.resource_stream("bids",
-                                   op.join("layout", "config", "bids.json")) as bids_cfg:
+with pkg_resources.resource_stream("nibetaseries",
+                                   op.join("data", "bids.json")) as bids_cfg:
     bids_patterns = json.load(bids_cfg)['default_path_patterns']
 
 with pkg_resources.resource_stream("nibetaseries",
@@ -27,6 +27,7 @@ subject_entities = {
 
 bids_bold_entities = {
     **subject_entities,
+    "datatype": "func",
     "task": "waffles",
     "suffix": "bold",
     "extension": "nii.gz",
@@ -62,6 +63,7 @@ deriv_mask_fname = build_path(deriv_mask_entities, deriv_patterns)
 
 deriv_regressor_entities = {
     **subject_entities,
+    "datatype": "func",
     "task": "waffles",
     "description": "confounds",
     "suffix": "regressors",
@@ -79,7 +81,19 @@ deriv_betaseries_fname = build_path(deriv_betaseries_entities, deriv_patterns)
 
 @pytest.fixture(scope='session')
 def bids_dir(tmpdir_factory):
-    return tmpdir_factory.mktemp('bids')
+    bids_dir = tmpdir_factory.mktemp('bids')
+
+    dataset_json = bids_dir.ensure("dataset_description.json")
+
+    dataset_dict = {
+        "Name": "waffles and fries",
+        "BIDSVersion": "1.1.1",
+    }
+
+    with open(str(dataset_json), 'w') as dj:
+        json.dump(dataset_dict, dj)
+
+    return bids_dir
 
 
 @pytest.fixture(scope='session')
@@ -92,9 +106,32 @@ def sub_bids(bids_dir, example_file=bids_bold_fname):
 
 @pytest.fixture(scope='session')
 def deriv_dir(bids_dir):
-    return bids_dir.ensure('derivatives',
-                           'fmriprep',
-                           dir=True)
+    deriv_dir = bids_dir.ensure('derivatives',
+                                'fmriprep',
+                                dir=True)
+
+    dataset_json = deriv_dir.ensure("dataset_description.json")
+
+    dataset_dict = {
+        "Name": "fMRIPrep - fMRI PREProcessing workflow",
+        "BIDSVersion": "1.1.1",
+        "PipelineDescription": {
+            "Name": "fMRIPrep",
+            "Version": "1.5.0rc2+14.gf673eaf5",
+            "CodeURL": "https://github.com/poldracklab/fmriprep/archive/1.5.0.tar.gz"
+        },
+        "CodeURL": "https://github.com/poldracklab/fmriprep",
+        "HowToAcknowledge": "Please cite our paper (https://doi.org/10.1038/s41592-018-0235-4)",
+        "SourceDatasetsURLs": [
+            "https://doi.org/"
+        ],
+        "License": ""
+    }
+
+    with open(str(dataset_json), 'w') as dj:
+        json.dump(dataset_dict, dj)
+
+    return deriv_dir
 
 
 @pytest.fixture(scope='session')
@@ -105,9 +142,10 @@ def sub_fmriprep(deriv_dir, example_file=deriv_bold_fname):
                             dir=True)
 
 
+# layout = BIDSLayout("./", validate=False, derivatives="./derivatives/fmriprep")
 @pytest.fixture(scope='session')
-def sub_metadata(bids_dir, sub_json_fname=bids_json_fname):
-    sub_json = bids_dir.ensure(sub_json_fname)
+def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
+    sub_json = bids_dir.ensure(bids_json_fname)
     tr = 2
     bold_metadata = {"RepetitionTime": tr, "TaskName": "waffles"}
 
