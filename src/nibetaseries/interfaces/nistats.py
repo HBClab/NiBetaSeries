@@ -147,8 +147,9 @@ def _lss_events_iterator(events_file):
         trial_type = events.loc[trial_id, 'trial_type']
         # make a copy of the dataframe
         events_trial = events.copy()
-        # assign all events to be other (non-target trial)
-        events_trial['trial_type'] = 'other'
+        # assign new name to all events from original condition
+        trial_type_id = events_trial['trial_type'] == trial_type
+        events_trial.loc[trial_type_id, 'trial_type'] = 'other'
         # assign the trial of interest to be its original value
         events_trial.loc[trial_id, 'trial_type'] = trial_type
         yield events_trial, trial_type, trial_counter[trial_type]
