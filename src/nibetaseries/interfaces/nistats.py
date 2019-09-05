@@ -100,7 +100,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
 
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
-                                            'betaseries_trialtype-{trial_type}.nii.gz')
+                                            'desc-{trial_type}_betaseries.nii.gz')
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
