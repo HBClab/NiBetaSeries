@@ -1,6 +1,12 @@
+.. _contributing:
+
 ============================
 Contributing to NiBetaSeries
 ============================
+
+If you are viewing this file on GitHub, please see our
+`readthedocs page <https://nibetaseries.readthedocs.io>`_
+for links/images to render properly.
 
 **Welcome to the NiBetaSeries repository!**
 
@@ -22,15 +28,14 @@ Been here before? Already know what you're looking for in this guide?
 Jump to the following sections:
 
 -  `Joining the BIDS community <#joining-the-bids-community>`__
--  `Check out the BIDS Starter Kit <#check-bids-starter-kit>`__
+-  `Check out the BIDS Starter Kit <#check-out-the-bids-starter-kit>`__
 -  `Get in touch <#get-in-touch>`__
 -  `Contributing through GitHub <#contributing-through-github>`__
--  `Where to start: wiki, code and
-   templates <#where-to-start-wiki-code-and-templates>`__
 -  `Where to start: issue labels <#where-to-start-issue-labels>`__
 -  `Make a change with a pull
    request <#making-a-change-with-a-pull-request>`__
--  `Example pull request <#example-pull-request>`__
+-  `Code Server Development Environment <#code-server-development>`__
+-  `Docker Toolbox Instructions <#docker-toolbox-instructions>`__
 -  `Recognizing contributions <#recognizing-contributions>`__
 
 Joining the BIDS community
@@ -118,7 +123,7 @@ a documentation hosting service.
 Putting it all together, ReadTheDocs is an online documentation hosting service
 that uses sphinx, and sphinx is a documentation generation service that uses
 ReStructuredText to format the content.
-What a mouthfull!
+What a mouthful!
 
 Where to start: issue labels
 ----------------------------
@@ -250,6 +255,11 @@ Example::
     # create the branch on which you will make your issues
     git checkout -b your_issue_branch
 
+If you are making significant changes to the code, you may wish
+to setup a local development environment.
+Checkout the `code-server <#code-server-development>`__ section for one
+option on setting up a local development environment.
+
 5. Run the tests
 ~~~~~~~~~~~~~~~~
 
@@ -257,7 +267,7 @@ When you're done making changes, run all the checks, doc builder and spell check
 First you will install all the development requirements
 for the project with pip::
 
-    pip install requirements-dev.txt
+    pip install -e .[test]
 
 Then you can run tox by simply typing::
 
@@ -342,6 +352,137 @@ identifier or a one-word description, such as::
 
     myworkflow_lh_wf = init_workflow_wf(name='myworkflow_lh_wf')
     myworkflow_rh_wf = init_workflow_wf(name='myworkflow_rh_wf')
+
+Code Server Development
+-----------------------
+
+To get the best of working with containers and having an interactive
+development environment, we have an experimental setup with `code-server
+<https://github.com/cdr/code-server>`__.
+
+.. Note::
+    We have `a video walking through the process for fmriprep
+    <https://youtu.be/bkZ-NyUaTvg>`__ if you want a visual guide.
+    Hopefully the process for nibetaseries is similar enough for the video
+    to be useful.
+
+1. Build the Docker image
+~~~~~~~~~~~~~~~~~~~~~~~~~
+We assume you have NiBetaSeries cloned in $HOME/projects.
+We will use the ``Dockerfile_devel`` file to build
+our development docker image::
+
+    $ cd $HOME/projects/NiBetaSeries
+    $ docker build -t nibetaseries_devel -f Dockerfile_devel .
+
+2. Run the Docker image
+~~~~~~~~~~~~~~~~~~~~~~~
+We can start a docker container using the image we built (``nibetaseries_devel``)::
+
+    $ docker run -it \
+      -p 127.0.0.1:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      nibetaseries_devel:latest
+
+or with Docker Toolbox, we can start a docker container with the command::
+
+    $ docker run -it \
+      -p 192.168.99.100:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      nibetaseries_devel:latest
+
+.. Note::
+    If you are using windows shell, ${PWD} may not be defined, instead use the absolute
+    path to your fmriprep directory.
+
+.. Note::
+    If you are using Docker Toolbox, you will need to change your virtualbox settings
+    using `these steps as a guide <#docker-toolbox-instructions>`_.
+
+If you want your git configurations inside the container, so you do not need to specify
+your email or username, you can add the following option to your Docker command: 
+``-v ${HOME}/.gitconfig:/home/neuro/.gitconfig``.
+
+Furthermore, if you do not want to type your password everytime you push changes to
+Github, you can store your credentials in a file named ``.git-credentials``.
+Github has wonderful `instructions to create a personal access token
+<https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line>`_ to store
+in credentials. 
+The token just needs access to the ``repo``.
+Once you have your ``API-TOKEN``, you can create a file named ``.git-credentials``
+with contents that would look like this:
+``https://jdkent:API-TOKEN@github.com``, where ``API-TOKEN`` is replaced with your string
+of letters and numbers and ``jdkent`` is replaced with your github user name.
+Finally, to pass ``.git-credentials`` to the Docker container, you will add the following option
+to your Docker command:
+``-v ${HOME}/.git-credentials:/home/neuro/.git-credentials``
+
+Thus a fully featured Docker command may look like this::
+
+    $ docker run -it \
+      -p 127.0.0.1:8445:8080 \
+      -v ${PWD}:/src/nibetaseries \
+      -v ${HOME}/.gitconfig:/home/neuro/.gitconfig \
+      -v ${HOME}/.git-credentials:/home/neuro/.git-credentials \
+      nibetaseries_devel:latest
+
+
+If the container started correctly, you should see the following on your console::
+
+    INFO  Server listening on http://localhost:8080
+    INFO    - No authentication
+    INFO    - Not serving HTTPS
+
+Now you can switch to your favorite browser and go to: ``127.0.0.1:8445``
+(or ``192.168.99.100:8445`` for Docker Toolbox).
+
+Code-Server Development Environment Features
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The editor is `vscode <https://code.visualstudio.com/docs>`_
+
+- There are several preconfigured debugging tests under
+  the debugging icon in the activity bar
+
+  - see `vscode debugging python <https://code.visualstudio.com/docs/python/debugging>`_
+    for details.
+
+- The ``gitlens``, ``python``, and ``restructuredtext`` extensions are preinstalled to improve
+  the development experience in vscode.
+
+Docker Toolbox Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Once you've installed and started Docker Toolbox and made sure it works,
+   we will find the virtualbox application on your desktop.
+
+.. image:: _static/step-0_open_virtualbox.png
+
+2. Once virtualbox is open, select the "default"
+box and make sure it is shut down.
+
+.. image:: _static/step-1_select_default.png
+
+3. Click the gear icon named settings.
+
+.. image:: _static/step-2_select_settings.png
+
+4. Select Network on the sidebar.
+
+.. image:: _static/step-3_select_network.png
+
+5. Click the triangle by "advanced" to expand options.
+
+.. image:: _static/step-4_expand_advanced.png
+
+6. Select the port forwarding option and place the
+port numbers ``8445`` in the host port and ``8080`` guest port.
+Name the connection ``code-server``.
+
+.. image:: _static/step-5_port_forward.png
+
+7. Click on the quickstart terminal again to restart Docker Toolbox.
+You can continue following the directions in
+`step 2 in code server development <#run-the-docker-image>`_
 
 
 Recognizing contributions

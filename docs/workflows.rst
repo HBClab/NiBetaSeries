@@ -1,3 +1,5 @@
+.. _workflows:
+
 =========
 Workflows
 =========
@@ -24,14 +26,14 @@ Participant Workflow
         selected_confounds=[''],
         smoothing_kernel=None)
 
-The general workflow for a participant models the betaseries for each trial type
-for each bold file associated with the participant.
-Then betas within a region of interest are based off a parcellation are averaged together.
-This occurs as many times as there are trials for that particular trial type, resulting
-in a psuedo-timeseries (e.g. each point in "time" represents an occurrence of
-that trial).
-All the psuedo time-series within a trial type are correlated with each other,
-resulting in a final correlation (adjacency) matrix.
+The general workflow for a participant models the betaseries
+for each trial type for each BOLD file associated with the participant.
+Then betas within an atlas parcel are averaged together.
+This occurs as many times as there are trials for that particular trial type,
+resulting in a psuedo-time series (i.e., each point in "time" represents an
+occurrence of that trial).
+All the psuedo-time series within a trial type are correlated with each other,
+resulting in a final correlation (adjacency) matrix for each trial type.
 
 BetaSeries Workflow
 -------------------
@@ -46,8 +48,9 @@ BetaSeries Workflow
         smoothing_kernel=0.0,
         selected_confounds=[''])
 
-The bold file is temporally filtered by nilearn (high pass and/or low pass) before being
-passed into nistats for modelling by least squares separate.
+nistats is used for modeling using the 
+"least squares separate" (LSS) procedure with the option
+for low pass filtering and smoothing.
 
 
 Correlation Workflow
@@ -59,7 +62,7 @@ Correlation Workflow
         from nibetaseries.workflows.analysis import init_correlation_wf
         wf = init_correlation_wf()
 
-The betaseries file has signal averaged across trials within a region defined by
-an atlas parcellation.
-After signal extraction has occurred for all regions, the signals are all correlated
-with each other to generate a correlation matrix.
+The betaseries file has signal averaged across trials within a parcel
+defined by an atlas parcellation.
+After signal extraction has occurred for all parcels, the signals
+are all correlated with each other to generate a correlation matrix.

@@ -18,6 +18,7 @@ Why does this file exist, and why not put this in __main__?
 from __future__ import absolute_import
 import os
 import argparse
+from argparse import RawTextHelpFormatter
 from glob import glob
 from multiprocessing import cpu_count
 from nipype import config as ncfg
@@ -29,7 +30,8 @@ def get_parser():
 
     verstr = 'nibs v{}'.format(__version__)
 
-    parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments')
+    parser = argparse.ArgumentParser(description='NiBetaSeries BIDS arguments',
+                                     formatter_class=RawTextHelpFormatter)
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
     parser.add_argument('derivatives_pipeline', help='The pipeline that contains '
@@ -45,64 +47,69 @@ def get_parser():
     parser.add_argument('-v', '--version', action='version',
                         version=verstr)
 
+    # Atlas Arguments (Required Options)
+    atlas_args = parser.add_argument_group('Required Atlas Arguments')
+    atlas_args.add_argument('-a', '--atlas-img', action='store', required=True,
+                            help='input atlas nifti where each voxel within a "region" '
+                                 'is labeled with the same integer and there is a unique '
+                                 'integer associated with each region of interest. '
+                                 'THIS OPTION IS REQUIRED.')
+    atlas_args.add_argument('-l', '--atlas-lut', action='store', required=True,
+                            help='atlas look up table (tsv) formatted with the columns: '
+                                  'index, regions which correspond to the regions in the '
+                                  'nifti file specified by --atlas-img. '
+                                  'THIS OPTION IS REQUIRED.')
+
     # preprocessing options
-    proc_opts = parser.add_argument_group('Options for preprocessing')
-    proc_opts.add_argument('-sm', '--smoothing_kernel', action='store', type=float, default=6.0,
+    proc_opts = parser.add_argument_group('Options for processing')
+    proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
-    proc_opts.add_argument('-lp', '--low_pass', action='store', type=float,
+    proc_opts.add_argument('-lp', '--low-pass', action='store', type=float,
                            default=None, help='low pass filter (Hz)')
     proc_opts.add_argument('-c', '--confounds', help='The confound column names '
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
                            nargs="+")
-    proc_opts.add_argument('-w', '--work_dir', help='directory where temporary files '
-                           'are stored')
+    proc_opts.add_argument('--hrf-model', default='glover',
+                           choices=['glover', 'spm', 'fir',
+                                    'glover + derivative',
+                                    'glover + derivative + dispersion',
+                                    'spm + derivative',
+                                    'spm + derivative + dispersion'],
+                           help='convolve your regressors '
+                                'with one of the following hemodynamic response functions')
+    proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
+                           'are stored (i.e. non-essential files). '
+                           'This directory can be deleted once you are reasonably '
+                           'certain nibs finished as expected.')
 
     # Image Selection options
     image_opts = parser.add_argument_group('Options for selecting images')
-    parser.add_argument('--participant_label', nargs="+",
+    parser.add_argument('--participant-label', nargs="+",
                         help='The label(s) of the participant(s) '
                              'that should be analyzed. The label '
                              'corresponds to sub-<participant_label> from the BIDS spec '
                              '(so it does not include "sub-"). If this parameter is not '
                              'provided all subjects should be analyzed. Multiple '
                              'participants can be specified with a space separated list.')
-    image_opts.add_argument('--session_label', action='store',
+    image_opts.add_argument('--session-label', action='store',
                             default=None, help='select a session to analyze')
-    image_opts.add_argument('-t', '--task_label', action='store',
+    image_opts.add_argument('-t', '--task-label', action='store',
                             default=None, help='select a specific task to be processed')
-    image_opts.add_argument('--run_label', action='store',
+    image_opts.add_argument('--run-label', action='store',
                             default=None, help='select a run to analyze')
-    image_opts.add_argument('-sp', '--space_label', action='store', default='MNI152NLin2009cAsym',
+    image_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
                             choices=['MNI152NLin2009cAsym'],
                             help='select a bold derivative in a specific space to be used')
-    image_opts.add_argument('--variant_label', action='store',
-                            default=None, help='select a variant bold to process')
-    image_opts.add_argument('--exclude_variant_label', action='store_true',
-                            default=False, help='exclude the variant from FMRIPREP')
-
-    # BetaSeries Specific Options
-    beta_series = parser.add_argument_group('Options for processing beta_series')
-    beta_series.add_argument('--hrf_model', default='glover',
-                             choices=['glover', 'spm', 'fir',
-                                      'glover + derivative',
-                                      'glover + derivative + dispersion',
-                                      'spm + derivative',
-                                      'spm + derivative + dispersion'],
-                             help='convolve your regressors '
-                                  'with one of the following hemodynamic response functions')
-    beta_series.add_argument('-a', '--atlas-img', action='store',
-                             help='input atlas nifti where each voxel within a "region" '
-                                  'is labeled with the same integer and there is a unique '
-                                  'integer associated with each region of interest')
-    beta_series.add_argument('-l', '--atlas-lut', action='store', required=True,
-                             help='atlas look up table (tsv) formatted with the columns: '
-                                  'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img')
+    image_opts.add_argument('--description-label', action='store',
+                            default=None, help='select a bold file with particular '
+                                               '`desc` label to process')
+    image_opts.add_argument('--exclude-description-label', action='store_true',
+                            default=False, help='exclude this `desc` label from nibetaseries')
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
-    g_perfm.add_argument('--nthreads', '--n_cpus', '-n-cpus', action='store', type=int,
+    g_perfm.add_argument('--nthreads', '-n-cpus', action='store', type=int,
                          help='maximum number of threads across all processes')
     g_perfm.add_argument('--use-plugin', action='store', default=None,
                          help='nipype plugin configuration file')
@@ -127,7 +134,7 @@ def main():
 
     derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
 
-    output_dir = os.path.abspath(os.path.join(opts.output_dir, 'NiBetaSeries'))
+    output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
     log_dir = os.path.join(output_dir, 'logs')
@@ -192,7 +199,7 @@ def main():
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
-            exclude_variant_label=opts.exclude_variant_label,
+            exclude_description_label=opts.exclude_description_label,
             hrf_model=opts.hrf_model,
             low_pass=opts.low_pass,
             output_dir=output_dir,
@@ -203,12 +210,14 @@ def main():
             space_label=opts.space_label,
             subject_list=subject_list,
             task_label=opts.task_label,
-            variant_label=opts.variant_label,
+            description_label=opts.description_label,
             work_dir=work_dir,
         )
 
         if opts.graph:
-            nibetaseries_participant_wf.write_graph(graph2use='colored', format='svg', simple_form=True)
+            nibetaseries_participant_wf.write_graph(graph2use='colored',
+                                                    format='svg',
+                                                    simple_form=True)
         try:
             nibetaseries_participant_wf.run(**plugin_settings)
         except RuntimeError as e:

@@ -18,6 +18,7 @@ extensions = [
     'sphinx_gallery.gen_gallery',
     'sphinxarg.ext',
     'sphinx.ext.mathjax',
+    'sphinxcontrib.bibtex',
 ]
 if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',
@@ -51,6 +52,8 @@ html_sidebars = {
    '**': ['searchbox.html', 'globaltoc.html', 'sourcelink.html'],
 }
 html_short_title = '%s-%s' % (project, version)
+
+html_static_path = ['_static']
 
 napoleon_use_ivar = True
 napoleon_use_rtype = False

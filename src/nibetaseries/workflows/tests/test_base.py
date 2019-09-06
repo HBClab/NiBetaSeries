@@ -1,14 +1,17 @@
-import os
+import os.path as op
 from nipype import config as ncfg
-
 
 from ..base import init_nibetaseries_participant_wf
 
 
-def test_init_nibetaseries_participant_wf(bids_dir, atlas_file, atlas_lut, bold_file):
-    output_dir = os.path.join(str(bids_dir), 'derivatives', 'atlasCorr')
-    work_dir = os.path.join(str(bids_dir), 'derivatives', 'work')
-    deriv_dir = os.path.join(str(bids_dir), 'derivatives', 'fmriprep')
+def test_init_nibetaseries_participant_wf(
+        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        ):
+
+    output_dir = op.join(str(bids_dir), 'derivatives', 'atlasCorr')
+    work_dir = op.join(str(bids_dir), 'derivatives', 'work')
+    deriv_dir = op.join(str(bids_dir), 'derivatives', 'fmriprep')
     ncfg.update_config({
         'logging': {'log_directory': work_dir,
                     'log_to_file': True},
@@ -21,7 +24,7 @@ def test_init_nibetaseries_participant_wf(bids_dir, atlas_file, atlas_lut, bold_
         atlas_lut=str(atlas_lut),
         bids_dir=str(bids_dir),
         derivatives_pipeline_dir=deriv_dir,
-        exclude_variant_label=None,
+        exclude_description_label=None,
         hrf_model='spm',
         low_pass=None,
         output_dir=output_dir,
@@ -32,7 +35,7 @@ def test_init_nibetaseries_participant_wf(bids_dir, atlas_file, atlas_lut, bold_
         space_label=None,
         subject_list=["01"],
         task_label=None,
-        variant_label=None,
+        description_label=None,
         work_dir=work_dir)
 
     assert test_np_wf.run()

@@ -1,0 +1,270 @@
+version: 2
+jobs:
+
+  build_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - run:
+          name:  Install pigz
+          command: |
+            sudo apt update && sudo apt -y install pigz
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+            - docker-v1-{{ .Branch }}-
+            - docker-v1-master-
+            - docker-v1-
+          paths:
+            - /tmp/cache/docker.tar.gz
+      - checkout
+
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Docker image
+          no_output_timeout: 60m
+          command: |
+            docker build \
+              --cache-from=hbclab/nibetaseries:unstable \
+              -t hbclab/nibetaseries:unstable \
+              --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
+              --build-arg VCS_REF=$(git rev-parse --short HEAD) .
+            # test if development image should be built
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[build[ _]?devel\]' )" != "" ]]; then
+              echo "building development container"
+              docker build \
+                --rm=false \
+                -t hbclab/nibetaseries_devel \
+                -f Dockerfile_devel .
+            fi
+      - run:
+          name: Test Docker image
+          command: |
+            docker run hbclab/nibetaseries:unstable nibs --help
+      - run:
+          name: Docker save
+          no_output_timeout: 30m
+          command: |
+            mkdir -p /tmp/cache
+            docker save hbclab/nibetaseries:unstable | pigz -3 > /tmp/cache/docker.tar.gz
+      
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - src/NiBetaSeries
+      - save_cache:
+          key: docker-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - /tmp/cache/docker.tar.gz
+
+  build_binder:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: ~/binderBuild
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "b9:b2:c0:2a:28:53:25:bb:b9:c0:4b:ca:13:96:b1:19"
+      - checkout
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: build binder
+          command: |
+            # setup git configuration for pushing to binder branch
+            cd ~/binderBuild
+            git config user.email "binder@binder.com"
+            git config user.name "binder bot"
+            git remote add upstream https://github.com/HBClab/NiBetaSeries.git
+            git checkout -b binder
+            git pull . ${CIRCLE_BRANCH}
+
+            # make directory to place requirements.txt to install nibetaseries
+            # inside binder
+            mkdir -p ~/binderBuild/binder
+            echo ".[nb]" > ~/binderBuild/binder/requirements.txt
+
+            # make the .ipynb file for binder
+            docker run -it \
+              --rm=false \
+              --name binder \
+              -w /src/nibetaseries \
+              hbclab/nibetaseries:unstable \
+              bash -c "source activate neuro_py36 && \
+                       pip install .[doc] && \
+                       sphx_glr_python_to_jupyter.py ./examples/plot_run_nibetaseries.py"
+            # copy the ipynb into the binder folder of the repository
+            docker cp binder:/src/nibetaseries/examples/plot_run_nibetaseries.ipynb ~/binderBuild/binder
+            # push the notebook to the binder branch
+            git add binder/*
+            git commit -m 'add binder files[ci skip]'
+            git push -fq upstream binder
+
+  tox_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Run NiBetaSeries tests
+          command: |
+            docker run -it \
+              -w /src/nibetaseries \
+              hbclab/nibetaseries:unstable tox -e py36
+    
+  build_docs:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - attach_workspace:
+          at: /tmp
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Build Documentation
+          command: |
+            mkdir -p /tmp/docBuild
+            docker run -it \
+              --rm=false \
+              --name=doc_builder \
+              -w /src/nibetaseries \
+              hbclab/nibetaseries:unstable \
+              tox -e docs
+            docker cp doc_builder:/src/nibetaseries/docs/_build/html/ /tmp/docBuild
+      - store_artifacts:
+          path: /tmp/docBuild/html
+
+  deploy_docker:
+    machine:
+      image: circleci/classic:201711-01
+    working_directory: /tmp/src/NiBetaSeries
+    steps:
+      - restore_cache:
+          keys:
+            - docker-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Load Docker image layer cache
+          no_output_timeout: 30m
+          command: |
+            docker info
+            set +o pipefail
+            if [ -f /tmp/cache/docker.tar.gz ]; then
+              sudo apt update && sudo apt -y install pigz
+              pigz -d --stdout /tmp/cache/docker.tar.gz | docker load
+              docker images
+            fi
+      - run:
+          name: Deploy to Docker Hub
+          no_output_timeout: 40m
+          command: |
+            if [[ -n "$DOCKER_PASS" ]]; then
+              docker login -u $DOCKER_USER -p $DOCKER_PASS
+              docker push hbclab/nibetaseries:unstable
+              if [[ -n "$CIRCLE_TAG" ]]; then
+                docker tag hbclab/nibetaseries:unstable hbclab/nibetaseries:$CIRCLE_TAG
+                docker push hbclab/nibetaseries:$CIRCLE_TAG
+              fi
+            fi
+    
+workflows:
+  version: 2
+  build_test_deploy:
+    jobs:
+      - build_docker:
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+
+      - tox_docker:
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/    
+        
+      - build_docs:
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only: /.*/
+            tags:
+              only: /^v.*/
+
+      - build_binder:
+          requires:
+            - build_docker
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              only: /^v.*/
+
+      - deploy_docker:
+          context: hbclab
+          requires:
+            - tox_docker
+            - build_docs
+          filters:
+            branches:
+              only: master
+            tags:
+              only: /^v.*/

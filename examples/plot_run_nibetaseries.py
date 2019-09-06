@@ -1,6 +1,6 @@
 """
-Running NiBetaSeries using ds000164 (Stroop Task)
-===============================================================
+Running NiBetaSeries
+====================
 
 This example runs through a basic call of NiBetaSeries using
 the commandline entry point ``nibs``.
@@ -25,8 +25,11 @@ import pandas as pd   # manipulate tabular data
 #############################################################################
 # Download relevant data from ds000164 (and Atlas Files)
 # ======================================================
-# The subject data came from `openneuro <https://openneuro.org/datasets/ds000164/versions/00001/>`_.
-# The atlas data came from a `recently published parcellation <https://www.ncbi.nlm.nih.gov/pubmed/28981612>`_
+# The subject data came from `openneuro
+# <https://openneuro.org/datasets/ds000164/versions/00001/>`_
+# :cite:`n-Verstynen2014`.
+# The atlas data came from a `recently published parcellation
+# <https://www.ncbi.nlm.nih.gov/pubmed/28981612>`_
 # in a publically accessible github repository.
 
 # atlas github repo for reference:
@@ -36,7 +39,7 @@ data_dir = tempfile.mkdtemp()
 print('Our working directory: {}'.format(data_dir))
 
 # download the tar data
-url = "https://www.dropbox.com/s/qoqbiya1ou7vi78/ds000164-test_v1.tar.gz?dl=1"
+url = "https://www.dropbox.com/s/fvtyld08srwl3x9/ds000164-test_v2.tar.gz?dl=1"
 tar_file = os.path.join(data_dir, "ds000164.tar.gz")
 u = urllib.request.urlopen(url)
 data = u.read()
@@ -89,13 +92,6 @@ events_file = os.path.join(data_dir,
                            "func",
                            "sub-001_task-stroop_events.tsv")
 events_df = pd.read_csv(events_file, sep='\t', na_values="n/a")
-print(events_df.head())
-
-#############################################################################
-# change the Y/N to 1/0
-# ---------------------
-
-events_df['correct'].replace({"Y": 1, "N": 0}, inplace=True)
 print(events_df.head())
 
 #############################################################################
@@ -164,6 +160,7 @@ atlas_df.to_csv(atlas_tsv, sep="\t", index=False)
 #############################################################################
 # Run nibs
 # ========
+
 out_dir = os.path.join(data_dir, "ds000164", "derivatives")
 work_dir = os.path.join(out_dir, "work")
 atlas_mni_file = os.path.join(data_dir,
@@ -173,7 +170,7 @@ atlas_mni_file = os.path.join(data_dir,
                               "Schaefer2018_100Parcels_7Networks_order_FSLMNI152_2mm.nii.gz")
 cmd = """\
 nibs -c WhiteMatter CSF \
---participant_label 001 \
+--participant-label 001 \
 -w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
@@ -186,6 +183,12 @@ participant
            bids_dir=os.path.join(data_dir, "ds000164"),
            out_dir=out_dir,
            work_dir=work_dir)
+
+# Since we cannot run bash commands inside this tutorial
+# we are printing the actual bash command so you can see it
+# in the output
+print("The Example Command:\n", cmd)
+
 # call nibs
 p = Popen(cmd, shell=True, stdout=PIPE, stderr=STDOUT)
 
@@ -205,9 +208,10 @@ list_files(data_dir)
 # Collect results
 # ===============
 
-corr_mat_path = os.path.join(out_dir, "NiBetaSeries", "nibetaseries", "sub-001", "func")
+corr_mat_path = os.path.join(out_dir, "nibetaseries", "sub-001", "func")
 trial_types = ['congruent', 'incongruent', 'neutral']
-filename_template = "sub-001_task-stroop_bold_space-MNI152NLin2009cAsym_preproc_trialtype-{trial_type}_matrix.tsv"
+filename_template = ('sub-001_task-stroop_space-MNI152NLin2009cAsym_'
+                     'desc-{trial_type}_correlation.tsv')
 pd_dict = {}
 for trial_type in trial_types:
     file_path = os.path.join(corr_mat_path, filename_template.format(trial_type=trial_type))
@@ -231,3 +235,12 @@ for trial_type, df in pd_dict.items():
     # iterate over rows
     r += 1
 plt.tight_layout()
+
+#############################################################################
+# References
+# ==========
+# .. bibliography:: ../references.bib
+#    :style: plain
+#    :labelprefix: notebook-
+#    :keyprefix: n-
+#

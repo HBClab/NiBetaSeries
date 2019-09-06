@@ -10,7 +10,7 @@ def test_get_parser():
         print('success')
 
 
-def test_nibs(bids_dir, atlas_file, atlas_lut, fmriprep_dir):
+def test_nibs(bids_dir, atlas_file, atlas_lut, deriv_dir):
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
     assert call(["nibs",

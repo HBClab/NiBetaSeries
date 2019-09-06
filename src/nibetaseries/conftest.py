@@ -6,37 +6,144 @@ from nistats.hemodynamic_models import spm_hrf
 from scipy.stats import pearsonr
 from scipy.optimize import minimize
 import pytest
+from bids.layout.writing import build_path
+import pkg_resources
+import os.path as op
 
-bids_prefix = "sub-01_ses-pre_task-waffles"
-deriv_prefix = bids_prefix + "_space-MNI152NLin2009cAsym"
+# read in filename patterns to create valid filenames
+bids_cfg = pkg_resources.resource_string("nibetaseries", op.join("data", "bids.json"))
+bids_patterns = json.loads(bids_cfg.decode('utf-8'))['default_path_patterns']
+
+deriv_cfg = pkg_resources.resource_string("nibetaseries", op.join("data", "derivatives.json"))
+deriv_patterns = json.loads(deriv_cfg.decode('utf-8'))['fmriprep_path_patterns']
+
+# building blocks for generating valid file names
+subject_entities = {
+    "subject": "01",
+    "session": "pre",
+}
+
+bids_bold_entities = {
+    **subject_entities,
+    "datatype": "func",
+    "task": "waffles",
+    "suffix": "bold",
+    "extension": "nii.gz",
+}
+bids_bold_fname = build_path(bids_bold_entities, bids_patterns)
+
+bids_json_entities = {
+    **bids_bold_entities,
+    "extension": "json",
+}
+bids_json_fname = build_path(bids_json_entities, bids_patterns)
+
+bids_events_entities = {
+    **bids_bold_entities,
+    "suffix": "events",
+    "extension": "tsv",
+}
+bids_events_fname = build_path(bids_events_entities, bids_patterns)
+
+deriv_bold_entities = {
+    **bids_bold_entities,
+    "space": "MNI152NLin2009cAsym",
+    "description": "preproc",
+}
+deriv_bold_fname = build_path(deriv_bold_entities, deriv_patterns)
+
+deriv_mask_entities = {
+    **deriv_bold_entities,
+    "suffix": "mask",
+    "description": "brain",
+}
+deriv_mask_fname = build_path(deriv_mask_entities, deriv_patterns)
+
+deriv_regressor_entities = {
+    **subject_entities,
+    "datatype": "func",
+    "task": "waffles",
+    "description": "confounds",
+    "suffix": "regressors",
+    "extension": "tsv",
+}
+deriv_regressor_fname = build_path(deriv_regressor_entities, deriv_patterns)
+
+deriv_betaseries_entities = {
+    **deriv_bold_entities,
+    "suffix": "betaseries",
+    "description": "testCond",
+}
+deriv_betaseries_fname = build_path(deriv_betaseries_entities, deriv_patterns)
 
 
 @pytest.fixture(scope='session')
 def bids_dir(tmpdir_factory):
-    return tmpdir_factory.mktemp('bids')
+    bids_dir = tmpdir_factory.mktemp('bids')
+
+    dataset_json = bids_dir.ensure("dataset_description.json")
+
+    dataset_dict = {
+        "Name": "waffles and fries",
+        "BIDSVersion": "1.1.1",
+    }
+
+    with open(str(dataset_json), 'w') as dj:
+        json.dump(dataset_dict, dj)
+
+    return bids_dir
 
 
 @pytest.fixture(scope='session')
-def sub_bids(bids_dir):
-    return bids_dir.ensure('sub-01',
-                           'ses-pre',
-                           'func',
+def sub_bids(bids_dir, example_file=bids_bold_fname):
+    sub_dir = op.dirname(example_file)
+
+    return bids_dir.ensure(sub_dir,
                            dir=True)
 
 
 @pytest.fixture(scope='session')
-def fmriprep_dir(bids_dir):
-    return bids_dir.ensure('derivatives',
-                           'fmriprep',
-                           'sub-01',
-                           'ses-pre',
-                           'func',
-                           dir=True)
+def deriv_dir(bids_dir):
+    deriv_dir = bids_dir.ensure('derivatives',
+                                'fmriprep',
+                                dir=True)
+
+    dataset_json = deriv_dir.ensure("dataset_description.json")
+
+    dataset_dict = {
+        "Name": "fMRIPrep - fMRI PREProcessing workflow",
+        "BIDSVersion": "1.1.1",
+        "PipelineDescription": {
+            "Name": "fMRIPrep",
+            "Version": "1.5.0rc2+14.gf673eaf5",
+            "CodeURL": "https://github.com/poldracklab/fmriprep/archive/1.5.0.tar.gz"
+        },
+        "CodeURL": "https://github.com/poldracklab/fmriprep",
+        "HowToAcknowledge": "Please cite our paper (https://doi.org/10.1038/s41592-018-0235-4)",
+        "SourceDatasetsURLs": [
+            "https://doi.org/"
+        ],
+        "License": ""
+    }
+
+    with open(str(dataset_json), 'w') as dj:
+        json.dump(dataset_dict, dj)
+
+    return deriv_dir
 
 
 @pytest.fixture(scope='session')
-def sub_metadata(sub_bids, bids_prefix=bids_prefix):
-    sub_json = sub_bids.join(bids_prefix + "_bold.json")
+def sub_fmriprep(deriv_dir, example_file=deriv_bold_fname):
+    sub_dir = op.dirname(example_file)
+
+    return deriv_dir.ensure(sub_dir,
+                            dir=True)
+
+
+# layout = BIDSLayout("./", validate=False, derivatives="./derivatives/fmriprep")
+@pytest.fixture(scope='session')
+def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
+    sub_json = bids_dir.ensure(bids_json_fname)
     tr = 2
     bold_metadata = {"RepetitionTime": tr, "TaskName": "waffles"}
 
@@ -47,13 +154,13 @@ def sub_metadata(sub_bids, bids_prefix=bids_prefix):
 
 
 @pytest.fixture(scope='session')
-def bold_file(sub_bids, bids_prefix=bids_prefix):
-    return sub_bids.ensure(bids_prefix + "_bold.nii.gz")
+def bold_file(bids_dir, bids_bold_fname=bids_bold_fname):
+    return bids_dir.ensure(bids_bold_fname)
 
 
 @pytest.fixture(scope='session')
-def preproc_file(fmriprep_dir, sub_metadata, deriv_prefix=deriv_prefix):
-    preproc_file = fmriprep_dir.join(deriv_prefix + "_bold_preproc.nii.gz")
+def preproc_file(deriv_dir, sub_metadata, deriv_bold_fname=deriv_bold_fname):
+    deriv_bold = deriv_dir.ensure(deriv_bold_fname)
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
     tr = bold_metadata["RepetitionTime"]
@@ -76,14 +183,15 @@ def preproc_file(fmriprep_dir, sub_metadata, deriv_prefix=deriv_prefix):
     # make a nifti image
     img = nib.Nifti1Image(img_data, np.eye(4))
     # save the nifti image
-    img.to_filename(str(preproc_file))
+    img.to_filename(str(deriv_bold))
 
-    return preproc_file
+    return deriv_bold
 
 
 @pytest.fixture(scope='session')
-def sub_events(sub_bids, sub_metadata, preproc_file, bids_prefix=bids_prefix):
-    events_file = sub_bids.join(bids_prefix + "_events.tsv")
+def sub_events(bids_dir, sub_metadata, preproc_file,
+               bids_events_fname=bids_events_fname):
+    events_file = bids_dir.ensure(bids_events_fname)
     # read in subject metadata to get the TR
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
@@ -109,8 +217,9 @@ def sub_events(sub_bids, sub_metadata, preproc_file, bids_prefix=bids_prefix):
 
 
 @pytest.fixture(scope='session')
-def confounds_file(fmriprep_dir, preproc_file, bids_prefix=bids_prefix):
-    confounds_file = fmriprep_dir.join(bids_prefix + "_bold_confounds.tsv")
+def confounds_file(deriv_dir, preproc_file,
+                   deriv_regressor_fname=deriv_regressor_fname):
+    confounds_file = deriv_dir.ensure(deriv_regressor_fname)
     tp = nib.load(str(preproc_file)).shape[-1]
     ix = np.arange(tp)
     # csf
@@ -123,8 +232,9 @@ def confounds_file(fmriprep_dir, preproc_file, bids_prefix=bids_prefix):
 
 
 @pytest.fixture(scope='session')
-def brainmask_file(fmriprep_dir, deriv_prefix=deriv_prefix):
-    brainmask_file = fmriprep_dir.join(deriv_prefix + "_bold_brainmask.nii.gz")
+def brainmask_file(deriv_dir,
+                   deriv_mask_fname=deriv_mask_fname):
+    brainmask_file = deriv_dir.ensure(deriv_mask_fname)
     bm_data = np.array([[[1, 1]]], dtype=np.int16)
     bm_img = nib.Nifti1Image(bm_data, np.eye(4))
     bm_img.to_filename(str(brainmask_file))
@@ -153,8 +263,9 @@ def atlas_lut(tmpdir_factory):
 
 
 @pytest.fixture(scope='session')
-def betaseries_file(tmpdir_factory):
-    bfile = tmpdir_factory.mktemp("beta").join("betaseries_trialtype-testCond.nii.gz")
+def betaseries_file(tmpdir_factory,
+                    deriv_betaseries_fname=deriv_betaseries_fname):
+    bfile = tmpdir_factory.mktemp("beta").ensure(deriv_betaseries_fname)
     np.random.seed(3)
     num_trials = 40
     tgt_corr = 0.1

@@ -12,19 +12,25 @@ include *.md
 include *.json
 
 include *.enc
-include requirements.txt
-include requirements-dev.txt
-include AUTHORS.rst
-include CHANGELOG.rst
-include CONTRIBUTING.rst
 include LICENSE
-include README.rst
+include *.rst
+include *.yml
+include *.toml
 
 include tox.ini .travis.yml
 recursive-include tests *.py
 
 include versioneer.py
 
+prune scripts
 prune .github
 prune .joss
+prune .circleci
+prune .vscode
 global-exclude *.py[cod] __pycache__ *.so *.dylib
+
+exclude *.sh
+exclude Dockerfile
+exclude .dockerignore
+exclude Dockerfile_devel
+
