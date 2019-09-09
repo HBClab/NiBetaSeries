@@ -19,7 +19,7 @@ Participant Workflow
         confound_tsv_list=[''],
         events_tsv_list=[''],
         hrf_model='glover',
-        high_pass=None,
+        high_pass=0.01,
         name='subtest',
         output_dir='.',
         preproc_img_list=[''],
@@ -44,7 +44,7 @@ BetaSeries Workflow
     from nibetaseries.workflows.model import init_betaseries_wf
     wf = init_betaseries_wf(
         hrf_model='glover',
-        high_pass=None,
+        high_pass=0.01,
         smoothing_kernel=0.0,
         selected_confounds=[''])
 

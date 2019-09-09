@@ -26,7 +26,7 @@ def test_init_nibetaseries_participant_wf(
         derivatives_pipeline_dir=deriv_dir,
         exclude_description_label=None,
         hrf_model='spm',
-        high_pass=None,
+        high_pass=0.01,
         output_dir=output_dir,
         run_label=None,
         selected_confounds=['WhiteMatter', 'CSF'],
