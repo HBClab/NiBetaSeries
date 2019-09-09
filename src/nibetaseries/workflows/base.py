@@ -19,7 +19,7 @@ from bids import BIDSLayout
 
 def init_nibetaseries_participant_wf(
     atlas_img, atlas_lut, bids_dir,
-    derivatives_pipeline_dir, exclude_description_label, hrf_model, low_pass,
+    derivatives_pipeline_dir, exclude_description_label, hrf_model, high_pass,
     output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
@@ -43,8 +43,8 @@ def init_nibetaseries_participant_wf(
             Exclude bold series containing this description label
         hrf_model : str
             The model that represents the shape of the hemodynamic response function
-        low_pass : float or None
-            Low pass filter (Hz)
+        high_pass : float or None
+            High pass filter (Hz)
         output_dir : str
             Directory where derivatives are saved
         run_label : str or None
@@ -99,7 +99,7 @@ def init_nibetaseries_participant_wf(
             confound_tsv_list=confound_tsv_list,
             events_tsv_list=events_tsv_list,
             hrf_model=hrf_model,
-            low_pass=low_pass,
+            high_pass=high_pass,
             name='single_subject' + subject_label + '_wf',
             output_dir=output_dir,
             preproc_img_list=preproc_img_list,
@@ -121,7 +121,7 @@ def init_nibetaseries_participant_wf(
 
 def init_single_subject_wf(
     atlas_img, atlas_lut, bold_metadata_list, brainmask_list, confound_tsv_list,
-    events_tsv_list, hrf_model, low_pass, name, output_dir, preproc_img_list,
+    events_tsv_list, hrf_model, high_pass, name, output_dir, preproc_img_list,
     selected_confounds, smoothing_kernel
         ):
     """
@@ -140,7 +140,7 @@ def init_single_subject_wf(
             confound_tsv_list=[''],
             events_tsv_list=[''],
             hrf_model='',
-            low_pass='',
+            high_pass='',
             name='subtest',
             output_dir='.',
             preproc_img_list=[''],
@@ -164,9 +164,9 @@ def init_single_subject_wf(
             list of event tsvs
         hrf_model : str
             hemodynamic response function used to model the data
-        low_pass : float or None
-            low pass filter to apply to bold (in Hertz).
-            Reminder - frequencies _lower_ than this number are kept.
+        high_pass : float or None
+            high pass filter to apply to bold (in Hertz).
+            Reminder - frequencies _higher_ than this number are kept.
         name : str
             name of the workflow (e.g. ``subject-01_wf``)
         output_dir : str
@@ -232,7 +232,7 @@ def init_single_subject_wf(
                           name='output_node')
 
     # initialize the betaseries workflow
-    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, low_pass=low_pass,
+    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, high_pass=high_pass,
                                        selected_confounds=selected_confounds,
                                        smoothing_kernel=smoothing_kernel)
 
