@@ -17,7 +17,7 @@ from ..interfaces.nistats import BetaSeries
 
 def init_betaseries_wf(name="betaseries_wf",
                        hrf_model='glover',
-                       high_pass=None,
+                       high_pass=0.0078125,
                        smoothing_kernel=None,
                        selected_confounds=None,
                        ):
@@ -33,7 +33,7 @@ def init_betaseries_wf(name="betaseries_wf",
         from nibetaseries.workflows.model import init_betaseries_wf
         wf = init_betaseries_wf(
             hrf_model='glover',
-            high_pass=None,
+            high_pass=0.0078125,
             smoothing_kernel=0.0,
             selected_confounds=[''])
 
@@ -43,7 +43,7 @@ def init_betaseries_wf(name="betaseries_wf",
         Name of workflow (default: ``betaseries_wf``)
     hrf_model : str
         hemodynamic response function used to model the data (default: ``glover``)
-    high_pass : float or None
+    high_pass : float
         high pass filter to apply to bold (in Hertz).
         Reminder - frequencies _lower_ than this number are kept.
     smoothing_kernel : float or None
