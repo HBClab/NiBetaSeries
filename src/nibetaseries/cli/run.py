@@ -256,7 +256,7 @@ def main():
     if citation_files['md'].exists():
         # Generate HTML file resolving citations
         cmd = ['pandoc', '-s', '--bibliography',
-               pkgrf('nibetaseries', 'data/boilerplate.bib'),
+               pkgrf('nibetaseries', 'data/references.bib'),
                '--filter', 'pandoc-citeproc',
                '--metadata', 'pagetitle="NiBetaSeries citation boilerplate"',
                str(citation_files['md']),
@@ -271,7 +271,7 @@ def main():
 
         # Generate LaTex file resolving citations
         cmd = ['pandoc', '-s', '--bibliography',
-               pkgrf('nibetaseries', 'data/boilerplate.bib'),
+               pkgrf('nibetaseries', 'data/references.bib'),
                '--natbib', str(citation_files['md']),
                '-o', str(citation_files['tex'])]
         logger.info('Generating a LaTeX version of the citation boilerplate...')
@@ -281,7 +281,7 @@ def main():
             logger.warning('Could not generate CITATION.tex file:\n%s',
                            ' '.join(cmd))
         else:
-            copyfile(pkgrf('nibetaseries', 'data/boilerplate.bib'),
+            copyfile(pkgrf('nibetaseries', 'data/references.bib'),
                      citation_files['bib'])
     else:
         logger.warning('NiBetaSeries could not find the markdown version of '
