@@ -31,7 +31,7 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Either(None, traits.Float(),
-                             desc="the high pass filter (Hz)")
+                              desc="the high pass filter (Hz)")
 
 
 class BetaSeriesOutputSpec(TraitedSpec):
