@@ -22,6 +22,12 @@ from argparse import RawTextHelpFormatter
 from glob import glob
 from multiprocessing import cpu_count
 from nipype import config as ncfg
+from subprocess import check_call, CalledProcessError, TimeoutExpired
+from pkg_resources import resource_filename as pkgrf
+from shutil import copyfile
+import logging
+
+logger = logging.getLogger('cli')
 
 
 def get_parser():
@@ -226,5 +232,57 @@ def main():
             else:
                 raise e
 
+        boilerplate = nibetaseries_participant_wf.visit_desc()
+        if boilerplate:
+            citation_files = {
+                ext: log_dir / ('CITATION.%s' % ext)
+                for ext in ('bib', 'tex', 'md', 'html')
+            }
+            # To please git-annex users and also to guarantee consistency
+            # among different renderings of the same file, first remove any
+            # existing one
+            for citation_file in citation_files.values():
+                try:
+                    citation_file.unlink()
+                except FileNotFoundError:
+                    pass
+
+            citation_files['md'].write_text(boilerplate)
+
     elif opts.analysis_level == "group":
         raise NotImplementedError('group analysis not currently implemented')
+
+    if citation_files['md'].exists():
+        # Generate HTML file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/references.bib'),
+               '--filter', 'pandoc-citeproc',
+               '--metadata', 'pagetitle="NiBetaSeries citation boilerplate"',
+               str(citation_files['md']),
+               '-o', str(citation_files['html'])]
+
+        logger.info('Generating an HTML version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.html file:\n%s',
+                           ' '.join(cmd))
+
+        # Generate LaTex file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/boilerplate.bib'),
+               '--natbib', str(citation_files['md']),
+               '-o', str(citation_files['tex'])]
+        logger.info('Generating a LaTeX version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.tex file:\n%s',
+                           ' '.join(cmd))
+        else:
+            copyfile(pkgrf('nibetaseries', 'data/boilerplate.bib'),
+                     citation_files['bib'])
+    else:
+        logger.warning('NiBetaSeries could not find the markdown version of '
+                       'the citation boilerplate (%s). HTML and LaTeX versions'
+                       ' of it will not be available', citation_files['md'])
