@@ -77,14 +77,14 @@ def init_betaseries_wf(name="betaseries_wf",
 
     """
     workflow = Workflow(name=name)
-    smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm, '
+    smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
+                  ' '.format(fwhm=smoothing_kernel)
                   if smoothing_kernel != 0. else '')
     confound_str = (', '.join(selected_confounds) + ' and ' if
                     selected_confounds else '')
     workflow.__desc__ = """\
 Least squares- separate (LSS) models were generated for each event in the task
-following the method described in [@Turner2012a], using Nistats {nistats_ver}
-[@nistats].
+following the method described in [@Turner2012a], using Nistats {nistats_ver}.
 Prior to modeling, preprocessed data were {smooth_str}masked,
 and mean-scaled over time.
 For each trial, preprocessed data were subjected to a general linear model in

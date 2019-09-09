@@ -61,8 +61,8 @@ matrix.
 The correlation coefficient estimator used for this step was empirical
 covariance, as implemented in Nilearn {nilearn_ver} [@nilearn].
 Correlation coefficients were converted to normally-distributed z-values using
-Fisher's r-to-z conversion [@FisherRtoZ].
-Figures for the correlation matrix were also generated.
+Fisher's r-to-z conversion [@fisher1915frequency].
+Figures for the correlation matrices were also generated.
 """.format(nilearn_ver=nilearn_ver)
 
     input_node = pe.MapNode(niu.IdentityInterface(fields=['betaseries_files',

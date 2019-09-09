@@ -26,6 +26,7 @@ from subprocess import check_call, CalledProcessError, TimeoutExpired
 from pkg_resources import resource_filename as pkgrf
 from shutil import copyfile
 import logging
+from pathlib import Path
 
 logger = logging.getLogger('cli')
 
@@ -143,7 +144,7 @@ def main():
     output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
-    log_dir = os.path.join(output_dir, 'logs')
+    log_dir = os.path.join(output_dir, 'nibetaseries/logs')
     os.makedirs(log_dir, exist_ok=True)
 
     if opts.work_dir:
@@ -235,7 +236,7 @@ def main():
         boilerplate = nibetaseries_participant_wf.visit_desc()
         if boilerplate:
             citation_files = {
-                ext: log_dir / ('CITATION.%s' % ext)
+                ext: Path(log_dir) / 'CITATION.{}'.format(ext)
                 for ext in ('bib', 'tex', 'md', 'html')
             }
             # To please git-annex users and also to guarantee consistency
@@ -255,7 +256,7 @@ def main():
     if citation_files['md'].exists():
         # Generate HTML file resolving citations
         cmd = ['pandoc', '-s', '--bibliography',
-               pkgrf('nibetaseries', 'data/references.bib'),
+               pkgrf('nibetaseries', 'data/boilerplate.bib'),
                '--filter', 'pandoc-citeproc',
                '--metadata', 'pagetitle="NiBetaSeries citation boilerplate"',
                str(citation_files['md']),
