@@ -26,6 +26,6 @@ comment:
   require_changes: no
 
 ignore:
-  - "_version.py"
-  - "conftest.py"
-  - "test_*.py"
+  - "src/nibetaseries/_version.py"
+  - "src/nibetaseries/conftest.py"
+  - "**/test_*.py"
