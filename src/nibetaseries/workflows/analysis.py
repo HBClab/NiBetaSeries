@@ -10,6 +10,8 @@ This workflow takes roi-roi correlations of the input betaseries
 from __future__ import print_function, division, absolute_import, unicode_literals
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+from nilearn import __version__ as nilearn_ver
 from ..interfaces.nilearn import AtlasConnectivity
 
 
@@ -50,7 +52,18 @@ def init_correlation_wf(name="correlation_wf"):
         correlation_fig
             a svg file of a circular connectivity plot showing all roi-roi correlations
     """
-    workflow = pe.Workflow(name=name)
+    workflow = Workflow(name=name)
+
+    workflow.__desc__ = """\
+The beta series 4D image for each condition in the task was subjected to an
+ROI-to-ROI connectivity analysis to produce a condition-specific correlation
+matrix.
+The correlation coefficient estimator used for this step was empirical
+covariance, as implemented in Nilearn {nilearn_ver} [@nilearn].
+Correlation coefficients were converted to normally-distributed z-values using
+Fisher's r-to-z conversion [@FisherRtoZ].
+Figures for the correlation matrix were also generated.
+""".format(nilearn_ver=nilearn_ver)
 
     input_node = pe.MapNode(niu.IdentityInterface(fields=['betaseries_files',
                                                           'atlas_file',

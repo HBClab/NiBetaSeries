@@ -12,6 +12,8 @@ Derive Beta Series Maps
 from __future__ import print_function, division, absolute_import, unicode_literals
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+from nistats import __version__ as nistats_ver
 from ..interfaces.nistats import BetaSeries
 
 
@@ -74,7 +76,34 @@ def init_betaseries_wf(name="betaseries_wf",
         (assuming the number of trials for any trial type is above 2)
 
     """
-    workflow = pe.Workflow(name=name)
+    workflow = Workflow(name=name)
+    smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm, '
+                  if smoothing_kernel != 0. else '')
+    confound_str = (', '.join(selected_confounds) + ' and ' if
+                    selected_confounds else '')
+    workflow.__desc__ = """\
+Least squares- separate (LSS) models were generated for each event in the task
+following the method described in [@Turner2012a], using Nistats {nistats_ver}
+[@nistats].
+Prior to modeling, preprocessed data were {smooth_str}masked,
+and mean-scaled over time.
+For each trial, preprocessed data were subjected to a general linear model in
+which the trial was modeled in its own regressor, while all other trials from
+that condition were modeled in a second regressor, and other conditions were
+modeled in their own regressors.
+Each condition regressor was convolved with a "{hrf}" hemodynamic response
+function for the model.
+In addition to condition regressors, {confound_str}a
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+included in the model.
+AR(1) prewhitening was applied in each model to account for temporal
+autocorrelation.
+After fitting each model, the parameter estimate map associated with the
+target trial's regressor was retained and concatenated into a 4D image with all
+other trials from that condition, resulting in a set of N 4D images of varying
+sizes, where N refers to the number of conditions in the task.
+""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
+           confound_str=confound_str, hpf=low_pass)
 
     input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
                                                        'events_file',
