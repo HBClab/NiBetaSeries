@@ -43,7 +43,7 @@ def init_nibetaseries_participant_wf(
             Exclude bold series containing this description label
         hrf_model : str
             The model that represents the shape of the hemodynamic response function
-        high_pass : float or None
+        high_pass : float
             High pass filter (Hz)
         output_dir : str
             Directory where derivatives are saved
@@ -164,7 +164,7 @@ def init_single_subject_wf(
             list of event tsvs
         hrf_model : str
             hemodynamic response function used to model the data
-        high_pass : float or None
+        high_pass : float
             high pass filter to apply to bold (in Hertz).
             Reminder - frequencies _higher_ than this number are kept.
         name : str

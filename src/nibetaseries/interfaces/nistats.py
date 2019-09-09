@@ -30,8 +30,7 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
     hrf_model = traits.String(desc="hemodynamic response model")
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
-    high_pass = traits.Either(None, traits.Float(),
-                              desc="the high pass filter (Hz)")
+    high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
 
 
 class BetaSeriesOutputSpec(TraitedSpec):
@@ -60,10 +59,7 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
             confounds = None
 
         # high_pass, switch from Hz to Period
-        if self.inputs.high_pass:
-            high_pass_period = int(1 / self.inputs.high_pass)
-        else:
-            high_pass_period = 128
+        high_pass_period = int(1 / self.inputs.high_pass)
 
         # setup the model
         model = first_level_model.FirstLevelModel(t_r=t_r,
