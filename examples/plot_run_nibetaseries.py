@@ -171,7 +171,7 @@ atlas_mni_file = os.path.join(data_dir,
 cmd = """\
 nibs -c WhiteMatter CSF \
 --participant-label 001 \
---estimator lsa \
+--estimator lss \
 -w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
