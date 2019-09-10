@@ -235,7 +235,6 @@ def _lsa_events_converter(events_file):
     """
 
     import pandas as pd
-    import numpy as np
     events = pd.read_csv(events_file, sep='\t')
     events['original_trial_type'] = events['trial_type']
     for cond, cond_df in events.groupby('trial_type'):

@@ -2,7 +2,7 @@
 import os
 import json
 
-from ..nistats import BetaSeries
+from ..nistats import LSSBetaSeries, LSABetaSeries
 
 
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
@@ -12,16 +12,15 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = BetaSeries(estimator='lss',
-                             bold_file=str(preproc_file),
-                             bold_metadata=bold_metadata,
-                             mask_file=str(brainmask_file),
-                             events_file=str(sub_events),
-                             confounds_file=str(confounds_file),
-                             selected_confounds=selected_confounds,
-                             hrf_model=hrf_model,
-                             smoothing_kernel=None,
-                             high_pass=0.008)
+    beta_series = LSSBetaSeries(bold_file=str(preproc_file),
+                                bold_metadata=bold_metadata,
+                                mask_file=str(brainmask_file),
+                                events_file=str(sub_events),
+                                confounds_file=str(confounds_file),
+                                selected_confounds=selected_confounds,
+                                hrf_model=hrf_model,
+                                smoothing_kernel=None,
+                                high_pass=0.008)
     res = beta_series.run()
 
     assert os.path.isfile(res.outputs.beta_maps)
@@ -36,16 +35,15 @@ def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = BetaSeries(estimator='lsa',
-                             bold_file=str(preproc_file),
-                             bold_metadata=bold_metadata,
-                             mask_file=str(brainmask_file),
-                             events_file=str(sub_events),
-                             confounds_file=str(confounds_file),
-                             selected_confounds=selected_confounds,
-                             hrf_model=hrf_model,
-                             smoothing_kernel=None,
-                             high_pass=0.008)
+    beta_series = LSABetaSeries(bold_file=str(preproc_file),
+                                bold_metadata=bold_metadata,
+                                mask_file=str(brainmask_file),
+                                events_file=str(sub_events),
+                                confounds_file=str(confounds_file),
+                                selected_confounds=selected_confounds,
+                                hrf_model=hrf_model,
+                                smoothing_kernel=None,
+                                high_pass=0.008)
     res = beta_series.run()
 
     assert os.path.isfile(res.outputs.beta_maps)
