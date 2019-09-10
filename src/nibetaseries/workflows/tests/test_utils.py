@@ -6,7 +6,8 @@ from bids import BIDSLayout
 
 def test_collect_data(bids_dir, deriv_dir, sub_fmriprep,
                       sub_metadata, bold_file, preproc_file,
-                      sub_events, confounds_file, brainmask_file):
+                      sub_events, confounds_file, brainmask_file,
+                      sub_rest_metadata, rest_file):
 
     with open(str(sub_metadata), "r") as sm:
         metadata = json.load(sm)
@@ -21,7 +22,13 @@ def test_collect_data(bids_dir, deriv_dir, sub_fmriprep,
     layout = BIDSLayout(str(bids_dir), derivatives=str(deriv_dir))
 
     subject_label = '01'
-
-    subject_data = collect_data(layout, subject_label)[0]
+    session = 'pre'
+    task = 'waffles'
+    run = '1'
+    space = 'MNI152NLin2009cAsym'
+    desc = 'preproc'
+    subject_data = collect_data(layout, subject_label, ses=session,
+                                task=task, run=run, space=space,
+                                description=desc)[0]
 
     assert subject_data == expected_out
