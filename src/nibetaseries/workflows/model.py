@@ -12,10 +12,11 @@ Derive Beta Series Maps
 from __future__ import print_function, division, absolute_import, unicode_literals
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
-from ..interfaces.nistats import BetaSeries
+from ..interfaces.nistats import LSSBetaSeries, LSABetaSeries
 
 
 def init_betaseries_wf(name="betaseries_wf",
+                       estimator='lss',
                        hrf_model='glover',
                        high_pass=0.0078125,
                        smoothing_kernel=None,
@@ -84,11 +85,20 @@ def init_betaseries_wf(name="betaseries_wf",
                                                        ]),
                          name='input_node')
 
-    betaseries_node = pe.Node(BetaSeries(selected_confounds=selected_confounds,
-                                         hrf_model=hrf_model,
-                                         smoothing_kernel=smoothing_kernel,
-                                         high_pass=high_pass),
-                              name='betaseries_node')
+    if estimator == 'lss':
+        betaseries_node = pe.Node(LSSBetaSeries(
+                selected_confounds=selected_confounds,
+                hrf_model=hrf_model,
+                smoothing_kernel=smoothing_kernel,
+                high_pass=high_pass),
+            name='betaseries_node')
+    elif estimator == 'lsa':
+        betaseries_node = pe.Node(LSABetaSeries(
+                selected_confounds=selected_confounds,
+                hrf_model=hrf_model,
+                smoothing_kernel=smoothing_kernel,
+                high_pass=high_pass),
+            name='betaseries_node')
 
     output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
                           name='output_node')
