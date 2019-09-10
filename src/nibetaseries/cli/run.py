@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Module that contains the command line app.
@@ -228,3 +229,12 @@ def main():
 
     elif opts.analysis_level == "group":
         raise NotImplementedError('group analysis not currently implemented')
+
+
+def init():
+    if __name__ == "__main__":
+        raise RuntimeError("NiBetaSeries/cli/run.py should not be run directly;\n"
+                           "Please `pip install` NiBetaSeries and use the `nibs` command")
+
+
+init()
