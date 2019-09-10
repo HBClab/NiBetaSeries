@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Module that contains the command line app.
@@ -71,8 +72,8 @@ def get_parser():
     proc_opts = parser.add_argument_group('Options for processing')
     proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
-    proc_opts.add_argument('-lp', '--low-pass', action='store', type=float,
-                           default=None, help='low pass filter (Hz)')
+    proc_opts.add_argument('-hp', '--high-pass', action='store', type=float,
+                           default=0.0078125, help='high pass filter (Hz)')
     proc_opts.add_argument('-c', '--confounds', help='The confound column names '
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
@@ -208,7 +209,7 @@ def main():
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
             hrf_model=opts.hrf_model,
-            low_pass=opts.low_pass,
+            high_pass=opts.high_pass,
             output_dir=output_dir,
             run_label=opts.run_label,
             selected_confounds=opts.confounds,
@@ -287,3 +288,12 @@ def main():
         logger.warning('NiBetaSeries could not find the markdown version of '
                        'the citation boilerplate (%s). HTML and LaTeX versions'
                        ' of it will not be available', citation_files['md'])
+
+
+def init():
+    if __name__ == "__main__":
+        raise RuntimeError("NiBetaSeries/cli/run.py should not be run directly;\n"
+                           "Please `pip install` NiBetaSeries and use the `nibs` command")
+
+
+init()

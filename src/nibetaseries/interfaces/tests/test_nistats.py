@@ -20,7 +20,7 @@ def test_beta_series(sub_metadata, preproc_file, sub_events,
                              selected_confounds=selected_confounds,
                              hrf_model=hrf_model,
                              smoothing_kernel=None,
-                             low_pass=None)
+                             high_pass=0.008)
     res = beta_series.run()
 
     assert os.path.isfile(res.outputs.beta_maps)

@@ -1,5 +1,7 @@
 from subprocess import call
 import os
+
+import pytest
 from ..run import get_parser
 
 
@@ -17,8 +19,23 @@ def test_nibs(bids_dir, atlas_file, atlas_lut, deriv_dir):
                  "-a " + str(atlas_file),
                  "-l " + str(atlas_lut),
                  "-c WhiteMatter CSF",
-                 "-lp 0.01",
+                 "-hp 0.008",
+                 "-sp MNI152NLin2009cAsym",
+                 "-sm 0.0",
+                 "--hrf-model spm",
+                 "--session-label pre",
+                 "--task-label waffles",
+                 "--run-label 1",
+                 "--description-label preproc",
+                 "--graph",
                  bids_dir,
                  "fmriprep",
                  out_dir,
                  "participant"])
+
+
+def test_init(monkeypatch):
+    from ...cli import run
+    monkeypatch.setattr(run, "__name__", "__main__")
+    with pytest.raises(RuntimeError):
+        run.init()

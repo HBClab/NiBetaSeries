@@ -28,6 +28,7 @@ bids_bold_entities = {
     "datatype": "func",
     "task": "waffles",
     "suffix": "bold",
+    "run": 1,
     "extension": "nii.gz",
 }
 bids_bold_fname = build_path(bids_bold_entities, bids_patterns)
@@ -37,6 +38,18 @@ bids_json_entities = {
     "extension": "json",
 }
 bids_json_fname = build_path(bids_json_entities, bids_patterns)
+
+bids_rest_entities = {
+    **bids_bold_entities,
+    "task": "rest",
+}
+bids_rest_fname = build_path(bids_rest_entities, bids_patterns)
+
+bids_rest_json_entities = {
+    **bids_rest_entities,
+    "extension": "json",
+}
+bids_rest_json_fname = build_path(bids_rest_json_entities, bids_patterns)
 
 bids_events_entities = {
     **bids_bold_entities,
@@ -63,6 +76,7 @@ deriv_regressor_entities = {
     **subject_entities,
     "datatype": "func",
     "task": "waffles",
+    "run": 1,
     "description": "confounds",
     "suffix": "regressors",
     "extension": "tsv",
@@ -140,7 +154,6 @@ def sub_fmriprep(deriv_dir, example_file=deriv_bold_fname):
                             dir=True)
 
 
-# layout = BIDSLayout("./", validate=False, derivatives="./derivatives/fmriprep")
 @pytest.fixture(scope='session')
 def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
     sub_json = bids_dir.ensure(bids_json_fname)
@@ -154,8 +167,25 @@ def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
 
 
 @pytest.fixture(scope='session')
+def sub_rest_metadata(bids_dir, bids_json_fname=bids_rest_json_fname):
+    sub_json = bids_dir.ensure(bids_rest_json_fname)
+    tr = 2
+    bold_metadata = {"RepetitionTime": tr, "TaskName": "rest"}
+
+    with open(str(sub_json), 'w') as md:
+        json.dump(bold_metadata, md)
+
+    return sub_json
+
+
+@pytest.fixture(scope='session')
 def bold_file(bids_dir, bids_bold_fname=bids_bold_fname):
     return bids_dir.ensure(bids_bold_fname)
+
+
+@pytest.fixture(scope='session')
+def rest_file(bids_dir, bids_rest_fname=bids_rest_fname):
+    return bids_dir.ensure(bids_rest_fname)
 
 
 @pytest.fixture(scope='session')

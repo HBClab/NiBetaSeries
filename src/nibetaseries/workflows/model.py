@@ -19,13 +19,13 @@ from ..interfaces.nistats import BetaSeries
 
 def init_betaseries_wf(name="betaseries_wf",
                        hrf_model='glover',
-                       low_pass=None,
+                       high_pass=0.0078125,
                        smoothing_kernel=None,
                        selected_confounds=None,
                        ):
     """Derives Beta Series Maps
     This workflow derives beta series maps from a bold file.
-    Before the betas are estimated, low/high pass temporal filtering
+    Before the betas are estimated, high pass temporal filtering
     will be performed, and confounds can be added when estimating the betas.
 
     .. workflow::
@@ -35,7 +35,7 @@ def init_betaseries_wf(name="betaseries_wf",
         from nibetaseries.workflows.model import init_betaseries_wf
         wf = init_betaseries_wf(
             hrf_model='glover',
-            low_pass=None,
+            high_pass=0.0078125,
             smoothing_kernel=0.0,
             selected_confounds=[''])
 
@@ -45,8 +45,8 @@ def init_betaseries_wf(name="betaseries_wf",
         Name of workflow (default: ``betaseries_wf``)
     hrf_model : str
         hemodynamic response function used to model the data (default: ``glover``)
-    low_pass : float or None
-        low pass filter to apply to bold (in Hertz).
+    high_pass : float
+        high pass filter to apply to bold (in Hertz).
         Reminder - frequencies _lower_ than this number are kept.
     smoothing_kernel : float or None
         The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
@@ -116,7 +116,7 @@ sizes, where N refers to the number of conditions in the task.
     betaseries_node = pe.Node(BetaSeries(selected_confounds=selected_confounds,
                                          hrf_model=hrf_model,
                                          smoothing_kernel=smoothing_kernel,
-                                         low_pass=low_pass),
+                                         high_pass=high_pass),
                               name='betaseries_node')
 
     output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
