@@ -16,6 +16,7 @@ from ..interfaces.nistats import BetaSeries
 
 
 def init_betaseries_wf(name="betaseries_wf",
+                       fir_delays=None,
                        hrf_model='glover',
                        high_pass=0.0078125,
                        smoothing_kernel=None,
@@ -32,6 +33,7 @@ def init_betaseries_wf(name="betaseries_wf",
 
         from nibetaseries.workflows.model import init_betaseries_wf
         wf = init_betaseries_wf(
+            fir_delays=None,
             hrf_model='glover',
             high_pass=0.0078125,
             smoothing_kernel=0.0,
@@ -41,6 +43,8 @@ def init_betaseries_wf(name="betaseries_wf",
     ----------
     name : str
         Name of workflow (default: ``betaseries_wf``)
+    fir_delays : list or None
+        FIR delays (in scans)
     hrf_model : str
         hemodynamic response function used to model the data (default: ``glover``)
     high_pass : float
@@ -84,10 +88,12 @@ def init_betaseries_wf(name="betaseries_wf",
                                                        ]),
                          name='input_node')
 
-    betaseries_node = pe.Node(BetaSeries(selected_confounds=selected_confounds,
+    betaseries_node = pe.Node(BetaSeries(fir_delays=fir_delays,
+                                         high_pass=high_pass,
                                          hrf_model=hrf_model,
-                                         smoothing_kernel=smoothing_kernel,
-                                         high_pass=high_pass),
+                                         selected_confounds=selected_confounds,
+                                         smoothing_kernel=smoothing_kernel
+                                         ),
                               name='betaseries_node')
 
     output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),

@@ -79,6 +79,9 @@ def get_parser():
                                     'spm + derivative + dispersion'],
                            help='convolve your regressors '
                                 'with one of the following hemodynamic response functions')
+    proc_opts.add_argument('--fir-delays', default=None,
+                           nargs='+', type=int, help='FIR delays in volumes',
+                           metavar='VOL')
     proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
@@ -201,6 +204,7 @@ def main():
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
+            fir_delays=opts.fir_delays,
             hrf_model=opts.hrf_model,
             high_pass=opts.high_pass,
             output_dir=output_dir,

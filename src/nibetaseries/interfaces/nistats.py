@@ -31,6 +31,8 @@ class BetaSeriesInputSpec(BaseInterfaceInputSpec):
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
+    fir_delays = traits.Either(None, traits.List(traits.Int),
+                               desc="FIR delays (in scans)")
 
 
 class BetaSeriesOutputSpec(TraitedSpec):
@@ -62,16 +64,19 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
         high_pass_period = int(1 / self.inputs.high_pass)
 
         # setup the model
-        model = first_level_model.FirstLevelModel(t_r=t_r,
-                                                  slice_time_ref=0,
-                                                  hrf_model=self.inputs.hrf_model,
-                                                  mask=self.inputs.mask_file,
-                                                  smoothing_fwhm=self.inputs.smoothing_kernel,
-                                                  standardize=True,
-                                                  signal_scaling=0,
-                                                  period_cut=high_pass_period,
-                                                  drift_model='cosine',
-                                                  verbose=1)
+        model = first_level_model.FirstLevelModel(
+            t_r=t_r,
+            slice_time_ref=0,
+            hrf_model=self.inputs.hrf_model,
+            mask=self.inputs.mask_file,
+            smoothing_fwhm=self.inputs.smoothing_kernel,
+            standardize=True,
+            signal_scaling=0,
+            period_cut=high_pass_period,
+            drift_model='cosine',
+            verbose=1,
+            fir_delays=self.inputs.fir_delays,
+        )
 
         # initialize dictionary to contain trial estimates (betas)
         beta_maps = {}
@@ -84,15 +89,27 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                       events=target_trial_df,
                       confounds=confounds)
 
-            # calculate the beta map
-            beta_map = model.compute_contrast(trial_type, output_type='effect_size')
-            design_matrix_collector[trial_idx] = model.design_matrices_[0]
-            # import pdb; pdb.set_trace()
-            # assign beta map to appropriate list
-            if trial_type in beta_maps:
-                beta_maps[trial_type].append(beta_map)
+            if self.inputs.hrf_model == 'fir':
+                for delay in self.inputs.fir_delays:
+                    delay_ttype = trial_type+'_delay_{}'.format(delay)
+                    new_delay_ttype = delay_ttype.replace('_delay_{}'.format(delay),
+                                                          'Delay{}'.format(delay))
+                    beta_map = model.compute_contrast(
+                        delay_ttype, output_type='effect_size')
+                    if new_delay_ttype in beta_maps:
+                        beta_maps[new_delay_ttype].append(beta_map)
+                    else:
+                        beta_maps[new_delay_ttype] = [beta_map]
             else:
-                beta_maps[trial_type] = [beta_map]
+                # calculate the beta map
+                beta_map = model.compute_contrast(trial_type, output_type='effect_size')
+                design_matrix_collector[trial_idx] = model.design_matrices_[0]
+                # import pdb; pdb.set_trace()
+                # assign beta map to appropriate list
+                if trial_type in beta_maps:
+                    beta_maps[trial_type].append(beta_map)
+                else:
+                    beta_maps[trial_type] = [beta_map]
 
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
@@ -111,8 +128,8 @@ class BetaSeries(NistatsBaseInterface, SimpleInterface):
                 nib.save(beta_series, beta_series_template.format(trial_type=t_type))
                 beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
-            self._results['beta_maps'] = beta_series_lst
-            self._results['design_matrices'] = design_matrix_collector
+        self._results['beta_maps'] = beta_series_lst
+        self._results['design_matrices'] = design_matrix_collector
         return runtime
 
 
