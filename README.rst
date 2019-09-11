@@ -91,9 +91,9 @@ Currently NiBetaSeries returns symmetric z-transformed correlation
 matrices with an entry for each parcel defined in the atlas,
 as well as the raw beta series images.
 
-.. note:: The betas (i.e., parameter estimates) are generated using the "Least Squares Separate" procedure.
+.. note:: The betas (i.e., parameter estimates) are generated using either
+    the "Least Squares Separate" or "Least Squares All" procedures.
     Please read the :ref:`betaseries` page for more background information.
-    There are plans to support Least Squares All in future iterations.
 
 What do I need to run NiBetaSeries?
 -----------------------------------
