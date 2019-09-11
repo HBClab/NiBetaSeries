@@ -61,8 +61,7 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         correlation_matrix_df = pd.DataFrame(correlation_matrix, index=regions, columns=regions)
 
         # do a fisher's r -> z transform
-        fisher_z_matrix_df = correlation_matrix_df.apply(
-            lambda x: (np.log(1 + x) - np.log(1 - x)) * 0.5)
+        fisher_z_matrix_df = correlation_matrix_df.apply(_fisher_r_to_z)
 
         # write out the file.
         trial_regex = re.compile(r'.*desc-(?P<trial>[A-Za-z0-9]+)')
@@ -95,3 +94,12 @@ class AtlasConnectivity(NilearnBaseInterface, SimpleInterface):
         self._results['correlation_fig'] = viz_mat_path
 
         return runtime
+
+
+def _fisher_r_to_z(x):
+    import numpy as np
+    # correct any rounding errors
+    # correlations cannot be greater than 1.
+    x = np.clip(x, -1, 1)
+
+    return np.arctanh(x)

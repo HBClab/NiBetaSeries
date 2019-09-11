@@ -12,6 +12,7 @@ Participant Workflow
 
     from nibetaseries.workflows.base import init_single_subject_wf
     wf = init_single_subject_wf(
+        estimator='lss',
         atlas_img='',
         atlas_lut='',
         bold_metadata_list=[''],
@@ -43,6 +44,7 @@ BetaSeries Workflow
 
     from nibetaseries.workflows.model import init_betaseries_wf
     wf = init_betaseries_wf(
+        estimator='lss',
         hrf_model='glover',
         high_pass=0.008,
         smoothing_kernel=0.0,
