@@ -21,7 +21,6 @@ def test_init_nibetaseries_participant_wf(
     })
     test_np_wf = init_nibetaseries_participant_wf(
         estimator='lss',
-        fir_delays=None,
         atlas_img=str(atlas_file),
         atlas_lut=str(atlas_lut),
         bids_dir=str(bids_dir),
@@ -44,7 +43,6 @@ def test_init_nibetaseries_participant_wf(
 
     test_np_wf = init_nibetaseries_participant_wf(
         estimator='lsa',
-        fir_delays=None,
         atlas_img=str(atlas_file),
         atlas_lut=str(atlas_lut),
         bids_dir=str(bids_dir),
