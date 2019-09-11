@@ -100,6 +100,6 @@ def _fisher_r_to_z(x):
     import numpy as np
     # correct any rounding errors
     # correlations cannot be greater than 1.
-    x[x > 1.] = 1.
+    x = np.clip(x, -1, 1)
 
-    return (np.log(1 + x) - np.log(1 - x)) * 0.5
+    return np.arctanh(x)
