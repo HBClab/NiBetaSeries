@@ -70,6 +70,9 @@ def get_parser():
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
+    proc_opts.add_argument('--estimator', default='lss',
+                           choices=['lss', 'lsa'],
+                           help='beta series modeling method')
     proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
     proc_opts.add_argument('-hp', '--high-pass', action='store', type=float,
@@ -203,6 +206,7 @@ def main():
     # running participant level
     if opts.analysis_level == "participant":
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
+            estimator=opts.estimator,
             atlas_img=os.path.abspath(opts.atlas_img),
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,

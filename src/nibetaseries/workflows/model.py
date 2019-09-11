@@ -14,10 +14,11 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from nistats import __version__ as nistats_ver
-from ..interfaces.nistats import BetaSeries
+from ..interfaces.nistats import LSSBetaSeries, LSABetaSeries
 
 
 def init_betaseries_wf(name="betaseries_wf",
+                       estimator='lss',
                        hrf_model='glover',
                        high_pass=0.0078125,
                        smoothing_kernel=None,
@@ -113,11 +114,20 @@ sizes, where N refers to the number of conditions in the task.
                                                        ]),
                          name='input_node')
 
-    betaseries_node = pe.Node(BetaSeries(selected_confounds=selected_confounds,
-                                         hrf_model=hrf_model,
-                                         smoothing_kernel=smoothing_kernel,
-                                         high_pass=high_pass),
-                              name='betaseries_node')
+    if estimator == 'lss':
+        betaseries_node = pe.Node(LSSBetaSeries(
+                selected_confounds=selected_confounds,
+                hrf_model=hrf_model,
+                smoothing_kernel=smoothing_kernel,
+                high_pass=high_pass),
+            name='betaseries_node')
+    elif estimator == 'lsa':
+        betaseries_node = pe.Node(LSABetaSeries(
+                selected_confounds=selected_confounds,
+                hrf_model=hrf_model,
+                smoothing_kernel=smoothing_kernel,
+                high_pass=high_pass),
+            name='betaseries_node')
 
     output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
                           name='output_node')

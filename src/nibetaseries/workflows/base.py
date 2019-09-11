@@ -20,7 +20,7 @@ from bids import BIDSLayout
 
 
 def init_nibetaseries_participant_wf(
-    atlas_img, atlas_lut, bids_dir,
+    estimator, atlas_img, atlas_lut, bids_dir,
     derivatives_pipeline_dir, exclude_description_label, hrf_model, high_pass,
     output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
@@ -112,6 +112,7 @@ It is released under the [CC0]\
         bold_metadata_list = [d['metadata'] for d in subject_data]
 
         single_subject_wf = init_single_subject_wf(
+            estimator=estimator,
             atlas_img=atlas_img,
             atlas_lut=atlas_lut,
             bold_metadata_list=bold_metadata_list,
@@ -140,9 +141,9 @@ It is released under the [CC0]\
 
 
 def init_single_subject_wf(
-    atlas_img, atlas_lut, bold_metadata_list, brainmask_list, confound_tsv_list,
-    events_tsv_list, hrf_model, high_pass, name, output_dir, preproc_img_list,
-    selected_confounds, smoothing_kernel
+    estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
+    confound_tsv_list, events_tsv_list, hrf_model, high_pass, name, output_dir,
+    preproc_img_list, selected_confounds, smoothing_kernel
         ):
     """
     This workflow completes the generation of the betaseries files
@@ -153,6 +154,7 @@ def init_single_subject_wf(
 
         from nibetaseries.workflows.base import init_single_subject_wf
         wf = init_single_subject_wf(
+            estimator='lss',
             atlas_img='',
             atlas_lut='',
             bold_metadata_list=[''],
@@ -252,7 +254,9 @@ def init_single_subject_wf(
                           name='output_node')
 
     # initialize the betaseries workflow
-    betaseries_wf = init_betaseries_wf(hrf_model=hrf_model, high_pass=high_pass,
+    betaseries_wf = init_betaseries_wf(estimator=estimator,
+                                       hrf_model=hrf_model,
+                                       high_pass=high_pass,
                                        selected_confounds=selected_confounds,
                                        smoothing_kernel=smoothing_kernel)
 

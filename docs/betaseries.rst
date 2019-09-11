@@ -64,8 +64,8 @@ the original conditions in the design matrix.
 In this updated version, the individual trial's design matrix is almost the same
 as the original design matrix, except that the trial is separated out into its
 own regressor.
-NiBetaSeries uses this updated "least squares separate" method and is thus optimized
-for fast event-related designs.
+NiBetaSeries can use this updated "least squares separate" method or the 
+"least squares all" method.
 
 Mathematical Background
 -----------------------
