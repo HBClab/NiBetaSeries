@@ -90,10 +90,11 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                       confounds=confounds)
 
             if self.inputs.hrf_model == 'fir':
+                # FS modeling
                 for delay in self.inputs.fir_delays:
                     delay_ttype = trial_type+'_delay_{}'.format(delay)
                     new_delay_ttype = delay_ttype.replace('_delay_{}'.format(delay),
-                                                          'Delay{}'.format(delay))
+                                                          'Delay{}Vol'.format(delay))
                     beta_map = model.compute_contrast(
                         delay_ttype, output_type='effect_size')
                     if new_delay_ttype in beta_maps:
