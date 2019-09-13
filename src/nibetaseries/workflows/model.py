@@ -85,8 +85,11 @@ def init_betaseries_wf(name="betaseries_wf",
                     selected_confounds else '')
     if estimator == 'lss' and hrf_model != 'fir':
         workflow.__desc__ = """\
+
+### Beta Series Modeling
+
 Least squares- separate (LSS) models were generated for each event in the task
-following the method described in [@Turner2012a]', using Nistats {nistats_ver}.
+following the method described in @Turner2012a, using Nistats {nistats_ver}.
 Prior to modeling, preprocessed data were {smooth_str}masked,
 and mean-scaled over time.
 For each trial, preprocessed data were subjected to a general linear model in
@@ -99,16 +102,20 @@ high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
+
 After fitting each model, the parameter estimate map associated with the
 target trial's regressor was retained and concatenated into a 4D image with all
 other trials from that condition, resulting in a set of N 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=low_pass)
+           confound_str=confound_str, hpf=high_pass)
     elif estimator == 'lss' and hrf_model == 'fir':
         workflow.__desc__ = """\
+
+### Beta Series Modeling
+
 Finite BOLD response- separate (FS) models were generated for each event in the
-task following the method described in [@Turner2012a]', using Nistats
+task following the method described in @Turner2012a, using Nistats
 {nistats_ver}.
 Prior to modeling, preprocessed data were {smooth_str}masked,
 and mean-scaled over time.
@@ -127,18 +134,22 @@ high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
+
 After fitting each model, the parameter estimate map associated with each of
 the target trial's {n_delays} delay-specific FIR regressors was retained
 and concatenated into delay-specific 4D images with all other trials from that
 condition, resulting in a set of N * {n_delays} 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=low_pass,
+           confound_str=confound_str, hpf=high_pass,
            fir_delays=', '.join(fir_delays), n_delays=len(fir_delays))
     elif estimator == 'lsa':
         workflow.__desc__ = """\
-A least square- all (LSA) model was generated following the method described in
-[@Rissman2004], using Nistats {nistats_ver}.
+
+### Beta Series Modeling
+
+A least squares- all (LSA) model was generated following the method described in
+@Rissman2004, using Nistats {nistats_ver}.
 Prior to modeling, preprocessed data were {smooth_str}masked,
 and mean-scaled over time.
 Preprocessed data were subjected to a general linear model in which each trial
@@ -149,12 +160,13 @@ high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
+
 After fitting each model, the parameter estimate map associated with the
 target trial's regressor was retained and concatenated into a 4D image with all
 other trials from that condition, resulting in a set of N 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=low_pass)
+           confound_str=confound_str, hpf=high_pass)
 
     input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
                                                        'events_file',

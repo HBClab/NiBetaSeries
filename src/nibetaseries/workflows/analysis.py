@@ -12,6 +12,8 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from nilearn import __version__ as nilearn_ver
+from mne import __version__ as mne_ver
+from matplotlib import __version__ as matplotlib_ver
 from ..interfaces.nilearn import AtlasConnectivity
 
 
@@ -55,6 +57,9 @@ def init_correlation_wf(name="correlation_wf"):
     workflow = Workflow(name=name)
 
     workflow.__desc__ = """\
+
+### Atlas Connectivity Analysis
+
 The beta series 4D image for each condition in the task was subjected to an
 ROI-to-ROI connectivity analysis to produce a condition-specific correlation
 matrix.
@@ -62,8 +67,12 @@ The correlation coefficient estimator used for this step was empirical
 covariance, as implemented in Nilearn {nilearn_ver} [@nilearn].
 Correlation coefficients were converted to normally-distributed z-values using
 Fisher's r-to-z conversion [@fisher1915frequency].
-Figures for the correlation matrices were also generated.
-""".format(nilearn_ver=nilearn_ver)
+Figures for the correlation matrices were generated with
+Matplotlib {matplotlib_ver} [@Hunter2007] and MNE-Python {mne_ver}
+[@gramfort2013meg; @gramfort2014mne].
+""".format(nilearn_ver=nilearn_ver,
+           matplotlib_ver=matplotlib_ver,
+           mne_ver=mne_ver)
 
     input_node = pe.MapNode(niu.IdentityInterface(fields=['betaseries_files',
                                                           'atlas_file',
