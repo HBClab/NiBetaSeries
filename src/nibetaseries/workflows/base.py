@@ -21,6 +21,7 @@ from nipype import __version__ as nipype_ver
 from nibabel import __version__ as nibabel_ver
 from niworkflows import __version__ as niworkflows_ver
 
+from .._version import get_versions
 from .utils import collect_data
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
@@ -84,9 +85,10 @@ def init_nibetaseries_participant_wf(
 
     nibetaseries_participant_wf.__desc__ = """
 Results included in this manuscript come from modeling
-performed using *NiBetaSeries* {nbs_ver} [@NiBetaSeriesZenodo],
+performed using *NiBetaSeries* {nibs_ver} [@NiBetaSeriesZenodo],
 which is based on *Nipype* {nipype_ver} [@nipype1; @nipype2].
-""".format(nbs_ver='1.0.0', nipype_ver=nipype_ver)
+""".format(nibs_ver=get_versions()['version'],
+           nipype_ver=nipype_ver)
 
     nibetaseries_participant_wf.__postdesc__ = """
 

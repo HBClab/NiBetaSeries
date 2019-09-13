@@ -2,18 +2,19 @@
 # -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-
 """
 This workflow takes roi-roi correlations of the input betaseries
 """
-
 from __future__ import print_function, division, absolute_import, unicode_literals
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
-from nilearn import __version__ as nilearn_ver
+
 from mne import __version__ as mne_ver
+from nilearn import __version__ as nilearn_ver
 from matplotlib import __version__ as matplotlib_ver
+
 from ..interfaces.nilearn import AtlasConnectivity
 
 

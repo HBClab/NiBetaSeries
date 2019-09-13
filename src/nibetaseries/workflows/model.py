@@ -7,13 +7,14 @@ Derive Beta Series Maps
 ^^^^^^^^^^^^^^^^^^^^^^^
 .. autofunction:: init_betaseries_wf
 """
-
-
 from __future__ import print_function, division, absolute_import, unicode_literals
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+
 from nistats import __version__ as nistats_ver
+
 from ..interfaces.nistats import LSSBetaSeries, LSABetaSeries
 
 
