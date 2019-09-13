@@ -83,17 +83,67 @@ def init_betaseries_wf(name="betaseries_wf",
                   if smoothing_kernel != 0. else '')
     confound_str = (', '.join(selected_confounds) + ' and ' if
                     selected_confounds else '')
-    workflow.__desc__ = """\
+    if estimator == 'lss' and hrf_model != 'fir':
+        workflow.__desc__ = """\
 Least squares- separate (LSS) models were generated for each event in the task
-following the method described in [@Turner2012a], using Nistats {nistats_ver}.
+following the method described in [@Turner2012a]', using Nistats {nistats_ver}.
 Prior to modeling, preprocessed data were {smooth_str}masked,
 and mean-scaled over time.
 For each trial, preprocessed data were subjected to a general linear model in
 which the trial was modeled in its own regressor, while all other trials from
 that condition were modeled in a second regressor, and other conditions were
-modeled in their own regressors.
-Each condition regressor was convolved with a "{hrf}" hemodynamic response
-function for the model.
+modeled in their own regressors. Each condition regressor was convolved with a
+"{hrf}" hemodynamic response function for the model.
+In addition to condition regressors, {confound_str}a
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+included in the model.
+AR(1) prewhitening was applied in each model to account for temporal
+autocorrelation.
+After fitting each model, the parameter estimate map associated with the
+target trial's regressor was retained and concatenated into a 4D image with all
+other trials from that condition, resulting in a set of N 4D images of varying
+sizes, where N refers to the number of conditions in the task.
+""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
+           confound_str=confound_str, hpf=low_pass)
+    elif estimator == 'lss' and hrf_model == 'fir':
+        workflow.__desc__ = """\
+Finite BOLD response- separate (FS) models were generated for each event in the
+task following the method described in [@Turner2012a]', using Nistats
+{nistats_ver}.
+Prior to modeling, preprocessed data were {smooth_str}masked,
+and mean-scaled over time.
+For each trial, preprocessed data were subjected to a general linear model in
+which the trial was modeled in its own set of finite impulse response (FIR)
+regressors. In a finite impulse response model, the BOLD response for each of a
+set of delays following the onset of the trial is modeled as an impulse, which
+can be used to capture the hemodynamic response model associated with that
+condition. In the models applied in this workflow, delay-specific FIR
+regressors corresponding to {delays} volumes after the target trial were
+included, while all other trials from that condition were modeled in a second
+set of FIR regressors, and other conditions were modeled in their own sets of
+FIR regressors.
+In addition to condition regressors, {confound_str}a
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+included in the model.
+AR(1) prewhitening was applied in each model to account for temporal
+autocorrelation.
+After fitting each model, the parameter estimate map associated with each of
+the target trial's {n_delays} delay-specific FIR regressors was retained
+and concatenated into delay-specific 4D images with all other trials from that
+condition, resulting in a set of N * {n_delays} 4D images of varying
+sizes, where N refers to the number of conditions in the task.
+""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
+           confound_str=confound_str, hpf=low_pass,
+           fir_delays=', '.join(fir_delays), n_delays=len(fir_delays))
+    elif estimator == 'lsa':
+        workflow.__desc__ = """\
+A least square- all (LSA) model was generated following the method described in
+[@Rissman2004], using Nistats {nistats_ver}.
+Prior to modeling, preprocessed data were {smooth_str}masked,
+and mean-scaled over time.
+Preprocessed data were subjected to a general linear model in which each trial
+was modeled in its own regressor. Each trial-specific regressor was convolved
+with a "{hrf}" hemodynamic response function for the model.
 In addition to condition regressors, {confound_str}a
 high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
 included in the model.
