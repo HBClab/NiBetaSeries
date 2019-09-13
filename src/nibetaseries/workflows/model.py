@@ -111,6 +111,7 @@ sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
            confound_str=confound_str, hpf=high_pass)
     elif estimator == 'lss' and hrf_model == 'fir':
+        fir_delays = [0, 1, 2, 3, 4]
         workflow.__desc__ = """\
 
 ### Beta Series Modeling

@@ -240,7 +240,7 @@ plt.tight_layout()
 #############################################################################
 # References
 # ==========
-# .. bibliography:: ../references.bib
+# .. bibliography:: ../../src/nibetaseries/data/references.bib
 #    :style: plain
 #    :labelprefix: notebook-
 #    :keyprefix: n-
