@@ -21,8 +21,7 @@ def collect_data(layout, participant_label, ses=None,
         'datatype': 'func',
         'suffix': 'bold',
         'extension': ['nii', 'nii.gz'],
-        'desc': '.+',
-        'regex_search': True,
+        'scope': 'derivatives',
     }
 
     if task:
@@ -34,7 +33,7 @@ def collect_data(layout, participant_label, ses=None,
     if space:
         preproc_query['space'] = space
     if description:
-        preproc_query['description'] = description
+        preproc_query['desc'] = description
 
     preprocs = layout.get(**preproc_query)
 
