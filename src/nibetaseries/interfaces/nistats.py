@@ -105,7 +105,6 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                 # calculate the beta map
                 beta_map = model.compute_contrast(trial_type, output_type='effect_size')
                 design_matrix_collector[trial_idx] = model.design_matrices_[0]
-                # import pdb; pdb.set_trace()
                 # assign beta map to appropriate list
                 if trial_type in beta_maps:
                     beta_maps[trial_type].append(beta_map)
