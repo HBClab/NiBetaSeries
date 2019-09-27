@@ -28,12 +28,11 @@ Participant Workflow
         smoothing_kernel=None)
 
 The general workflow for a participant models the beta series
-for each trial type for each BOLD file associated with the participant.
-Then betas within an atlas parcel are averaged together.
-This occurs as many times as there are trials for that particular trial type,
-resulting in a pseudo-time series (i.e., each point in "time" represents an
-occurrence of that trial).
-All the pseudo-time series within a trial type are correlated with each other,
+for each trial type for each BOLD file associated with the participants.
+Those beta series images are output for the user.
+if ``atlas_img`` and ``atlas_lut`` are defined,
+then betas within an atlas parcel are averaged together.
+All the parcels are correlated with each other for each trial type,
 resulting in a final correlation (adjacency) matrix for each trial type.
 
 BetaSeries Workflow
@@ -68,3 +67,4 @@ The beta series file has signal averaged across trials within a parcel
 defined by an atlas parcellation.
 After signal extraction has occurred for all parcels, the signals
 are all correlated with each other to generate a correlation matrix.
+This step is optional.
