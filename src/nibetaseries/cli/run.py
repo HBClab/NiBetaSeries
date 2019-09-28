@@ -135,6 +135,11 @@ def main():
     # get commandline options
     opts = get_parser().parse_args()
 
+    # check inputs
+    if (opts.hrf_model == 'fir') and (opts.fir_delays is None):
+        raise ValueError('If the FIR HRF model is selected, '
+                         'FIR delays must be provided.')
+
     # Set up directories
     # TODO: set up some sort of versioning system
     bids_dir = os.path.abspath(opts.bids_dir)
