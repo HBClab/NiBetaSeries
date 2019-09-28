@@ -99,7 +99,7 @@ that condition were modeled in a second regressor, and other conditions were
 modeled in their own regressors. Each condition regressor was convolved with a
 "{hrf}" hemodynamic response function for the model.
 In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
@@ -109,7 +109,8 @@ target trial's regressor was retained and concatenated into a 4D image with all
 other trials from that condition, resulting in a set of N 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=high_pass)
+           confound_str=confound_str, hpf=high_pass,
+           is_mult_confs='were' if len(confound_str) else 'was')
     elif estimator == 'lss' and hrf_model == 'fir':
         fir_delays = [0, 1, 2, 3, 4]
         workflow.__desc__ = """\

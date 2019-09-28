@@ -65,12 +65,12 @@ The beta series 4D image for each condition in the task was subjected to an
 ROI-to-ROI connectivity analysis to produce a condition-specific correlation
 matrix.
 The correlation coefficient estimator used for this step was empirical
-covariance, as implemented in Nilearn {nilearn_ver} [@nilearn].
+covariance, as implemented in Nilearn {nilearn_ver} [@Abraham2014].
 Correlation coefficients were converted to normally-distributed z-values using
-Fisher's r-to-z conversion [@fisher1915frequency].
+Fisher's r-to-z conversion [@Fisher1915].
 Figures for the correlation matrices were generated with
 Matplotlib {matplotlib_ver} [@Hunter2007] and MNE-Python {mne_ver}
-[@gramfort2013meg; @gramfort2014mne].
+[@Gramfort2013; @Gramfort2014].
 """.format(nilearn_ver=nilearn_ver,
            matplotlib_ver=matplotlib_ver,
            mne_ver=mne_ver)
