@@ -6,7 +6,6 @@ env:
   global:
   - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
   - SEGFAULT_SIGNALS=all
-  - secure: "VovtWoTavKAeC15okVReKwL+c7Lbx/I0nJhFfMoTqO9DtXSimg2IjWLEv6XyD57/3a277NwUAOIq6j1qEnPRhjnGeUwY5bU1FF9txk0F5uLsc8DC0brzaMrPuOxgyc9nyVjTtkaKD4PWfH/8BlqJNdNoe/onsktmETfEfF4rYVCbsHCOLxi2XLOK5WdTvd9OJvjyT7doNuDhMinWPWw73Ah4qhAcqJULexAgWEypSwtssBXOFCTdhkHgRj0z7HZkUpfQILp3yh6rJS0rCo7VMVj7f+1IgTPcvyx/6cez88hUZYu6n0gBTYLGyIhIYWXt0nxpXL8FEWonNSiiJkKt7cuCkLt857hkF0xI5McHI0ETvqc97ICzUjae496nnuP6NZgTGEzcqHUS46KQh3faGzKA8ptkEllCn9683usZ5HF6a1GMAr/NXdmY/pGOhZO2zGMLt2Y8S9/XPLIe39HlTkoAMjBYb6lOQ5w/v3uA0Q3awuMzM0Dqm+BldB+9GTijWzKlre04dfJeIja3RZrGI83yUaMp7/NasKGVYulIT4C/3epPZIR/UmUDGul6xwQmpzplzVYJVNRr0s2BTbnWVjxc+h/doofx3UWTlItti3mH9B0Xq6klTRR15cjY/mh304OsUvwNwS7Ic5QtdMOkhTlGu/uegjrU0QCd6eNUemI="
 matrix:
   include:
   - name: "Linting/Checking Package"
@@ -22,15 +21,19 @@ matrix:
     env:
       - TOXENV=docs
     python: '3.5'  # match version from readthedocs
+  - name: "Checking Coverage"
+    env:
+      - TOXENV=report,codecov
+    python: '3.7'
   - python: '3.5'
     env:
-      - TOXENV=py35,report,codecov
+      - TOXENV=py35
   - python: '3.6'
     env:
-      - TOXENV=py36,report,codecov
+      - TOXENV=py36
   - python: '3.7'
     env:
-      - TOXENV=py37,report,codecov
+      - TOXENV=py37
 before_install:
 - python --version
 - uname -a
@@ -50,11 +53,15 @@ notifications:
   email:
     on_success: never
     on_failure: always
-deploy:
-  provider: pypi
-  user: jdkent
-  password:
-    secure: $PYPI_PASS
-  distributions: sdist bdist_wheel
-  on:
-    tags: true
+
+jobs:
+  include:
+    - stage: deploy
+      deploy:
+        provider: pypi
+        user: jdkent
+        password:
+          secure: $PYPI_PASS
+        distributions: sdist bdist_wheel
+        on:
+          tags: true
