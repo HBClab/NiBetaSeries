@@ -7,7 +7,7 @@ coverage:
   round: down
   range: "70...100"
   status:
-    project: yes
+    project:
       default:
         target: 70
         threshold: 10
