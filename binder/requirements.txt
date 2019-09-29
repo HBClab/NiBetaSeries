@@ -1,1 +1,1 @@
-.[nb,doc]
+.[binder]
