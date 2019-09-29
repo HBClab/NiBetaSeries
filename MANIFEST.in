@@ -27,10 +27,11 @@ prune .github
 prune .joss
 prune .circleci
 prune .vscode
+prune .binder
+prune .jupyter
 global-exclude *.py[cod] __pycache__ *.so *.dylib
 
 exclude *.sh
 exclude Dockerfile
 exclude .dockerignore
 exclude Dockerfile_devel
-
