@@ -33,7 +33,8 @@ def patched_gen_binder_rst(fpath, binder_conf, gallery_conf):
     """
     binder_conf = sphinx_gallery.binder.check_binder_conf(binder_conf)
     binder_url = sphinx_gallery.binder.gen_binder_url(fpath, binder_conf, gallery_conf)
-    binder_url = binder_url.replace(gallery_conf['gallery_dirs'] + os.path.sep, "").replace("ipynb", "py")
+    binder_url = binder_url.replace(
+        gallery_conf['gallery_dirs'] + os.path.sep, "").replace("ipynb", "py")
 
     rst = (
         "\n"
