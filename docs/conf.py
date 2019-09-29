@@ -51,7 +51,6 @@ sphinx_gallery_conf = {
         # path to your examples scripts
         'examples_dirs': '../examples',
         # path where to save gallery generated examples
-        'backreferences_dir': 'gen_modules/backreferences',
         'gallery_dirs': 'auto_examples',
         'binder': {
                 'org': 'HBClab',
@@ -83,13 +82,6 @@ if os.getenv('SPELLCHECK'):
     extensions += 'sphinxcontrib.spelling',
     spelling_show_suggestions = True
     spelling_lang = 'en_US'
-
-sphinx_gallery_conf = {
-     # path to your examples scripts
-     'examples_dirs': '../examples',
-     # path where to save gallery generated examples
-     'gallery_dirs': 'auto_examples',
-}
 
 source_suffix = '.rst'
 master_doc = 'index'
