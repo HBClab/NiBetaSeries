@@ -27,7 +27,7 @@ prune .github
 prune .joss
 prune .circleci
 prune .vscode
-prune .binder
+prune binder
 prune .jupyter
 global-exclude *.py[cod] __pycache__ *.so *.dylib
 
