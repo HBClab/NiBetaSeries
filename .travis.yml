@@ -34,6 +34,15 @@ matrix:
   - python: '3.7'
     env:
       - TOXENV=py37
+  - name: "deploy"
+    deploy:
+      provider: pypi
+      user: jdkent
+      password:
+        secure: $PYPI_PASS
+      distributions: sdist bdist_wheel
+      on:
+        tags: true
 before_install:
 - python --version
 - uname -a
@@ -53,15 +62,3 @@ notifications:
   email:
     on_success: never
     on_failure: always
-
-jobs:
-  include:
-    - stage: deploy
-      deploy:
-        provider: pypi
-        user: jdkent
-        password:
-          secure: $PYPI_PASS
-        distributions: sdist bdist_wheel
-        on:
-          tags: true
