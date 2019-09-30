@@ -12,8 +12,9 @@ coverage:
         target: 70
         threshold: 10
     patch:
-      target: 50
-      threshold: 100
+      default:
+        target: 50
+        threshold: 100
     changes: no
 
 parsers:
