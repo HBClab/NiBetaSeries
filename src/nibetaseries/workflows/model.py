@@ -133,7 +133,7 @@ included, while all other trials from that condition were modeled in a second
 set of FIR regressors, and other conditions were modeled in their own sets of
 FIR regressors.
 In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
@@ -145,6 +145,7 @@ condition, resulting in a set of N * {n_delays} 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
            confound_str=confound_str, hpf=high_pass,
+           is_mult_confs='were' if len(confound_str) else 'was',
            fir_delays=', '.join(fir_delays), n_delays=len(fir_delays))
     elif estimator == 'lsa':
         workflow.__desc__ = """\
@@ -159,7 +160,7 @@ Preprocessed data were subjected to a general linear model in which each trial
 was modeled in its own regressor. Each trial-specific regressor was convolved
 with a "{hrf}" hemodynamic response function for the model.
 In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) were
+high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
 included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
@@ -169,7 +170,8 @@ target trial's regressor was retained and concatenated into a 4D image with all
 other trials from that condition, resulting in a set of N 4D images of varying
 sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=high_pass)
+           confound_str=confound_str, hpf=high_pass,
+           is_mult_confs='were' if len(confound_str) else 'was')
 
     input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
                                                        'events_file',
