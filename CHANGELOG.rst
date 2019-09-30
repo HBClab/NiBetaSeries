@@ -1,7 +1,11 @@
 .. _changelog:
 
+=========
+CHANGELOG
+=========
+
 0.3.2 (September 04, 2019)
-==========================
+--------------------------
 
 This release is special because it will be published in the
 Journal of Open Source Software (JOSS).
@@ -12,7 +16,7 @@ but I will add all contributors back on for the subsequent release.
 * [MAINT] fix zenodo file
 
 0.3.1 (September 04, 2019)
-==========================
+--------------------------
 
 Changes to installation and documentation, but no functional code changes.
 
@@ -23,7 +27,7 @@ Changes to installation and documentation, but no functional code changes.
 * [MAINT] build tags (#183) @jdkent
 
 0.3.0 (August 29, 2019)
-=======================
+-----------------------
 
 Thanks to @PeerHerholz and @njvack for their contributions on this release.
 Special thanks to @snastase for being a great reviewer and improving the project
@@ -54,7 +58,7 @@ overall.
 * [WIP] JOSS Paper (#122) @jdkent
 
 0.2.3 (January 29, 2019)
-========================
+------------------------
 
 Various documentation and testing changes.
 We will be using readthedocs going forward and not doctr.
@@ -81,7 +85,7 @@ We will be using readthedocs going forward and not doctr.
 * [FIX] syntax links (#119) @PeerHerholz
 
 0.2.2 (November 15, 2018)
-=========================
+-------------------------
 
 Quick bug fixes, one related to updating the
 nipype dependency to a newer version (1.1.5)
@@ -90,7 +94,7 @@ nipype dependency to a newer version (1.1.5)
 * [FIX] add missing comma in hrf_models (#83) @jdkent
 
 0.2.1 (November 13, 2018)
-=========================
+-------------------------
 
 Large thanks to everyone at neurohackademy that helped make this a reality.
 This release is still a bit premature because I'm testing out
@@ -114,7 +118,7 @@ my workflow for making releases.
 * [MGT] simplify and create deployment (#79) @jdkent
 
 0.2.0 (November 13, 2018)
-=========================
+-------------------------
 
 * [MGT] simplify and create deployment (#79)
 * [TST] Add more tests (#78)
@@ -155,6 +159,6 @@ my workflow for making releases.
 
 
 0.1.0 (June 08, 2018)
-=====================
+---------------------
 
 * First release on PyPI.
