@@ -19,7 +19,8 @@ from bids import BIDSLayout
 
 def init_nibetaseries_participant_wf(
     estimator, atlas_img, atlas_lut, bids_dir,
-    derivatives_pipeline_dir, exclude_description_label, hrf_model, high_pass,
+    derivatives_pipeline_dir, exclude_description_label, fir_delays,
+    hrf_model, high_pass,
     output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
@@ -37,10 +38,12 @@ def init_nibetaseries_participant_wf(
             Path to input atlas lookup table (tsv)
         bids_dir : str
             Root directory of BIDS dataset
-        derivatives_pipeline_dir: str
+        derivatives_pipeline_dir : str
             Root directory of the derivatives pipeline
-        exclude_description_label: str or None
+        exclude_description_label : str or None
             Exclude bold series containing this description label
+        fir_delays : list or None
+            FIR delays (in scans)
         hrf_model : str
             The model that represents the shape of the hemodynamic response function
         high_pass : float
@@ -100,6 +103,7 @@ def init_nibetaseries_participant_wf(
             brainmask_list=brainmask_list,
             confound_tsv_list=confound_tsv_list,
             events_tsv_list=events_tsv_list,
+            fir_delays=fir_delays,
             hrf_model=hrf_model,
             high_pass=high_pass,
             name='single_subject' + subject_label + '_wf',
@@ -123,7 +127,8 @@ def init_nibetaseries_participant_wf(
 
 def init_single_subject_wf(
     estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
-    confound_tsv_list, events_tsv_list, hrf_model, high_pass, name, output_dir,
+    confound_tsv_list, events_tsv_list,  fir_delays, hrf_model, high_pass,
+    name, output_dir,
     preproc_img_list, selected_confounds, smoothing_kernel
         ):
     """
@@ -142,6 +147,7 @@ def init_single_subject_wf(
             brainmask_list=[''],
             confound_tsv_list=[''],
             events_tsv_list=[''],
+            fir_delays=None,
             hrf_model='',
             high_pass='',
             name='subtest',
@@ -153,9 +159,9 @@ def init_single_subject_wf(
     Parameters
     ----------
 
-        atlas_img : str
+        atlas_img : str or None
             path to input atlas nifti
-        atlas_lut : str
+        atlas_lut : str or None
             path to input atlas lookup table (tsv)
         bold_metadata_list : list
             list of bold metadata associated with each preprocessed file
@@ -165,6 +171,8 @@ def init_single_subject_wf(
             list of confound tsvs (e.g. from FMRIPREP)
         events_tsv_list : list
             list of event tsvs
+        fir_delays : list or None
+            FIR delays (in scans)
         hrf_model : str
             hemodynamic response function used to model the data
         high_pass : float
@@ -236,6 +244,7 @@ def init_single_subject_wf(
 
     # initialize the betaseries workflow
     betaseries_wf = init_betaseries_wf(estimator=estimator,
+                                       fir_delays=fir_delays,
                                        hrf_model=hrf_model,
                                        high_pass=high_pass,
                                        selected_confounds=selected_confounds,
@@ -257,7 +266,7 @@ def init_single_subject_wf(
                                     iterfield=['in_file'],
                                     name='ds_betaseries_file')
 
-    # connect the nodes
+    # connect the nodes for the beta series workflow
     workflow.connect([
         (input_node, betaseries_wf,
             [('preproc_img', 'input_node.bold_file'),
@@ -267,19 +276,28 @@ def init_single_subject_wf(
              ('bold_metadata', 'input_node.bold_metadata')]),
         (betaseries_wf, output_node,
             [('output_node.betaseries_files', 'betaseries_file')]),
-        (betaseries_wf, correlation_wf,
-            [('output_node.betaseries_files', 'input_node.betaseries_files')]),
-        (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
-                                      ('atlas_lut', 'input_node.atlas_lut')]),
-
-        (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrix'),
-                                       ('output_node.correlation_fig', 'correlation_fig')]),
-        (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
-        (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
-        (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
-        (output_node, ds_correlation_fig, [('correlation_fig', 'in_file')]),
         (input_node, ds_betaseries_file, [('preproc_img', 'source_file')]),
         (output_node, ds_betaseries_file, [('betaseries_file', 'in_file')]),
     ])
+
+    if atlas_img and atlas_lut:
+        # connect the nodes for the atlas workflow
+        input_node.inputs.atlas_img = atlas_img
+        input_node.inputs.atlas_lut = atlas_lut
+
+        workflow.connect([
+            (betaseries_wf, correlation_wf,
+                [('output_node.betaseries_files', 'input_node.betaseries_files')]),
+            (input_node, correlation_wf,
+                [('atlas_img', 'input_node.atlas_file'),
+                 ('atlas_lut', 'input_node.atlas_lut')]),
+            (correlation_wf, output_node,
+                [('output_node.correlation_matrix', 'correlation_matrix'),
+                 ('output_node.correlation_fig', 'correlation_fig')]),
+            (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
+            (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
+            (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
+            (output_node, ds_correlation_fig, [('correlation_fig', 'in_file')]),
+        ])
 
     return workflow

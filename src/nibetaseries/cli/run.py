@@ -28,6 +28,7 @@ from nipype import config as ncfg
 def get_parser():
     """Build parser object"""
     from ..__init__ import __version__
+    import sys
 
     verstr = 'nibs v{}'.format(__version__)
 
@@ -50,16 +51,16 @@ def get_parser():
 
     # Atlas Arguments (Required Options)
     atlas_args = parser.add_argument_group('Required Atlas Arguments')
-    atlas_args.add_argument('-a', '--atlas-img', action='store', required=True,
+    atlas_args.add_argument('-a', '--atlas-img', action='store',
+                            required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
                             help='input atlas nifti where each voxel within a "region" '
                                  'is labeled with the same integer and there is a unique '
-                                 'integer associated with each region of interest. '
-                                 'THIS OPTION IS REQUIRED.')
-    atlas_args.add_argument('-l', '--atlas-lut', action='store', required=True,
+                                 'integer associated with each region of interest.')
+    atlas_args.add_argument('-l', '--atlas-lut', action='store',
+                            required=('-a' in sys.argv or '--atlas-img' in sys.argv),
                             help='atlas look up table (tsv) formatted with the columns: '
                                   'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img. '
-                                  'THIS OPTION IS REQUIRED.')
+                                  'nifti file specified by --atlas-img.')
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
@@ -82,6 +83,9 @@ def get_parser():
                                     'spm + derivative + dispersion'],
                            help='convolve your regressors '
                                 'with one of the following hemodynamic response functions')
+    proc_opts.add_argument('--fir-delays', default=None,
+                           nargs='+', type=int, help='FIR delays in volumes',
+                           metavar='VOL')
     proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
@@ -131,6 +135,11 @@ def main():
 
     # get commandline options
     opts = get_parser().parse_args()
+
+    # check inputs
+    if (opts.hrf_model == 'fir') and (opts.fir_delays is None):
+        raise ValueError('If the FIR HRF model is selected, '
+                         'FIR delays must be provided.')
 
     # Set up directories
     # TODO: set up some sort of versioning system
@@ -205,6 +214,7 @@ def main():
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
+            fir_delays=opts.fir_delays,
             hrf_model=opts.hrf_model,
             high_pass=opts.high_pass,
             output_dir=output_dir,

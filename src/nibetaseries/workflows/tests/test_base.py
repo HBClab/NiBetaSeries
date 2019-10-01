@@ -19,8 +19,10 @@ def test_init_nibetaseries_participant_wf(
                       'crashfile_format': 'txt',
                       'parameterize_dirs': False},
     })
+    # LSS test
     test_np_wf = init_nibetaseries_participant_wf(
         estimator='lss',
+        fir_delays=None,
         atlas_img=str(atlas_file),
         atlas_lut=str(atlas_lut),
         bids_dir=str(bids_dir),
@@ -41,10 +43,36 @@ def test_init_nibetaseries_participant_wf(
 
     assert test_np_wf.run()
 
+    # FS test
     test_np_wf = init_nibetaseries_participant_wf(
-        estimator='lsa',
+        estimator='lss',
+        fir_delays=[0, 1, 2, 3, 4],
         atlas_img=str(atlas_file),
         atlas_lut=str(atlas_lut),
+        bids_dir=str(bids_dir),
+        derivatives_pipeline_dir=deriv_dir,
+        exclude_description_label=None,
+        hrf_model='fir',
+        high_pass=0.008,
+        output_dir=output_dir,
+        run_label=None,
+        selected_confounds=['WhiteMatter', 'CSF'],
+        session_label=None,
+        smoothing_kernel=None,
+        space_label=None,
+        subject_list=["01"],
+        task_label=None,
+        description_label=None,
+        work_dir=work_dir)
+
+    assert test_np_wf.run()
+
+    # LSA test
+    test_np_wf = init_nibetaseries_participant_wf(
+        estimator='lsa',
+        fir_delays=None,
+        atlas_img=None,
+        atlas_lut=None,
         bids_dir=str(bids_dir),
         derivatives_pipeline_dir=deriv_dir,
         exclude_description_label=None,
