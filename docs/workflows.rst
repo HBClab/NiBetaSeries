@@ -14,8 +14,8 @@ Participant Workflow
     wf = init_single_subject_wf(
         estimator='lss',
         fir_delays=None,
-        atlas_img='',
-        atlas_lut='',
+        atlas_img='img.nii.gz',
+        atlas_lut='lut.tsv',
         bold_metadata_list=[''],
         brainmask_list=[''],
         confound_tsv_list=[''],
