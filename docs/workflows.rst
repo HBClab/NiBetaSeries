@@ -13,6 +13,7 @@ Participant Workflow
     from nibetaseries.workflows.base import init_single_subject_wf
     wf = init_single_subject_wf(
         estimator='lss',
+        fir_delays=None,
         atlas_img='',
         atlas_lut='',
         bold_metadata_list=[''],
@@ -38,12 +39,14 @@ resulting in a final correlation (adjacency) matrix for each trial type.
 BetaSeries Workflow
 -------------------
 .. workflow::
-    :graph2use: orig
-    :simple_form: yes
+    :graph2use: flat
+    :simple_form: no
+    :include-source: yes
 
     from nibetaseries.workflows.model import init_betaseries_wf
     wf = init_betaseries_wf(
         estimator='lss',
+        fir_delays=None,
         hrf_model='glover',
         high_pass=0.008,
         smoothing_kernel=0.0,
@@ -52,6 +55,25 @@ BetaSeries Workflow
 nistats is used for modeling using the
 "least squares separate" (LSS) procedure with the option
 for high pass filtering and smoothing.
+
+.. workflow::
+    :graph2use: flat
+    :simple_form: no
+    :include-source: yes
+
+    from nibetaseries.workflows.model import init_betaseries_wf
+    wf = init_betaseries_wf(
+        estimator='lss',
+        fir_delays=[0, 1, 2, 3, 4],
+        hrf_model='fir',
+        high_pass=0.008,
+        smoothing_kernel=0.0,
+        selected_confounds=[''])
+
+Additionally, NiBetaSeries can be used to perform
+finite BOLD response- separate (FS) modeling by combining
+the LSS estimator with a FIR HRF model and a set of FIR delays.
+This model produces a 4D beta series for each condition, at each FIR delay.
 
 
 Correlation Workflow
