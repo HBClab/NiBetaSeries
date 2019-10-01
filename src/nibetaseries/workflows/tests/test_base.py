@@ -41,10 +41,12 @@ def test_init_nibetaseries_participant_wf(
 
     assert test_np_wf.run()
 
+    # tests lsa
+    # tests not including atlas_img or atlas_lut
     test_np_wf = init_nibetaseries_participant_wf(
         estimator='lsa',
-        atlas_img=str(atlas_file),
-        atlas_lut=str(atlas_lut),
+        atlas_img=None,
+        atlas_lut=None,
         bids_dir=str(bids_dir),
         derivatives_pipeline_dir=deriv_dir,
         exclude_description_label=None,

@@ -87,9 +87,9 @@ of providing a command-line application experience like fMRIPrep_.
 
 What does NiBetaSeries give me?
 -------------------------------
-Currently NiBetaSeries returns symmetric z-transformed correlation
-matrices with an entry for each parcel defined in the atlas,
-as well as the raw beta series images.
+Currently NiBetaSeries returns the beta series images and optionally
+symmetric z-transformed correlation matrices with an entry for each
+parcel defined in the atlas.
 
 .. note:: The betas (i.e., parameter estimates) are generated using either
     the "Least Squares Separate" or "Least Squares All" procedures.
