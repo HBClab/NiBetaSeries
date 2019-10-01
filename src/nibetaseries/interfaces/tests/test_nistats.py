@@ -29,6 +29,31 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
         os.remove(beta_map)
 
 
+def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
+                        confounds_file, brainmask_file):
+    selected_confounds = ['WhiteMatter', 'CSF']
+    hrf_model = 'fir'
+    fir_delays = [0, 1, 2, 3, 4]
+    with open(str(sub_metadata), 'r') as md:
+        bold_metadata = json.load(md)
+
+    beta_series = LSSBetaSeries(bold_file=str(preproc_file),
+                                bold_metadata=bold_metadata,
+                                mask_file=str(brainmask_file),
+                                events_file=str(sub_events),
+                                confounds_file=str(confounds_file),
+                                selected_confounds=selected_confounds,
+                                hrf_model=hrf_model,
+                                fir_delays=fir_delays,
+                                smoothing_kernel=None,
+                                high_pass=0.008)
+    res = beta_series.run()
+
+    for beta_map in res.outputs.beta_maps:
+        assert os.path.isfile(beta_map)
+        os.remove(beta_map)
+
+
 def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file):
     selected_confounds = ['WhiteMatter', 'CSF']
