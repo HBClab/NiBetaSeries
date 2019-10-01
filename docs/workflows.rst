@@ -39,8 +39,9 @@ resulting in a final correlation (adjacency) matrix for each trial type.
 BetaSeries Workflow
 -------------------
 .. workflow::
-    :graph2use: orig
-    :simple_form: yes
+    :graph2use: flat
+    :simple_form: no
+    :include-source: yes
 
     from nibetaseries.workflows.model import init_betaseries_wf
     wf = init_betaseries_wf(
@@ -56,8 +57,9 @@ nistats is used for modeling using the
 for high pass filtering and smoothing.
 
 .. workflow::
-    :graph2use: orig
-    :simple_form: yes
+    :graph2use: flat
+    :simple_form: no
+    :include-source: yes
 
     from nibetaseries.workflows.model import init_betaseries_wf
     wf = init_betaseries_wf(
