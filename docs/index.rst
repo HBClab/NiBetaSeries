@@ -13,7 +13,7 @@ Contents
    betaseries
    FAQ
    code_of_conduct
-   contributing
+   development/index
    authors
    changelog
 
