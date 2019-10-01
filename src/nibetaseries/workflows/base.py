@@ -159,9 +159,9 @@ def init_single_subject_wf(
     Parameters
     ----------
 
-        atlas_img : str
+        atlas_img : str or None
             path to input atlas nifti
-        atlas_lut : str
+        atlas_lut : str or None
             path to input atlas lookup table (tsv)
         bold_metadata_list : list
             list of bold metadata associated with each preprocessed file
@@ -266,7 +266,7 @@ def init_single_subject_wf(
                                     iterfield=['in_file'],
                                     name='ds_betaseries_file')
 
-    # connect the nodes
+    # connect the nodes for the beta series workflow
     workflow.connect([
         (input_node, betaseries_wf,
             [('preproc_img', 'input_node.bold_file'),
@@ -276,19 +276,28 @@ def init_single_subject_wf(
              ('bold_metadata', 'input_node.bold_metadata')]),
         (betaseries_wf, output_node,
             [('output_node.betaseries_files', 'betaseries_file')]),
-        (betaseries_wf, correlation_wf,
-            [('output_node.betaseries_files', 'input_node.betaseries_files')]),
-        (input_node, correlation_wf, [('atlas_img', 'input_node.atlas_file'),
-                                      ('atlas_lut', 'input_node.atlas_lut')]),
-
-        (correlation_wf, output_node, [('output_node.correlation_matrix', 'correlation_matrix'),
-                                       ('output_node.correlation_fig', 'correlation_fig')]),
-        (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
-        (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
-        (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
-        (output_node, ds_correlation_fig, [('correlation_fig', 'in_file')]),
         (input_node, ds_betaseries_file, [('preproc_img', 'source_file')]),
         (output_node, ds_betaseries_file, [('betaseries_file', 'in_file')]),
     ])
+
+    if atlas_img and atlas_lut:
+        # connect the nodes for the atlas workflow
+        input_node.inputs.atlas_img = atlas_img
+        input_node.inputs.atlas_lut = atlas_lut
+
+        workflow.connect([
+            (betaseries_wf, correlation_wf,
+                [('output_node.betaseries_files', 'input_node.betaseries_files')]),
+            (input_node, correlation_wf,
+                [('atlas_img', 'input_node.atlas_file'),
+                 ('atlas_lut', 'input_node.atlas_lut')]),
+            (correlation_wf, output_node,
+                [('output_node.correlation_matrix', 'correlation_matrix'),
+                 ('output_node.correlation_fig', 'correlation_fig')]),
+            (input_node, ds_correlation_matrix, [('preproc_img', 'source_file')]),
+            (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
+            (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
+            (output_node, ds_correlation_fig, [('correlation_fig', 'in_file')]),
+        ])
 
     return workflow

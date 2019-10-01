@@ -6,10 +6,35 @@ from ..run import get_parser
 
 
 def test_get_parser():
-    try:
+    with pytest.raises(SystemExit):
         get_parser().parse_args(['-h'])
-    except SystemExit:
-        print('success')
+
+
+def test_conditional_arguments(monkeypatch):
+    import sys
+    parser_args = [
+            'bids_dir',
+            'derivatives_pipeline',
+            'output_dir',
+            'participant',
+            '-l', 'lut',
+            '-a', 'img'
+    ]
+
+    # normal call
+    get_parser().parse_args(parser_args)
+
+    # remove the lut arguments
+    no_lut = [a for a in parser_args if a != "-l" and a != "lut"]
+    monkeypatch.setattr(sys, 'argv', no_lut)
+    with pytest.raises(SystemExit):
+        get_parser().parse_args(no_lut)
+
+    # remove the atlas-img arguments
+    no_img = [a for a in parser_args if a != "-a" and a != "img"]
+    monkeypatch.setattr(sys, 'argv', no_img)
+    with pytest.raises(SystemExit):
+        get_parser().parse_args(no_img)
 
 
 def test_nibs_lss(bids_dir, atlas_file, atlas_lut, deriv_dir):

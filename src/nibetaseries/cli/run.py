@@ -28,6 +28,7 @@ from nipype import config as ncfg
 def get_parser():
     """Build parser object"""
     from ..__init__ import __version__
+    import sys
 
     verstr = 'nibs v{}'.format(__version__)
 
@@ -50,16 +51,16 @@ def get_parser():
 
     # Atlas Arguments (Required Options)
     atlas_args = parser.add_argument_group('Required Atlas Arguments')
-    atlas_args.add_argument('-a', '--atlas-img', action='store', required=True,
+    atlas_args.add_argument('-a', '--atlas-img', action='store',
+                            required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
                             help='input atlas nifti where each voxel within a "region" '
                                  'is labeled with the same integer and there is a unique '
-                                 'integer associated with each region of interest. '
-                                 'THIS OPTION IS REQUIRED.')
-    atlas_args.add_argument('-l', '--atlas-lut', action='store', required=True,
+                                 'integer associated with each region of interest.')
+    atlas_args.add_argument('-l', '--atlas-lut', action='store',
+                            required=('-a' in sys.argv or '--atlas-img' in sys.argv),
                             help='atlas look up table (tsv) formatted with the columns: '
                                   'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img. '
-                                  'THIS OPTION IS REQUIRED.')
+                                  'nifti file specified by --atlas-img.')
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
