@@ -116,7 +116,6 @@ sizes, where N refers to the number of conditions in the task.
            confound_str=confound_str, hpf=high_pass,
            is_mult_confs='were' if len(confound_str) else 'was')
     elif estimator == 'lss' and hrf_model == 'fir':
-        fir_delays = [0, 1, 2, 3, 4]
         workflow.__desc__ = """\
 
 ### Beta Series Modeling
