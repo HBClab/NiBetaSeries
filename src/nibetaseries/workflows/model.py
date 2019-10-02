@@ -141,7 +141,7 @@ included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
 
-After fitting each model, the parameter estimate map associated with each of
+After fitting each model, the parameter estimate (i.e., beta) map associated with each of
 the target trial's {n_delays} delay-specific FIR regressors was retained
 and concatenated into delay-specific 4D images with all other trials from that
 condition, resulting in a set of N * {n_delays} 4D images of varying
