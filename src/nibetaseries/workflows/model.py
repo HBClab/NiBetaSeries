@@ -108,7 +108,7 @@ included in the model.
 AR(1) prewhitening was applied in each model to account for temporal
 autocorrelation.
 
-After fitting each model, the parameter estimate map associated with the
+After fitting each model, the parameter estimate (i.e., beta) map associated with the
 target trial's regressor was retained and concatenated into a 4D image with all
 other trials from that condition, resulting in a set of N 4D images of varying
 sizes, where N refers to the number of conditions in the task.
