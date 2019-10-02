@@ -38,6 +38,10 @@ resulting in a final correlation (adjacency) matrix for each trial type.
 
 BetaSeries Workflow
 -------------------
+
+Least Squares- Separate (LSS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. workflow::
     :graph2use: flat
     :simple_form: no
@@ -53,8 +57,11 @@ BetaSeries Workflow
         selected_confounds=[''])
 
 nistats is used for modeling using the
-"least squares separate" (LSS) procedure with the option
+"least squares- separate" (LSS) procedure with the option
 for high pass filtering and smoothing.
+
+Finite BOLD Response- Separate (FS)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. workflow::
     :graph2use: flat
@@ -75,6 +82,28 @@ finite BOLD response- separate (FS) modeling by combining
 the LSS estimator with a FIR HRF model and a set of FIR delays.
 This model produces a 4D beta series for each condition, at each FIR delay.
 
+Least Squares- All (LSA)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. workflow::
+    :graph2use: flat
+    :simple_form: no
+    :include-source: yes
+
+    from nibetaseries.workflows.model import init_betaseries_wf
+    wf = init_betaseries_wf(
+        estimator='lsa',
+        fir_delays=None,
+        hrf_model='glover',
+        high_pass=0.008,
+        smoothing_kernel=0.0,
+        selected_confounds=[''])
+
+For completeness, NiBetaSeries also implements least squares- all (LSA),
+where each trial is given its own regressor in a single model as opposed to
+LSS where there are as many models as there are trials.
+While computationally faster, this method is unable to provide accurate
+estimates if the trials are too close together.
 
 Correlation Workflow
 --------------------
