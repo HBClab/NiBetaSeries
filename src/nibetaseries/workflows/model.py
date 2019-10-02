@@ -83,98 +83,15 @@ def init_betaseries_wf(name="betaseries_wf",
 
     """
     workflow = Workflow(name=name)
-    smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
-                  ' '.format(fwhm=smoothing_kernel)
-                  if smoothing_kernel != 0. else '')
-    confound_str = (', '.join(selected_confounds) + ' and ' if
-                    selected_confounds else '')
-    if estimator == 'lss' and hrf_model != 'fir':
-        workflow.__desc__ = """\
-
-### Beta Series Modeling
-
-Least squares- separate (LSS) models were generated for each event in the task
-following the method described in @Turner2012a, using Nistats {nistats_ver}.
-Prior to modeling, preprocessed data were {smooth_str}masked,
-and mean-scaled over time.
-For each trial, preprocessed data were subjected to a general linear model in
-which the trial was modeled in its own regressor, while all other trials from
-that condition were modeled in a second regressor, and other conditions were
-modeled in their own regressors. Each condition regressor was convolved with a
-"{hrf}" hemodynamic response function for the model.
-In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
-included in the model.
-AR(1) prewhitening was applied in each model to account for temporal
-autocorrelation.
-
-After fitting each model, the parameter estimate map associated with the
-target trial's regressor was retained and concatenated into a 4D image with all
-other trials from that condition, resulting in a set of N 4D images of varying
-sizes, where N refers to the number of conditions in the task.
-""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=high_pass,
-           is_mult_confs='were' if len(confound_str) else 'was')
-    elif estimator == 'lss' and hrf_model == 'fir':
-        workflow.__desc__ = """\
-
-### Beta Series Modeling
-
-Finite BOLD response- separate (FS) models were generated for each event in the
-task following the method described in @Turner2012a, using Nistats
-{nistats_ver}.
-Prior to modeling, preprocessed data were {smooth_str}masked,
-and mean-scaled over time.
-For each trial, preprocessed data were subjected to a general linear model in
-which the trial was modeled in its own set of finite impulse response (FIR)
-regressors. In a finite impulse response model, the BOLD response for each of a
-set of delays following the onset of the trial is modeled as an impulse, which
-can be used to capture the hemodynamic response model associated with that
-condition. In the models applied in this workflow, delay-specific FIR
-regressors corresponding to {fir_delays} volumes after the target trial were
-included, while all other trials from that condition were modeled in a second
-set of FIR regressors, and other conditions were modeled in their own sets of
-FIR regressors.
-In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
-included in the model.
-AR(1) prewhitening was applied in each model to account for temporal
-autocorrelation.
-
-After fitting each model, the parameter estimate map associated with each of
-the target trial's {n_delays} delay-specific FIR regressors was retained
-and concatenated into delay-specific 4D images with all other trials from that
-condition, resulting in a set of N * {n_delays} 4D images of varying
-sizes, where N refers to the number of conditions in the task.
-""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=high_pass,
-           is_mult_confs='were' if len(confound_str) else 'was',
-           fir_delays=', '.join([str(d) for d in fir_delays]), n_delays=len(fir_delays))
-    elif estimator == 'lsa':
-        workflow.__desc__ = """\
-
-### Beta Series Modeling
-
-A least squares- all (LSA) model was generated following the method described in
-@Rissman2004, using Nistats {nistats_ver}.
-Prior to modeling, preprocessed data were {smooth_str}masked,
-and mean-scaled over time.
-Preprocessed data were subjected to a general linear model in which each trial
-was modeled in its own regressor. Each trial-specific regressor was convolved
-with a "{hrf}" hemodynamic response function for the model.
-In addition to condition regressors, {confound_str}a
-high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
-included in the model.
-AR(1) prewhitening was applied in each model to account for temporal
-autocorrelation.
-
-After fitting each model, the parameter estimate map associated with the
-target trial's regressor was retained and concatenated into a 4D image with all
-other trials from that condition, resulting in a set of N 4D images of varying
-sizes, where N refers to the number of conditions in the task.
-""".format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
-           confound_str=confound_str, hpf=high_pass,
-           is_mult_confs='were' if len(confound_str) else 'was')
+    workflow.__desc__ = gen_wf_description(
+        nistats_ver=nistats_ver,
+        fwhm=smoothing_kernel,
+        hrf=hrf_model,
+        hpf=high_pass,
+        selected_confounds=selected_confounds,
+        estimator=estimator,
+        fir_delays=fir_delays,
+    )
 
     input_node = pe.Node(niu.IdentityInterface(fields=['bold_file',
                                                        'events_file',
@@ -214,3 +131,121 @@ sizes, where N refers to the number of conditions in the task.
     ])
 
     return workflow
+
+
+def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
+                       selected_confounds, estimator,
+                       fir_delays=None):
+    from textwrap import dedent
+
+    smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
+                  ' '.format(fwhm=fwhm)
+                  if fwhm != 0. else '')
+
+    preproc_str = ('Prior to modeling, preprocessed data were {smooth_str}masked,'
+                   'and mean-scaled over time.'.format(smooth_str=smooth_str))
+
+    beta_series_tmp = dedent("""
+        After fitting {n_models} model, the parameter estimate (i.e., beta) map
+        associated with the target trial's regressor was retained and concatenated
+        into a 4D image with all other trials from that condition, resulting in a
+        set of N 4D images where N refers to the number of conditions in the task.
+        The number of volumes in each 4D image corresponds to the number of trials
+        in that condition.\
+        """)
+
+    if estimator == "lss" and hrf == "fir":
+        estimator_intro = dedent("""\
+            Finite BOLD response- separate (FS) models were generated
+            for each event in the task following the method described
+            in @Turner2012a, using Nistats {nistats_ver}.\
+            """.format(nistats_ver=nistats_ver))
+
+        estimator_str = dedent("""\
+            For each trial, preprocessed data were subjected to a general linear model in
+            which the trial was modeled in its own set of finite impulse response (FIR)
+            regressors. In a finite impulse response model, the BOLD response for each of a
+            set of delays following the onset of the trial is modeled as an impulse, which
+            can be used to capture the hemodynamic response model associated with that
+            condition. In the models applied in this workflow, delay-specific FIR
+            regressors corresponding to {fir_delays} volumes after the target trial were
+            included, while all other trials from that condition were modeled in a second
+            set of FIR regressors, and other conditions were modeled in their own sets of
+            FIR regressors.\
+            """.format(fir_delays=[str(d) for d in fir_delays]))
+
+        beta_series_str = dedent("""\
+            After fitting each model, the parameter estimate map associated with each of
+            the target trial's {n_delays} delay-specific FIR regressors was retained
+            and concatenated into delay-specific 4D images with all other trials from that
+            condition, resulting in a set of N * {n_delays} 4D images of varying
+            sizes, where N refers to the number of conditions in the task.\
+            """.format(n_delays=len(fir_delays)))
+
+    elif estimator == "lss" and hrf != "fir":
+        estimator_intro = dedent("""\
+            Least squares- separate (LSS) models were generated for each event in the task
+            following the method described in @Turner2012a, using Nistats {nistats_ver}.\
+            """.format(nistats_ver=nistats_ver))
+
+        estimator_str = dedent("""\
+            For each trial, preprocessed data were subjected to a general linear model in
+            which the trial was modeled in its own regressor, while all other trials from
+            that condition were modeled in a second regressor, and other conditions were
+            modeled in their own regressors.\
+            """)
+
+        beta_series_str = beta_series_tmp.format(n_models='each')
+
+    elif estimator == "lsa":
+        estimator_intro = dedent("""\
+            A least squares- all (LSA) model was generated following the method described in
+            @Rissman2004, using Nistats {nistats_ver}.\
+            """.format(nistats_ver=nistats_ver))
+
+        estimator_str = dedent("""\
+            Preprocessed data were subjected to a general linear model in which each trial
+            was modeled in its own regressor.\
+            """)
+
+        beta_series_str = beta_series_tmp.format(n_models='the')
+
+    else:
+        raise ValueError("{est} not a supported estimator".format(est=estimator))
+
+    hrf_str = dedent("""\
+        Each condition regressor was convolved with a
+        "{hrf}" hemodynamic response function for the model.\
+        """.format(hrf=hrf) if hrf != 'fir' else '')
+
+    confound_str = (', '.join(selected_confounds) + ' and ' if
+                    selected_confounds else '')
+
+    confound_desc = dedent("""\
+        In addition to condition regressors, {confound_str}a
+        high-pass filter of {hpf} Hz (implemented using a cosine drift model) {is_mult_confs}
+        included in the model.
+        AR(1) prewhitening was applied in each model to account for temporal
+        autocorrelation.\
+        """.format(confound_str=confound_str,
+                   hpf=hpf,
+                   is_mult_confs='were' if len(confound_str) else 'was'))
+
+    # combine all sentences
+    description = dedent("""\
+        ### Beta Series Modeling
+
+        {estimator_intro}
+        {preproc_str}
+        {estimator_str}{hrf_str}
+        {confound_desc}
+
+        {beta_series_str}
+    """.format(estimator_intro=estimator_intro,
+               preproc_str=preproc_str,
+               estimator_str=estimator_str,
+               hrf_str=hrf_str,
+               confound_desc=confound_desc,
+               beta_series_str=beta_series_str))
+
+    return description
