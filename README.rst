@@ -14,7 +14,7 @@ for links to render properly.
     :stub-columns: 1
 
     * - docs
-      - |docs|
+      - |docs| |joss|
     * - tests
       - | |travis| |circleci|
         | |codecov|
@@ -30,6 +30,9 @@ for links to render properly.
 
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2552303.svg
    :target: https://zenodo.org/record/2552303#.XFBjwN-YU8p
+
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01295/status.svg
+   :target: https://doi.org/10.21105/joss.01295
 
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
