@@ -131,7 +131,7 @@ regressors. In a finite impulse response model, the BOLD response for each of a
 set of delays following the onset of the trial is modeled as an impulse, which
 can be used to capture the hemodynamic response model associated with that
 condition. In the models applied in this workflow, delay-specific FIR
-regressors corresponding to {delays} volumes after the target trial were
+regressors corresponding to {fir_delays} volumes after the target trial were
 included, while all other trials from that condition were modeled in a second
 set of FIR regressors, and other conditions were modeled in their own sets of
 FIR regressors.
@@ -149,7 +149,7 @@ sizes, where N refers to the number of conditions in the task.
 """.format(nistats_ver=nistats_ver, smooth_str=smooth_str, hrf=hrf_model,
            confound_str=confound_str, hpf=high_pass,
            is_mult_confs='were' if len(confound_str) else 'was',
-           fir_delays=', '.join(fir_delays), n_delays=len(fir_delays))
+           fir_delays=', '.join([str(d) for d in fir_delays]), n_delays=len(fir_delays))
     elif estimator == 'lsa':
         workflow.__desc__ = """\
 
