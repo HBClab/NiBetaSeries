@@ -148,10 +148,10 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
     beta_series_tmp = dedent("""
         After fitting {n_models} model, the parameter estimate (i.e., beta) map
         associated with the target trial's regressor was retained and concatenated
-        into a 4D image with all other trials from that condition, resulting in a
-        set of N 4D images where N refers to the number of conditions in the task.
-        The number of volumes in each 4D image corresponds to the number of trials
-        in that condition.\
+        into a 4D image with all other trials from the same condition, resulting
+        in a set of N 4D images where N refers to the number of conditions in the task.
+        The number of volumes in each 4D image represents the number of trials in that
+        condition.\
         """)
 
     if estimator == "lss" and hrf == "fir":
@@ -175,11 +175,13 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             """.format(fir_delays=[str(d) for d in fir_delays]))
 
         beta_series_str = dedent("""\
-            After fitting each model, the parameter estimate map associated with each of
-            the target trial's {n_delays} delay-specific FIR regressors was retained
-            and concatenated into delay-specific 4D images with all other trials from that
-            condition, resulting in a set of N * {n_delays} 4D images of varying
-            sizes, where N refers to the number of conditions in the task.\
+            After fitting each model, the parameter estimate (i.e., beta) map associated
+            with each of the target trial's {n_delays} delay-specific FIR regressors
+            was retained and concatenated into delay-specific 4D images with all other
+            trials from the same condition, resulting in a set of N * {n_delays} 4D
+            images where N refers to the number of conditions in the task.
+            The number of volumes in each 4D image represents the number of trials in that
+            condition.\
             """.format(n_delays=len(fir_delays)))
 
     elif estimator == "lss" and hrf != "fir":
