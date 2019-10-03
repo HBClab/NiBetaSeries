@@ -131,7 +131,7 @@ print(atlas_df.head())
 
 #############################################################################
 # drop color codes columns
-# -----------------------
+# ------------------------
 
 atlas_df.drop([2, 3, 4, 5], axis='columns', inplace=True)
 print(atlas_df.head())
