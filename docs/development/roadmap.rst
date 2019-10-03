@@ -1,8 +1,8 @@
 .. _roadmap:
 
-#######
+=======
 Roadmap
-#######
+=======
 
 This page serves as a reference to the overall goals of NiBetaSeries development.
 

@@ -1,8 +1,8 @@
 .. _nibetaseries_development_guide:
 
-##############################
+==============================
 NiBetaSeries Development Guide
-##############################
+==============================
 
 .. toctree::
    :maxdepth: 2

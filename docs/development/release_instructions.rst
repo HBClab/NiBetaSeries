@@ -1,8 +1,8 @@
 .. _release_instructions:
 
-####################
+====================
 Release Instructions
-####################
+====================
 
 In order to create a release for NiBetaSeries, we must make sure the pre-conditions are
 met, and that we follow the release instructions.
