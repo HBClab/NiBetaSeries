@@ -130,7 +130,7 @@ atlas_df = pd.read_csv(atlas_txt, sep="\t", header=None)
 print(atlas_df.head())
 
 #############################################################################
-# drop coordinate columns
+# drop color codes columns
 # -----------------------
 
 atlas_df.drop([2, 3, 4, 5], axis='columns', inplace=True)
