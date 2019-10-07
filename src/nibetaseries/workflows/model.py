@@ -235,6 +235,7 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
 
     # combine all sentences
     description = dedent("""\
+
         ### Beta Series Modeling
 
         {estimator_intro}
@@ -243,11 +244,11 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
         {confound_desc}
 
         {beta_series_str}
-    """.format(estimator_intro=estimator_intro,
-               preproc_str=preproc_str,
-               estimator_str=estimator_str,
-               hrf_str=hrf_str,
-               confound_desc=confound_desc,
-               beta_series_str=beta_series_str))
+        """).format(estimator_intro=estimator_intro,
+                    preproc_str=preproc_str,
+                    estimator_str=estimator_str,
+                    hrf_str=hrf_str,
+                    confound_desc=confound_desc,
+                    beta_series_str=beta_series_str)
 
     return description

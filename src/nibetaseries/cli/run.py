@@ -133,6 +133,8 @@ def get_parser():
     misc = parser.add_argument_group('misc options')
     misc.add_argument('--graph', action='store_true', default=False,
                       help='generates a graph png of the workflow')
+    misc.add_argument('--boilerplate', action='store_true', default=False,
+                      help='generate boilerplate without running workflow')
 
     return parser
 
@@ -240,13 +242,15 @@ def main():
             nibetaseries_participant_wf.write_graph(graph2use='colored',
                                                     format='svg',
                                                     simple_form=True)
-        try:
-            nibetaseries_participant_wf.run(**plugin_settings)
-        except RuntimeError as e:
-            if "Workflow did not execute cleanly" in str(e):
-                print("Workflow did not execute cleanly")
-            else:
-                raise e
+
+        if not opts.boilerplate:
+            try:
+                nibetaseries_participant_wf.run(**plugin_settings)
+            except RuntimeError as e:
+                if "Workflow did not execute cleanly" in str(e):
+                    print("Workflow did not execute cleanly")
+                else:
+                    raise e
 
         boilerplate = nibetaseries_participant_wf.visit_desc()
         if boilerplate:
