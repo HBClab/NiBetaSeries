@@ -310,7 +310,7 @@ Other Relevant Readings
 References
 ----------
 
-.. bibliography:: references.bib
+.. bibliography:: ../src/nibetaseries/data/references.bib
     :style: plain
     :labelprefix: docs-
     :keyprefix: d-

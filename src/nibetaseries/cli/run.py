@@ -23,6 +23,13 @@ from argparse import RawTextHelpFormatter
 from glob import glob
 from multiprocessing import cpu_count
 from nipype import config as ncfg
+from subprocess import check_call, CalledProcessError, TimeoutExpired
+from pkg_resources import resource_filename as pkgrf
+from shutil import copyfile
+import logging
+from pathlib import Path
+
+logger = logging.getLogger('cli')
 
 
 def get_parser():
@@ -126,6 +133,8 @@ def get_parser():
     misc = parser.add_argument_group('misc options')
     misc.add_argument('--graph', action='store_true', default=False,
                       help='generates a graph png of the workflow')
+    misc.add_argument('--boilerplate', action='store_true', default=False,
+                      help='generate boilerplate without running workflow')
 
     return parser
 
@@ -150,7 +159,7 @@ def main():
     output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
-    log_dir = os.path.join(output_dir, 'logs')
+    log_dir = os.path.join(output_dir, 'nibetaseries/logs')
     os.makedirs(log_dir, exist_ok=True)
 
     if opts.work_dir:
@@ -233,16 +242,70 @@ def main():
             nibetaseries_participant_wf.write_graph(graph2use='colored',
                                                     format='svg',
                                                     simple_form=True)
-        try:
-            nibetaseries_participant_wf.run(**plugin_settings)
-        except RuntimeError as e:
-            if "Workflow did not execute cleanly" in str(e):
-                print("Workflow did not execute cleanly")
-            else:
-                raise e
+
+        if not opts.boilerplate:
+            try:
+                nibetaseries_participant_wf.run(**plugin_settings)
+            except RuntimeError as e:
+                if "Workflow did not execute cleanly" in str(e):
+                    print("Workflow did not execute cleanly")
+                else:
+                    raise e
+
+        boilerplate = nibetaseries_participant_wf.visit_desc()
+        if boilerplate:
+            citation_files = {
+                ext: Path(log_dir) / 'CITATION.{}'.format(ext)
+                for ext in ('bib', 'tex', 'md', 'html')
+            }
+            # To please git-annex users and also to guarantee consistency
+            # among different renderings of the same file, first remove any
+            # existing one
+            for citation_file in citation_files.values():
+                try:
+                    citation_file.unlink()
+                except FileNotFoundError:
+                    pass
+
+            citation_files['md'].write_text(boilerplate)
 
     elif opts.analysis_level == "group":
         raise NotImplementedError('group analysis not currently implemented')
+
+    if citation_files['md'].exists():
+        # Generate HTML file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/references.bib'),
+               '--filter', 'pandoc-citeproc',
+               '--metadata', 'pagetitle="NiBetaSeries citation boilerplate"',
+               str(citation_files['md']),
+               '-o', str(citation_files['html'])]
+
+        logger.info('Generating an HTML version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.html file:\n%s',
+                           ' '.join(cmd))
+
+        # Generate LaTex file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/references.bib'),
+               '--natbib', str(citation_files['md']),
+               '-o', str(citation_files['tex'])]
+        logger.info('Generating a LaTeX version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.tex file:\n%s',
+                           ' '.join(cmd))
+        else:
+            copyfile(pkgrf('nibetaseries', 'data/references.bib'),
+                     citation_files['bib'])
+    else:
+        logger.warning('NiBetaSeries could not find the markdown version of '
+                       'the citation boilerplate (%s). HTML and LaTeX versions'
+                       ' of it will not be available', citation_files['md'])
 
 
 def init():
