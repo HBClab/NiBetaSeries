@@ -4,6 +4,71 @@
 CHANGELOG
 =========
 
+0.4.0 (October 07, 2019)
+------------------------
+This has been a busy month for NiBetaSeries.
+We have two more methods for calculating betas (LSA and FS),
+and LSS has been modified to account for separate conditions.
+All of this great work is thanks to @tsalo.
+
+The second major change is the refactor of how we read from
+the FMRIPREP directory, previously we assumed results from
+fmriprep version (< v1.2.0), but now we only support files output
+from fmriprep (>= v1.2.0).
+If you have results from an older version of fmriprep, check our
+FAQ for a potential solution.
+
+The third major change is the generation of a citation template,
+so you can easily populate your methods section with the appropriate information.
+Again, thanks to @tsalo for this marvelous contribution.
+
+The fourth and final major change (in no particular order), is passing the
+beta series image maps directly to the output directory, no longer requiring the
+user to have an atlas and a lookup table to use NiBetaSeries.
+This will allow users to use the beta series image maps for whatever downstream
+analysis they wish.
+
+Thank you to all the contributors mentioned below for improving NiBetaSeries
+through documentation fixes and other code changes.
+
+An unsung hero is @PeerHerholz for code review and
+beneficial recommendations for the future of NiBetaSeries, Thank you!
+Also not listed is @mwvoss for opening issue #123.
+Making a good issue is work and should be recognized, thank you!
+
+While I have almost certainly missed giving thanks to everyone that
+has helped, please know I appreciate your contributions and I'm
+thankful you took some time out of your day to help this project grow.
+
+* [DOC] update instructions with template checklist (#242) @jdkent
+* [FIX] update code-server version (#238) @jdkent
+* [DOC] Generate citable boilerplates for workflows (#205) @tsalo
+* [DOC] Clarify in demo that you are stripping color codes #123 (#234) @ipacheco-uy
+* [DOC] Fix documentation headers (#235) @atrievel
+* [FIX] add nano to dev container (#233) @pranesh-sp
+* [DOC] add lsa section (#231) @jdkent
+* [DOC] add joss badge (#229) @zkhan12
+* [ENH,DOC] add development documentation section (#222) @jdkent
+* [DOC,FIX] add fake img and lut to participant workflow (#225) @jdkent
+* [ENH] Implement finite BOLD response- separate (FS) modeling (#204) @tsalo
+* [MAINT] allow more lenience for pull requests (#223) @jdkent
+* [ENH] Make atlases optional (#213) @jdkent
+* [FIX,DOC] make title for changelog (#221) @jdkent
+* [MAINT] make travisci more efficient (#216) @jdkent
+* [FIX] make codecov yaml valid (#220) @jdkent
+* [FIX] show binder badge on readthedocs (#219) @jdkent
+* [ENH,DOC] sphinx gallery binder (#217) @jdkent
+* [MAINT] make codecov more lenient (#215) @jdkent
+* [FIX] use scope=derivatives in collect_data (#212) @jdkent
+* [FIX] respond to suggested edits (#206) @jdkent
+* [ENH] Implement least squares- all (LSA) modeling (#202) @tsalo
+* [TST] add more tests (#201) @jdkent
+* [FIX, DOC] Rename low-pass filter to high-pass filter (#198) @tsalo
+* [MAINT] explicitly set codecov settings (#200) @jdkent
+* [ENH,FIX] refactor bids file processing (#193) @jdkent
+* [ENH] Separate other conditions in LSS model (#191) @tsalo
+
+
 0.3.2 (September 04, 2019)
 --------------------------
 
