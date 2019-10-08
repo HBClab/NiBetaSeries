@@ -112,7 +112,7 @@ While I have almost certainly missed giving thanks to everyone that
 has helped, please know I appreciate your contributions and I'm
 thankful you took some time out of your day to help this project grow.
 
-
+* [DOC] update instructions with template checklist (#242) @jdkent
 * [FIX] update code-server version (#238) @jdkent
 * [DOC] Generate citable boilerplates for workflows (#205) @tsalo
 * [DOC] Clarify in demo that you are stripping color codes #123 (#234) @ipacheco-uy
