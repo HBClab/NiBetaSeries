@@ -5,14 +5,14 @@ import pytest
 from ..base import init_nibetaseries_participant_wf
 
 
-@pytest.mark.parametrize("estimator,fir_delays",
-                         [('lsa', None),
-                          ('lss', None),
-                          ('lss', [0, 1, 2, 3, 4])])
+@pytest.mark.parametrize("estimator,fir_delays,hrf_model",
+                         [('lsa', None, 'spm'),
+                          ('lss', None, 'spm'),
+                          ('lss', [0, 1, 2, 3, 4], 'fir')])
 def test_valid_init_nibetaseries_participant_wf(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
-        estimator, fir_delays):
+        estimator, fir_delays, hrf_model):
 
     output_dir = op.join(str(bids_dir), 'derivatives', 'atlasCorr')
     work_dir = op.join(str(bids_dir), 'derivatives', 'work')
@@ -33,7 +33,7 @@ def test_valid_init_nibetaseries_participant_wf(
         bids_dir=str(bids_dir),
         derivatives_pipeline_dir=deriv_dir,
         exclude_description_label=None,
-        hrf_model='spm',
+        hrf_model=hrf_model,
         high_pass=0.008,
         output_dir=output_dir,
         run_label=None,
@@ -54,7 +54,7 @@ def test_valid_init_nibetaseries_participant_wf(
                           (123, 123, 123, 123, 123)])
 def test_filters_init_nibetaseries_participant_wf(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
-        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        sub_events, confounds_file, brainmask_file,
         session_label, task_label, run_label, space_label, description_label):
 
     output_dir = op.join(str(bids_dir), 'derivatives', 'atlasCorr')
@@ -71,8 +71,8 @@ def test_filters_init_nibetaseries_participant_wf(
         init_nibetaseries_participant_wf(
             estimator='lsa',
             fir_delays=None,
-            atlas_img=str(atlas_file),
-            atlas_lut=str(atlas_lut),
+            atlas_img=None,
+            atlas_lut=None,
             bids_dir=str(bids_dir),
             derivatives_pipeline_dir=deriv_dir,
             exclude_description_label=None,
