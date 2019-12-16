@@ -76,6 +76,15 @@ Please check out their pages and support the developers.
 CHANGELOG
 =========
 
+0.4.1 (December 16, 2019)
+-------------------------
+Bug fix and maintainance release.
+
+* [MAINT] refactor and increase tests for run.py (#249) @jdkent
+* [FIX] allow flexible derivatives location (#247) @jdkent
+* [ENH] create useful error message when images are not found  (#246) @jdkent
+* [MAINT] fix nistats dependency  (#245) @jdkent
+
 0.4.0 (October 07, 2019)
 ------------------------
 This has been a busy month for NiBetaSeries.
@@ -139,7 +148,6 @@ thankful you took some time out of your day to help this project grow.
 * [MAINT] explicitly set codecov settings (#200) @jdkent
 * [ENH,FIX] refactor bids file processing (#193) @jdkent
 * [ENH] Separate other conditions in LSS model (#191) @tsalo
-
 
 0.3.2 (September 04, 2019)
 --------------------------
@@ -293,7 +301,6 @@ my workflow for making releases.
 * [FIX] add graph (#10)
 * [ENH] Refactor NiBetaSeries (#9)
 * [ENH] Refactor (#2)
-
 
 0.1.0 (June 08, 2018)
 ---------------------
