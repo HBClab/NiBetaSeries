@@ -2,7 +2,7 @@ from subprocess import call
 import os
 
 import pytest
-from ..run import get_parser
+from ..run import get_parser, main
 
 
 def test_get_parser():
@@ -112,3 +112,22 @@ def test_init(monkeypatch):
     monkeypatch.setattr(run, "__name__", "__main__")
     with pytest.raises(RuntimeError):
         run.init()
+
+
+def test_main(monkeypatch):
+    import sys
+
+    parser_args = [
+            'nibs',
+            'bids_dir',
+            'derivatives_pipeline',
+            'output_dir',
+            'participant',
+            '-l', 'lut',
+            '-a', 'img',
+    ]
+    monkeypatch.setattr(sys, 'argv', parser_args)
+    with pytest.raises(NotADirectoryError) as no_dir:
+        main()
+
+    assert "is not an available directory" in str(no_dir.value)
