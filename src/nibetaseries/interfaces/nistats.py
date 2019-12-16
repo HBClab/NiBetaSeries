@@ -60,9 +60,6 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
         else:
             confounds = None
 
-        # high_pass, switch from Hz to Period
-        high_pass_period = int(1 / self.inputs.high_pass)
-
         # setup the model
         model = first_level_model.FirstLevelModel(
             t_r=t_r,
@@ -72,7 +69,7 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
             smoothing_fwhm=self.inputs.smoothing_kernel,
             standardize=True,
             signal_scaling=0,
-            period_cut=high_pass_period,
+            high_pass=self.inputs.high_pass,
             drift_model='cosine',
             verbose=1,
             fir_delays=self.inputs.fir_delays,
@@ -177,9 +174,6 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
         else:
             confounds = None
 
-        # high_pass, switch from Hz to Period
-        high_pass_period = int(1 / self.inputs.high_pass)
-
         # setup the model
         model = first_level_model.FirstLevelModel(
             t_r=t_r,
@@ -189,7 +183,7 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             smoothing_fwhm=self.inputs.smoothing_kernel,
             standardize=True,
             signal_scaling=0,
-            period_cut=high_pass_period,
+            high_pass=self.inputs.high_pass,
             drift_model='cosine',
             verbose=1
         )
