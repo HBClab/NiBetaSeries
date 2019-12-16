@@ -45,14 +45,23 @@ jobs:
         - TOXENV=docs
       python: '3.5'  # match version from readthedocs
     - stage: test
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y graphviz
       python: '3.5'
       env:
         - TOXENV=py35
     - stage: test
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y graphviz
       python: '3.6'
       env:
         - TOXENV=py36
     - stage: test
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y graphviz
       python: '3.7'
       env:
         - TOXENV=py37,report,codecov
