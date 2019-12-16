@@ -42,7 +42,7 @@ def test_valid_init_nibetaseries_participant_wf(
         smoothing_kernel=None,
         space_label=None,
         subject_list=["01"],
-        task_label="deez",
+        task_label=None,
         description_label=None,
         work_dir=work_dir)
 
