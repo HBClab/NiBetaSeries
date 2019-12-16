@@ -43,8 +43,13 @@ def get_parser():
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
-    parser.add_argument('derivatives_pipeline', help='The pipeline that contains '
-                        'minimally preprocessed img, brainmask, and confounds.tsv')
+    parser.add_argument('derivatives_pipeline', help='Either the name of the pipeline '
+                        '(e.g., fmriprep) or the directory path to the pipeline '
+                        '(e.g., /some/dir/fmriprep) that contains the minimally preprocessed '
+                        'img, brainmask, and confounds.tsv. '
+                        'If you only give the name of the pipeline, it is assumed to be under '
+                        'a derivatives directory within the bids directory '
+                        '(e.g., /my/bids/derivatives).')
     parser.add_argument('output_dir', help='The directory where the output directory '
                         'and files should be stored. If you are running group level analysis '
                         'this folder should be prepopulated with the results of the'
@@ -153,8 +158,14 @@ def main():
     # Set up directories
     # TODO: set up some sort of versioning system
     bids_dir = os.path.abspath(opts.bids_dir)
+    if os.path.isdir(opts.derivatives_pipeline):
+        derivatives_pipeline_dir = os.path.abspath(opts.derivatives_pipeline)
+    else:
+        derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
 
-    derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
+    if not os.path.isdir(derivatives_pipeline_dir):
+        msg = "{dir} is not an available directory".format(dir=derivatives_pipeline_dir)
+        raise NotADirectoryError(msg)
 
     output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
