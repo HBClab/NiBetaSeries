@@ -1,4 +1,3 @@
-from subprocess import call
 import os
 
 import pytest
@@ -37,74 +36,41 @@ def test_conditional_arguments(monkeypatch):
         get_parser().parse_args(no_img)
 
 
-def test_nibs_lss(bids_dir, atlas_file, atlas_lut, deriv_dir):
+@pytest.mark.parametrize("estimator,fir_delays,hrf_model",
+                         [('lsa', None, 'spm'),
+                          ('lss', None, 'spm'),
+                          ('lss', [0, 1, 2, 3, 4], 'fir')])
+def test_nibs(
+        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        estimator, fir_delays, hrf_model, monkeypatch):
+    import sys
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
-    assert call(["nibs",
-                 "-a " + str(atlas_file),
-                 "-l " + str(atlas_lut),
-                 "-c WhiteMatter CSF",
-                 "--high-pass 0.008",
-                 "--estimator lss",
-                 "-sp MNI152NLin2009cAsym",
-                 "-sm 0.0",
-                 "--hrf-model spm",
-                 "--session-label pre",
-                 "--task-label waffles",
-                 "--run-label 1",
-                 "--description-label preproc",
-                 "--graph",
-                 bids_dir,
-                 "fmriprep",
-                 out_dir,
-                 "participant"])
+    args = ["nibs",
+            "-a", str(atlas_file),
+            "-l", str(atlas_lut),
+            "-c", "WhiteMatter", "CSF",
+            "--high-pass", "0.008",
+            "--estimator", estimator,
+            "-sp", "MNI152NLin2009cAsym",
+            "-sm", "0.0",
+            "--hrf-model", hrf_model,
+            "--session-label", "pre",
+            "--task-label", "waffles",
+            "--run-label", "1",
+            "--description-label", "preproc",
+            "--graph",
+            bids_dir,
+            "fmriprep",
+            out_dir,
+            "participant"]
+    if fir_delays:
+        args.append('--fir-delays')
+        args.extend([str(d) for d in fir_delays])
 
-
-def test_nibs_fs(bids_dir, atlas_file, atlas_lut, deriv_dir):
-    bids_dir = str(bids_dir)
-    out_dir = os.path.join(bids_dir, 'derivatives')
-    assert call(["nibs",
-                 "-a " + str(atlas_file),
-                 "-l " + str(atlas_lut),
-                 "-c WhiteMatter CSF",
-                 "--high-pass 0.008",
-                 "--estimator lss",
-                 "-sp MNI152NLin2009cAsym",
-                 "-sm 0.0",
-                 "--hrf-model fir",
-                 "--fir-delays 0 1 2 3 4"
-                 "--session-label pre",
-                 "--task-label waffles",
-                 "--run-label 1",
-                 "--description-label preproc",
-                 "--graph",
-                 bids_dir,
-                 "fmriprep",
-                 out_dir,
-                 "participant"])
-
-
-def test_nibs_lsa(bids_dir, atlas_file, atlas_lut, deriv_dir):
-    bids_dir = str(bids_dir)
-    out_dir = os.path.join(bids_dir, 'derivatives')
-    assert call(["nibs",
-                 "-a " + str(atlas_file),
-                 "-l " + str(atlas_lut),
-                 "-c WhiteMatter CSF",
-                 "--high-pass 0.008",
-                 "--estimator lsa",
-                 "-sp MNI152NLin2009cAsym",
-                 "-sm 0.0",
-                 "--hrf-model spm",
-                 "--session-label pre",
-                 "--task-label waffles",
-                 "--run-label 1",
-                 "--description-label preproc",
-                 "--graph",
-                 bids_dir,
-                 "fmriprep",
-                 out_dir,
-                 "participant"])
+    monkeypatch.setattr(sys, 'argv', args)
+    assert main() is None
 
 
 def test_init(monkeypatch):
@@ -114,7 +80,7 @@ def test_init(monkeypatch):
         run.init()
 
 
-def test_main(monkeypatch):
+def test_deriv_directory(monkeypatch):
     import sys
 
     parser_args = [
@@ -131,3 +97,21 @@ def test_main(monkeypatch):
         main()
 
     assert "is not an available directory" in str(no_dir.value)
+
+
+def test_fir_delays(monkeypatch):
+    import sys
+
+    parser_args = [
+            'nibs',
+            'bids_dir',
+            'derivatives_pipeline',
+            'output_dir',
+            'participant',
+            '--hrf-model', 'fir',
+    ]
+    monkeypatch.setattr(sys, 'argv', parser_args)
+    with pytest.raises(ValueError) as no_delays:
+        main()
+
+    assert "If the FIR HRF model is selected" in str(no_delays.value)
