@@ -37,6 +37,10 @@ def collect_data(layout, participant_label, ses=None,
 
     preprocs = layout.get(**preproc_query)
 
+    if not preprocs:
+        msg = "could not find preprocessed outputs: " + str(preproc_query)
+        raise ValueError(msg)
+
     # get the relevant files for each preproc
     preproc_collector = []
     # common across all queries
