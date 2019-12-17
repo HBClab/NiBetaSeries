@@ -104,28 +104,33 @@ def get_parser():
                            'certain nibs finished as expected.')
 
     # Image Selection options
-    image_opts = parser.add_argument_group('Options for selecting images')
-    parser.add_argument('--participant-label', nargs="+",
-                        help='The label(s) of the participant(s) '
-                             'that should be analyzed. The label '
-                             'corresponds to sub-<participant_label> from the BIDS spec '
-                             '(so it does not include "sub-"). If this parameter is not '
-                             'provided all subjects should be analyzed. Multiple '
-                             'participants can be specified with a space separated list.')
-    image_opts.add_argument('--session-label', action='store',
-                            default=None, help='select a session to analyze')
-    image_opts.add_argument('-t', '--task-label', action='store',
-                            default=None, help='select a specific task to be processed')
-    image_opts.add_argument('--run-label', action='store',
-                            default=None, help='select a run to analyze')
-    image_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
-                            choices=['MNI152NLin2009cAsym'],
-                            help='select a bold derivative in a specific space to be used')
-    image_opts.add_argument('--description-label', action='store',
-                            default=None, help='select a bold file with particular '
-                                               '`desc` label to process')
-    image_opts.add_argument('--exclude-description-label', action='store_true',
-                            default=False, help='exclude this `desc` label from nibetaseries')
+    bids_opts = parser.add_argument_group('Options for selecting images')
+    bids_opts.add_argument('--participant-label', nargs="+",
+                           help='The label(s) of the participant(s) '
+                                'that should be analyzed. The label '
+                                'corresponds to sub-<participant_label> from the BIDS spec '
+                                '(so it does not include "sub-"). If this parameter is not '
+                                'provided all subjects should be analyzed. Multiple '
+                                'participants can be specified with a space separated list.')
+    bids_opts.add_argument('--session-label', action='store',
+                           default=None, help='select a session to analyze')
+    bids_opts.add_argument('-t', '--task-label', action='store',
+                           default=None, help='select a specific task to be processed')
+    bids_opts.add_argument('--run-label', action='store',
+                           default=None, help='select a run to analyze')
+    bids_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
+                           choices=['MNI152NLin2009cAsym'],
+                           help='select a bold derivative in a specific space to be used')
+    bids_opts.add_argument('--description-label', action='store',
+                           default=None, help='select a bold file with particular '
+                                              '`desc` label to process')
+    bids_opts.add_argument('--exclude-description-label', action='store_true',
+                           default=False, help='exclude this `desc` label from nibetaseries')
+    bids_opts.add_argument('--database-path', action='store', default=None,
+                           help="Path to directory containing SQLite database indicies "
+                                "for this BIDS dataset. "
+                                "If a value is passed and the file already exists, "
+                                "indexing is skipped.")
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
@@ -232,6 +237,7 @@ def main():
             atlas_img=os.path.abspath(opts.atlas_img),
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,
+            database_path=opts.database_path,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
             fir_delays=opts.fir_delays,

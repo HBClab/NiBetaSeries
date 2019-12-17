@@ -15,6 +15,7 @@ def collect_data(layout, participant_label, ses=None,
     """
     Uses pybids to retrieve the input data for a given participant
     """
+    import json
     # get all the preprocessed fmri images.
     preproc_query = {
         'subject': participant_label,
@@ -79,12 +80,14 @@ def collect_data(layout, participant_label, ses=None,
         query_res['preproc'] = preproc.path
 
         # get metadata for the preproc
-        bold_query = _combine_dict(preproc_dict_ns, {'suffix': 'bold',
-                                                     'extension': ['nii', 'nii.gz'],
-                                                     'desc': None})
-        bold_file = layout.get(**bold_query)[0]
+        metadata_query = _combine_dict(preproc_dict_ns, {'suffix': 'bold',
+                                                         'extension': ['json'],
+                                                         'desc': None})
+        bold_json = layout.get(**metadata_query)[0]
+        with open(bold_json.path, "r") as md:
+            metadata = json.load(md)
 
-        query_res['metadata'] = bold_file.get_metadata()
+        query_res['metadata'] = metadata
         preproc_collector.append(query_res)
 
     return preproc_collector

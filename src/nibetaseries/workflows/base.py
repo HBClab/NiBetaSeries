@@ -30,8 +30,8 @@ from ..interfaces.bids import DerivativesDataSink
 
 def init_nibetaseries_participant_wf(
     estimator, atlas_img, atlas_lut, bids_dir,
-    derivatives_pipeline_dir, exclude_description_label, fir_delays,
-    hrf_model, high_pass,
+    database_path, derivatives_pipeline_dir, exclude_description_label,
+    fir_delays, hrf_model, high_pass,
     output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
@@ -49,6 +49,8 @@ def init_nibetaseries_participant_wf(
             Path to input atlas lookup table (tsv)
         bids_dir : str
             Root directory of BIDS dataset
+        database_path : str
+            Path to a BIDS database
         derivatives_pipeline_dir : str
             Root directory of the derivatives pipeline
         exclude_description_label : str or None
@@ -116,8 +118,19 @@ It is released under the [CC0]\
            pandas_ver=pandas_ver,
            numpy_ver=numpy_ver)
 
+    # Go ahead and initialize the layout database
+    if database_path is None:
+        database_path = os.path.join(work_dir, 'dbcache')
+        reset_database = True
+    else:
+        reset_database = False
+
     # reading in derivatives and bids inputs as queryable database like objects
-    layout = BIDSLayout(bids_dir, derivatives=derivatives_pipeline_dir)
+    layout = BIDSLayout(bids_dir,
+                        derivatives=derivatives_pipeline_dir,
+                        index_metadata=False,
+                        database_file=database_path,
+                        reset_database=reset_database)
 
     for subject_label in subject_list:
         # collect the necessary inputs for both collect data
