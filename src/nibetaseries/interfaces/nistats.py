@@ -306,13 +306,11 @@ def _select_confounds(confounds_file, selected_confounds):
         contains all desired (processed) confounds.
     """
     import pandas as pd
-    import numpy as np
     confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
 
-    # fill the first value of FramewiseDisplacement with the mean.
-    if 'FramewiseDisplacement' in selected_confounds:
-        confounds_df['FramewiseDisplacement'] = confounds_df['FramewiseDisplacement'].fillna(
-                                np.mean(confounds_df['FramewiseDisplacement']))
+    # fill all nans with zero?
+    for confound in selected_confounds:
+        confounds_df[confound] = confounds_df[confound].fillna(0)
 
     desired_confounds = confounds_df[selected_confounds]
     return desired_confounds
