@@ -133,15 +133,13 @@ It is released under the [CC0]\
                         reset_database=reset_database)
 
     # only index bold file metadata
-    indexer = BIDSLayoutIndexerPatch(layout)
-    metadata_filter = {
-        'extension': ['nii', 'nii.gz', 'json'],
-        'suffix': 'bold',
-        'task': task_label,
-        'run': run_label,
-        'session': session_label,
-    }
-    indexer.index_metadata(**metadata_filter)
+    if reset_database:
+        indexer = BIDSLayoutIndexerPatch(layout)
+        metadata_filter = {
+            'extension': ['nii', 'nii.gz', 'json'],
+            'suffix': 'bold',
+        }
+        indexer.index_metadata(**metadata_filter)
 
     for subject_label in subject_list:
         # collect the necessary inputs for both collect data
