@@ -304,6 +304,24 @@ def atlas_lut(tmpdir_factory):
 
 
 @pytest.fixture(scope='session')
+def bids_db_file(
+        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        ):
+    from bids import BIDSLayout
+
+    db_file = bids_dir / ".dbcache"
+
+    BIDSLayout(bids_dir,
+               derivatives=deriv_dir,
+               index_metadata=False,
+               database_file=db_file,
+               reset_database=True)
+
+    return db_file
+
+
+@pytest.fixture(scope='session')
 def betaseries_file(tmpdir_factory,
                     deriv_betaseries_fname=deriv_betaseries_fname):
     bfile = tmpdir_factory.mktemp("beta").ensure(deriv_betaseries_fname)

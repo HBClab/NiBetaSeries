@@ -11,7 +11,7 @@ from ..base import init_nibetaseries_participant_wf
                           ('lss', [0, 1, 2, 3, 4], 'fir')])
 def test_valid_init_nibetaseries_participant_wf(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
-        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut, bids_db_file,
         estimator, fir_delays, hrf_model):
 
     output_dir = op.join(str(bids_dir), 'derivatives', 'atlasCorr')
@@ -31,6 +31,7 @@ def test_valid_init_nibetaseries_participant_wf(
         atlas_img=str(atlas_file),
         atlas_lut=str(atlas_lut),
         bids_dir=str(bids_dir),
+        database_path=bids_db_file,
         derivatives_pipeline_dir=deriv_dir,
         exclude_description_label=None,
         hrf_model=hrf_model,
@@ -74,6 +75,7 @@ def test_filters_init_nibetaseries_participant_wf(
             atlas_img=None,
             atlas_lut=None,
             bids_dir=str(bids_dir),
+            database_path=None,
             derivatives_pipeline_dir=deriv_dir,
             exclude_description_label=None,
             hrf_model='spm',
