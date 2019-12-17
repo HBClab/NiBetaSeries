@@ -182,7 +182,8 @@ def main():
 
     # only for a subset of subjects
     if opts.participant_label:
-        subject_list = opts.participant_label
+        subject_list = [s[4:] if s.startswith('sub-') else s
+                        for s in opts.participant_label]
     # for all subjects
     else:
         subject_dirs = glob(os.path.join(bids_dir, "sub-*"))
