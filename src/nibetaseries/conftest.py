@@ -315,7 +315,7 @@ def bids_db_file(
     BIDSLayout(bids_dir,
                derivatives=deriv_dir,
                index_metadata=False,
-               database_file=db_file,
+               database_file=str(db_file),
                reset_database=True)
 
     return db_file
