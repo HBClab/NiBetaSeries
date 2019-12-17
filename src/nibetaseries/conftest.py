@@ -309,14 +309,24 @@ def bids_db_file(
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
         ):
     from bids import BIDSLayout
+    from .workflows.utils import BIDSLayoutIndexerPatch
 
     db_file = bids_dir / ".dbcache"
 
-    BIDSLayout(str(bids_dir),
-               derivatives=str(deriv_dir),
-               index_metadata=False,
-               database_file=str(db_file),
-               reset_database=True)
+    layout = BIDSLayout(
+        str(bids_dir),
+        derivatives=str(deriv_dir),
+        index_metadata=False,
+        database_file=str(db_file),
+        reset_database=True)
+
+    # only index bold file metadata
+    indexer = BIDSLayoutIndexerPatch(layout)
+    metadata_filter = {
+        'extension': ['nii', 'nii.gz', 'json'],
+        'suffix': 'bold',
+    }
+    indexer.index_metadata(**metadata_filter)
 
     return db_file
 

@@ -1,6 +1,6 @@
 import json
 
-from ..utils import collect_data
+from ..utils import collect_data, BIDSLayoutIndexerPatch
 from bids import BIDSLayout
 
 
@@ -19,7 +19,18 @@ def test_collect_data(bids_dir, deriv_dir, sub_fmriprep,
             'preproc': str(preproc_file),
             'metadata': metadata
         }
-    layout = BIDSLayout(str(bids_dir), derivatives=str(deriv_dir))
+    layout = BIDSLayout(
+        str(bids_dir),
+        derivatives=str(deriv_dir),
+        index_metadata=False)
+
+    # only index bold file metadata
+    indexer = BIDSLayoutIndexerPatch(layout)
+    metadata_filter = {
+        'extension': ['nii', 'nii.gz', 'json'],
+        'suffix': 'bold',
+    }
+    indexer.index_metadata(**metadata_filter)
 
     subject_label = '01'
     session = 'pre'
