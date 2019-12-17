@@ -167,6 +167,18 @@ def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
 
 
 @pytest.fixture(scope='session')
+def sub_top_metadata(bids_dir, bids_json_fname='task-waffles_bold.json'):
+    sub_json = bids_dir.ensure(bids_json_fname)
+    tr = 2
+    bold_metadata = {"RepetitionTime": tr, "TaskName": "waffles"}
+
+    with open(str(sub_json), 'w') as md:
+        json.dump(bold_metadata, md)
+
+    return sub_json
+
+
+@pytest.fixture(scope='session')
 def sub_rest_metadata(bids_dir, bids_json_fname=bids_rest_json_fname):
     sub_json = bids_dir.ensure(bids_rest_json_fname)
     tr = 2

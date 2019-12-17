@@ -10,7 +10,7 @@ from ..base import init_nibetaseries_participant_wf
                           ('lss', None, 'spm'),
                           ('lss', [0, 1, 2, 3, 4], 'fir')])
 def test_valid_init_nibetaseries_participant_wf(
-        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        bids_dir, deriv_dir, sub_fmriprep, sub_top_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut, bids_db_file,
         estimator, fir_delays, hrf_model):
 
