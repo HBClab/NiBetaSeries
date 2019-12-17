@@ -22,7 +22,7 @@ from nibabel import __version__ as nibabel_ver
 from niworkflows import __version__ as niworkflows_ver
 
 from .._version import get_versions
-from .utils import collect_data
+from .utils import collect_data, BIDSLayoutIndexerPatch
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
 from ..interfaces.bids import DerivativesDataSink
@@ -131,6 +131,17 @@ It is released under the [CC0]\
                         index_metadata=False,
                         database_file=database_path,
                         reset_database=reset_database)
+
+    # only index bold file metadata
+    indexer = BIDSLayoutIndexerPatch(layout)
+    metadata_filter = {
+        'extension': ['nii', 'nii.gz', 'json'],
+        'suffix': 'bold',
+        'task': task_label,
+        'run': run_label,
+        'session': session_label,
+    }
+    indexer.index_metadata(**metadata_filter)
 
     for subject_label in subject_list:
         # collect the necessary inputs for both collect data
