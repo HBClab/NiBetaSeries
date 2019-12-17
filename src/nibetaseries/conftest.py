@@ -312,8 +312,8 @@ def bids_db_file(
 
     db_file = bids_dir / ".dbcache"
 
-    BIDSLayout(bids_dir,
-               derivatives=deriv_dir,
+    BIDSLayout(str(bids_dir),
+               derivatives=str(deriv_dir),
                index_metadata=False,
                database_file=str(db_file),
                reset_database=True)
