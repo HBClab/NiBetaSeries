@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Module that contains the command line app.
@@ -22,11 +23,19 @@ from argparse import RawTextHelpFormatter
 from glob import glob
 from multiprocessing import cpu_count
 from nipype import config as ncfg
+from subprocess import check_call, CalledProcessError, TimeoutExpired
+from pkg_resources import resource_filename as pkgrf
+from shutil import copyfile
+import logging
+from pathlib import Path
+
+logger = logging.getLogger('cli')
 
 
 def get_parser():
     """Build parser object"""
     from ..__init__ import __version__
+    import sys
 
     verstr = 'nibs v{}'.format(__version__)
 
@@ -34,8 +43,13 @@ def get_parser():
                                      formatter_class=RawTextHelpFormatter)
     parser.add_argument('bids_dir', help='The directory with the input dataset '
                         'formatted according to the BIDS standard.')
-    parser.add_argument('derivatives_pipeline', help='The pipeline that contains '
-                        'minimally preprocessed img, brainmask, and confounds.tsv')
+    parser.add_argument('derivatives_pipeline', help='Either the name of the pipeline '
+                        '(e.g., fmriprep) or the directory path to the pipeline '
+                        '(e.g., /some/dir/fmriprep) that contains the minimally preprocessed '
+                        'img, brainmask, and confounds.tsv. '
+                        'If you only give the name of the pipeline, it is assumed to be under '
+                        'a derivatives directory within the bids directory '
+                        '(e.g., /my/bids/derivatives).')
     parser.add_argument('output_dir', help='The directory where the output directory '
                         'and files should be stored. If you are running group level analysis '
                         'this folder should be prepopulated with the results of the'
@@ -49,23 +63,26 @@ def get_parser():
 
     # Atlas Arguments (Required Options)
     atlas_args = parser.add_argument_group('Required Atlas Arguments')
-    atlas_args.add_argument('-a', '--atlas-img', action='store', required=True,
+    atlas_args.add_argument('-a', '--atlas-img', action='store',
+                            required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
                             help='input atlas nifti where each voxel within a "region" '
                                  'is labeled with the same integer and there is a unique '
-                                 'integer associated with each region of interest. '
-                                 'THIS OPTION IS REQUIRED.')
-    atlas_args.add_argument('-l', '--atlas-lut', action='store', required=True,
+                                 'integer associated with each region of interest.')
+    atlas_args.add_argument('-l', '--atlas-lut', action='store',
+                            required=('-a' in sys.argv or '--atlas-img' in sys.argv),
                             help='atlas look up table (tsv) formatted with the columns: '
                                   'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img. '
-                                  'THIS OPTION IS REQUIRED.')
+                                  'nifti file specified by --atlas-img.')
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
+    proc_opts.add_argument('--estimator', default='lss',
+                           choices=['lss', 'lsa'],
+                           help='beta series modeling method')
     proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
                            help='select a smoothing kernel (mm)')
-    proc_opts.add_argument('-lp', '--low-pass', action='store', type=float,
-                           default=None, help='low pass filter (Hz)')
+    proc_opts.add_argument('-hp', '--high-pass', action='store', type=float,
+                           default=0.0078125, help='high pass filter (Hz)')
     proc_opts.add_argument('-c', '--confounds', help='The confound column names '
                            'that are to be included in nuisance regression. '
                            'write the confounds you wish to include separated by a space',
@@ -78,6 +95,9 @@ def get_parser():
                                     'spm + derivative + dispersion'],
                            help='convolve your regressors '
                                 'with one of the following hemodynamic response functions')
+    proc_opts.add_argument('--fir-delays', default=None,
+                           nargs='+', type=int, help='FIR delays in volumes',
+                           metavar='VOL')
     proc_opts.add_argument('-w', '--work-dir', help='directory where temporary files '
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
@@ -118,6 +138,8 @@ def get_parser():
     misc = parser.add_argument_group('misc options')
     misc.add_argument('--graph', action='store_true', default=False,
                       help='generates a graph png of the workflow')
+    misc.add_argument('--boilerplate', action='store_true', default=False,
+                      help='generate boilerplate without running workflow')
 
     return parser
 
@@ -128,16 +150,27 @@ def main():
     # get commandline options
     opts = get_parser().parse_args()
 
+    # check inputs
+    if (opts.hrf_model == 'fir') and (opts.fir_delays is None):
+        raise ValueError('If the FIR HRF model is selected, '
+                         'FIR delays must be provided.')
+
     # Set up directories
     # TODO: set up some sort of versioning system
     bids_dir = os.path.abspath(opts.bids_dir)
+    if os.path.isdir(opts.derivatives_pipeline):
+        derivatives_pipeline_dir = os.path.abspath(opts.derivatives_pipeline)
+    else:
+        derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
 
-    derivatives_pipeline_dir = os.path.join(bids_dir, 'derivatives', opts.derivatives_pipeline)
+    if not os.path.isdir(derivatives_pipeline_dir):
+        msg = "{dir} is not an available directory".format(dir=derivatives_pipeline_dir)
+        raise NotADirectoryError(msg)
 
     output_dir = os.path.abspath(opts.output_dir)
     os.makedirs(output_dir, exist_ok=True)
 
-    log_dir = os.path.join(output_dir, 'logs')
+    log_dir = os.path.join(output_dir, 'nibetaseries/logs')
     os.makedirs(log_dir, exist_ok=True)
 
     if opts.work_dir:
@@ -195,13 +228,15 @@ def main():
     # running participant level
     if opts.analysis_level == "participant":
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
+            estimator=opts.estimator,
             atlas_img=os.path.abspath(opts.atlas_img),
             atlas_lut=os.path.abspath(opts.atlas_lut),
             bids_dir=bids_dir,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
+            fir_delays=opts.fir_delays,
             hrf_model=opts.hrf_model,
-            low_pass=opts.low_pass,
+            high_pass=opts.high_pass,
             output_dir=output_dir,
             run_label=opts.run_label,
             selected_confounds=opts.confounds,
@@ -218,13 +253,76 @@ def main():
             nibetaseries_participant_wf.write_graph(graph2use='colored',
                                                     format='svg',
                                                     simple_form=True)
-        try:
-            nibetaseries_participant_wf.run(**plugin_settings)
-        except RuntimeError as e:
-            if "Workflow did not execute cleanly" in str(e):
-                print("Workflow did not execute cleanly")
-            else:
-                raise e
+
+        if not opts.boilerplate:
+            try:
+                nibetaseries_participant_wf.run(**plugin_settings)
+            except RuntimeError as e:
+                if "Workflow did not execute cleanly" in str(e):
+                    print("Workflow did not execute cleanly")
+                else:
+                    raise e
+
+        boilerplate = nibetaseries_participant_wf.visit_desc()
+        if boilerplate:
+            citation_files = {
+                ext: Path(log_dir) / 'CITATION.{}'.format(ext)
+                for ext in ('bib', 'tex', 'md', 'html')
+            }
+            # To please git-annex users and also to guarantee consistency
+            # among different renderings of the same file, first remove any
+            # existing one
+            for citation_file in citation_files.values():
+                try:
+                    citation_file.unlink()
+                except FileNotFoundError:
+                    pass
+
+            citation_files['md'].write_text(boilerplate)
 
     elif opts.analysis_level == "group":
         raise NotImplementedError('group analysis not currently implemented')
+
+    if citation_files['md'].exists():
+        # Generate HTML file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/references.bib'),
+               '--filter', 'pandoc-citeproc',
+               '--metadata', 'pagetitle="NiBetaSeries citation boilerplate"',
+               str(citation_files['md']),
+               '-o', str(citation_files['html'])]
+
+        logger.info('Generating an HTML version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.html file:\n%s',
+                           ' '.join(cmd))
+
+        # Generate LaTex file resolving citations
+        cmd = ['pandoc', '-s', '--bibliography',
+               pkgrf('nibetaseries', 'data/references.bib'),
+               '--natbib', str(citation_files['md']),
+               '-o', str(citation_files['tex'])]
+        logger.info('Generating a LaTeX version of the citation boilerplate...')
+        try:
+            check_call(cmd, timeout=10)
+        except (FileNotFoundError, CalledProcessError, TimeoutExpired):
+            logger.warning('Could not generate CITATION.tex file:\n%s',
+                           ' '.join(cmd))
+        else:
+            copyfile(pkgrf('nibetaseries', 'data/references.bib'),
+                     citation_files['bib'])
+    else:
+        logger.warning('NiBetaSeries could not find the markdown version of '
+                       'the citation boilerplate (%s). HTML and LaTeX versions'
+                       ' of it will not be available', citation_files['md'])
+
+
+def init():
+    if __name__ == "__main__":
+        raise RuntimeError("NiBetaSeries/cli/run.py should not be run directly;\n"
+                           "Please `pip install` NiBetaSeries and use the `nibs` command")
+
+
+init()

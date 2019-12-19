@@ -8,7 +8,8 @@ ARG DEBIAN_FRONTEND="noninteractive"
 RUN apt-get update &&\
     apt-get install -y \
         net-tools \
-        git
+        git \
+        nano
 
 ENV SHELL=/bin/bash
 
@@ -28,7 +29,7 @@ USER root
 RUN cp -R /src/nibetaseries/src/nibetaseries.egg-info /src/
 
 # set up code-server (need net-tools for initialization)
-RUN curl -o /tmp/code-server.tar.gz -SL https://github.com/cdr/code-server/releases/download/2.preview.11-vsc1.37.0/code-server2.preview.11-vsc1.37.0-linux-x86_64.tar.gz
+RUN curl -o /tmp/code-server.tar.gz -SL https://github.com/cdr/code-server/releases/download/2.1523-vsc1.38.1/code-server2.1523-vsc1.38.1-linux-x86_64.tar.gz
 
 RUN mkdir /src/codeserver &&\
     tar -xvf /tmp/code-server.tar.gz -C /src/codeserver --strip-components=1 

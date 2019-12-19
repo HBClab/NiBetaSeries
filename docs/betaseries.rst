@@ -41,7 +41,7 @@ Once you calculate a beta estimate for each event of a given type
 (e.g., cue), you will have a four-dimensional dataset where each volume
 represents the beta estimates for a particular event.
 
-Having one regressor per event in a single model is known as "least squares all" (LSA).
+Having one regressor per event in a single model is known as "least squares- all" (LSA).
 This method, however, has limitations in the context of fast event-related
 designs (e.g., designs where the events occur between 3-6
 seconds apart on average).
@@ -49,10 +49,10 @@ Since each event has its own regressor, events that occur very close in time
 are collinear (e.g., are very overlapping).
 
 Jeanette Mumford :cite:`d-Mumford2012` derived a solution for
-the high collinearity observed in least squares all by using another
-type of regression known as "least squares separate" (LSS).
+the high collinearity observed in least squares- all by using another
+type of regression known as "least squares- separate" (LSS).
 Instead of having one general linear model (GLM) with a regressor per event,
-least squares separate implements a GLM per event with only two regressors:
+least squares- separate implements a GLM per event with only two regressors:
 1) one for the event of interest, and 2) one for every other event in the
 experiment.
 This process reduces the collinearity of the regressors and creates a more valid
@@ -64,8 +64,18 @@ the original conditions in the design matrix.
 In this updated version, the individual trial's design matrix is almost the same
 as the original design matrix, except that the trial is separated out into its
 own regressor.
-NiBetaSeries uses this updated "least squares separate" method and is thus optimized
-for fast event-related designs.
+
+Benjamin Turner :cite:`d-Turner2012a` also adapted the LSS method by combining
+it with finite impulse response (FIR) modeling, in which each of a set of
+temporal delays following each trial is modeled as an impulse function in order
+to characterize the shape of the BOLD response, as the
+finite BOLD response- separate (FS) model.
+The FS model showed promise as a method for decoding, as it does not make any
+assumptions about the shape of the BOLD response.
+
+NiBetaSeries can use the updated "least squares- separate" method,
+the "finite BOLD response- separate" method, or the original
+"least squares- all" method.
 
 Mathematical Background
 -----------------------
@@ -118,8 +128,8 @@ covary with other voxels.
 There is one final concept to cover in order to understand how the betas are
 estimated in ``NiBetaSeries``.
 You can model individual betas using a couple different strategies;
-"least squares all" (LSA) estimation represented in the above equation :eq:`lsa`,
-or "least squares separate" (LSS) estimation, in which each event receives
+"least squares- all" (LSA) estimation represented in the above equation :eq:`lsa`,
+or "least squares- separate" (LSS) estimation, in which each event receives
 its own GLM.
 The advantage of LSS comes from reducing the collinearity between closely spaced
 events.
@@ -157,7 +167,7 @@ more reliable.
     # the observed brain data (transposed so data points are in one column)
     Y = np.array([[2, 1, 5, 3]]).T
 
-    # least squares all (LSA)
+    # least squares- all (LSA)
     # there is one beta estimate per trial
     lsa_betas, _, _, _ = np.linalg.lstsq(X, Y)
 
@@ -300,7 +310,7 @@ Other Relevant Readings
 References
 ----------
 
-.. bibliography:: references.bib
+.. bibliography:: ../src/nibetaseries/data/references.bib
     :style: plain
     :labelprefix: docs-
     :keyprefix: d-

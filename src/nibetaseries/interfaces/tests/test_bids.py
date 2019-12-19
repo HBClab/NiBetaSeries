@@ -35,7 +35,7 @@ def test_derivatives_data_sink_tsv(base_dir, betaseries_file, corr_csv, preproc_
         'sub-01',
         'ses-pre',
         'func',
-        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+        ('sub-01_ses-pre_task-waffles_run-1_space-MNI152NLin2009cAsym'
          '_desc-condTest_correlation.tsv'))
 
     # create and run instance of the interface
@@ -56,7 +56,7 @@ def test_derivatives_data_sink_svg(base_dir, betaseries_file, corr_fig, preproc_
         'sub-01',
         'ses-pre',
         'func',
-        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+        ('sub-01_ses-pre_task-waffles_run-1_space-MNI152NLin2009cAsym'
          '_desc-condTest_correlation.svg'))
 
     # create and run instance of the interface
@@ -77,7 +77,7 @@ def test_derivatives_data_sink_bs(base_dir, betaseries_file, bs_out, preproc_fil
         'sub-01',
         'ses-pre',
         'func',
-        ('sub-01_ses-pre_task-waffles_space-MNI152NLin2009cAsym'
+        ('sub-01_ses-pre_task-waffles_run-1_space-MNI152NLin2009cAsym'
          '_desc-condTest_betaseries.nii.gz'))
 
     # create and run instance of the interface

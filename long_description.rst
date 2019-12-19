@@ -32,14 +32,13 @@ of providing a command-line application experience like fMRIPrep_.
 
 What does NiBetaSeries give me?
 -------------------------------
-Currently NiBetaSeries returns symmetric z-transformed correlation
-matrices, with an entry for each parcel defined in the atlas.
-Soon, NiBetaSeries will also return the betaseries images themselves,
-so you can flexibly apply additional analysis methods.
+Currently NiBetaSeries returns the beta series images and optionally
+symmetric z-transformed correlation matrices with an entry for each
+parcel defined in the atlas.
 
-.. note:: The betas (i.e., parameter estimates) are generated using the "Least Squares Separate" procedure.
+.. note:: The betas (i.e., parameter estimates) are generated using either
+    the "Least Squares Separate" or "Least Squares All" procedures.
     Please read the betaseries page for more background information.
-    There are plans to support Least Squares All in future iterations.
 
 What do I need to run NiBetaSeries?
 -----------------------------------
@@ -73,17 +72,111 @@ Please check out their pages and support the developers.
 
 .. _changelog:
 
-0.3.0 (August 29, 2019)
-=======================
+=========
+CHANGELOG
+=========
 
-Thanks to @PeerHerholz and @njvack for their contributions on this release.
-Special thanks to @snastase for being a great reviewer and improving the project
-overall.
+0.4.1 (December 16, 2019)
+-------------------------
+Bug fix and maintainance release.
+
+* [MAINT] refactor and increase tests for run.py (#249) @jdkent
+* [FIX] allow flexible derivatives location (#247) @jdkent
+* [ENH] create useful error message when images are not found  (#246) @jdkent
+* [MAINT] fix nistats dependency  (#245) @jdkent
+
+0.4.0 (October 07, 2019)
+------------------------
+This has been a busy month for NiBetaSeries.
+We have two more methods for calculating betas (LSA and FS),
+and LSS has been modified to account for separate conditions.
+All of this great work is thanks to @tsalo.
+
+The second major change is the refactor of how we read from
+the FMRIPREP directory, previously we assumed results from
+fmriprep version (< v1.2.0), but now we only support files output
+from fmriprep (>= v1.2.0).
+If you have results from an older version of fmriprep, check our
+FAQ for a potential solution.
+
+The third major change is the generation of a citation template,
+so you can easily populate your methods section with the appropriate information.
+Again, thanks to @tsalo for this marvelous contribution.
+
+The fourth and final major change (in no particular order), is passing the
+beta series image maps directly to the output directory, no longer requiring the
+user to have an atlas and a lookup table to use NiBetaSeries.
+This will allow users to use the beta series image maps for whatever downstream
+analysis they wish.
+
+Thank you to all the contributors mentioned below for improving NiBetaSeries
+through documentation fixes and other code changes.
+
+An unsung hero is @PeerHerholz for code review and
+beneficial recommendations for the future of NiBetaSeries, Thank you!
+Also not listed is @mwvoss for opening issue #123.
+Making a good issue is work and should be recognized, thank you!
+
+While I have almost certainly missed giving thanks to everyone that
+has helped, please know I appreciate your contributions and I'm
+thankful you took some time out of your day to help this project grow.
+
+* [DOC] update instructions with template checklist (#242) @jdkent
+* [FIX] update code-server version (#238) @jdkent
+* [DOC] Generate citable boilerplates for workflows (#205) @tsalo
+* [DOC] Clarify in demo that you are stripping color codes #123 (#234) @ipacheco-uy
+* [DOC] Fix documentation headers (#235) @atrievel
+* [FIX] add nano to dev container (#233) @pranesh-sp
+* [DOC] add lsa section (#231) @jdkent
+* [DOC] add joss badge (#229) @zkhan12
+* [ENH,DOC] add development documentation section (#222) @jdkent
+* [DOC,FIX] add fake img and lut to participant workflow (#225) @jdkent
+* [ENH] Implement finite BOLD response- separate (FS) modeling (#204) @tsalo
+* [MAINT] allow more lenience for pull requests (#223) @jdkent
+* [ENH] Make atlases optional (#213) @jdkent
+* [FIX,DOC] make title for changelog (#221) @jdkent
+* [MAINT] make travisci more efficient (#216) @jdkent
+* [FIX] make codecov yaml valid (#220) @jdkent
+* [FIX] show binder badge on readthedocs (#219) @jdkent
+* [ENH,DOC] sphinx gallery binder (#217) @jdkent
+* [MAINT] make codecov more lenient (#215) @jdkent
+* [FIX] use scope=derivatives in collect_data (#212) @jdkent
+* [FIX] respond to suggested edits (#206) @jdkent
+* [ENH] Implement least squares- all (LSA) modeling (#202) @tsalo
+* [TST] add more tests (#201) @jdkent
+* [FIX, DOC] Rename low-pass filter to high-pass filter (#198) @tsalo
+* [MAINT] explicitly set codecov settings (#200) @jdkent
+* [ENH,FIX] refactor bids file processing (#193) @jdkent
+* [ENH] Separate other conditions in LSS model (#191) @tsalo
+
+0.3.2 (September 04, 2019)
+--------------------------
+
 This release is special because it will be published in the
 Journal of Open Source Software (JOSS).
 One condition of this is that the authors on the paper be the only authors in the zenodo file.
 I will modify the authors listed on the zenodo file for this release,
 but I will add all contributors back on for the subsequent release.
+
+* [MAINT] fix zenodo file
+
+0.3.1 (September 04, 2019)
+--------------------------
+
+Changes to installation and documentation, but no functional code changes.
+
+* [DOC] address review comments (#185) @jdkent
+* [DOC] add everyone to contributors in the zenodo file (#188) @jdkent
+* [MAINT] Change Installation Method (#187) @jdkent
+* [ENH] add code server (#182) @jdkent
+* [MAINT] build tags (#183) @jdkent
+
+0.3.0 (August 29, 2019)
+-----------------------
+
+Thanks to @PeerHerholz and @njvack for their contributions on this release.
+Special thanks to @snastase for being a great reviewer and improving the project
+overall.
 
 * [ENH] reduce focus on parcellations (#179) @jdkent
 * [FIX] generalized -> general linear model description (#178) @jdkent
@@ -110,7 +203,7 @@ but I will add all contributors back on for the subsequent release.
 * [WIP] JOSS Paper (#122) @jdkent
 
 0.2.3 (January 29, 2019)
-========================
+------------------------
 
 Various documentation and testing changes.
 We will be using readthedocs going forward and not doctr.
@@ -137,7 +230,7 @@ We will be using readthedocs going forward and not doctr.
 * [FIX] syntax links (#119) @PeerHerholz
 
 0.2.2 (November 15, 2018)
-=========================
+-------------------------
 
 Quick bug fixes, one related to updating the
 nipype dependency to a newer version (1.1.5)
@@ -146,7 +239,7 @@ nipype dependency to a newer version (1.1.5)
 * [FIX] add missing comma in hrf_models (#83) @jdkent
 
 0.2.1 (November 13, 2018)
-=========================
+-------------------------
 
 Large thanks to everyone at neurohackademy that helped make this a reality.
 This release is still a bit premature because I'm testing out
@@ -170,7 +263,7 @@ my workflow for making releases.
 * [MGT] simplify and create deployment (#79) @jdkent
 
 0.2.0 (November 13, 2018)
-=========================
+-------------------------
 
 * [MGT] simplify and create deployment (#79)
 * [TST] Add more tests (#78)
@@ -209,8 +302,7 @@ my workflow for making releases.
 * [ENH] Refactor NiBetaSeries (#9)
 * [ENH] Refactor (#2)
 
-
-0.1.0 (2018-06-08)
-==================
+0.1.0 (June 08, 2018)
+---------------------
 
 * First release on PyPI.

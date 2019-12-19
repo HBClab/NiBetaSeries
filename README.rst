@@ -14,7 +14,7 @@ for links to render properly.
     :stub-columns: 1
 
     * - docs
-      - |docs|
+      - |docs| |joss|
     * - tests
       - | |travis| |circleci|
         | |codecov|
@@ -31,6 +31,9 @@ for links to render properly.
 .. |zenodo| image:: https://zenodo.org/badge/DOI/10.5281/zenodo.2552303.svg
    :target: https://zenodo.org/record/2552303#.XFBjwN-YU8p
 
+.. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01295/status.svg
+   :target: https://doi.org/10.21105/joss.01295
+
 .. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
     :target: https://travis-ci.org/HBClab/NiBetaSeries
@@ -44,7 +47,7 @@ for links to render properly.
     :target: https://circleci.com/gh/HBClab/NiBetaSeries
 
 .. |binder| image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/HBClab/NiBetaSeries/binder?filepath=%2Fbinder%2Fplot_run_nibetaseries.ipynb
+    :target: https://mybinder.org/v2/gh/HBClab/NiBetaSeries/master?filepath=%2Fexamples
 
 .. |version| image:: https://img.shields.io/pypi/v/nibetaseries.svg
     :alt: PyPI Package latest release
@@ -87,13 +90,13 @@ of providing a command-line application experience like fMRIPrep_.
 
 What does NiBetaSeries give me?
 -------------------------------
-Currently NiBetaSeries returns symmetric z-transformed correlation
-matrices with an entry for each parcel defined in the atlas,
-as well as the raw beta series images.
+Currently NiBetaSeries returns the beta series images and optionally
+symmetric z-transformed correlation matrices with an entry for each
+parcel defined in the atlas.
 
-.. note:: The betas (i.e., parameter estimates) are generated using the "Least Squares Separate" procedure.
+.. note:: The betas (i.e., parameter estimates) are generated using either
+    the "Least Squares Separate" or "Least Squares All" procedures.
     Please read the :ref:`betaseries` page for more background information.
-    There are plans to support Least Squares All in future iterations.
 
 What do I need to run NiBetaSeries?
 -----------------------------------

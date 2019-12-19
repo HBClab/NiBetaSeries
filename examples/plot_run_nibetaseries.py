@@ -130,8 +130,8 @@ atlas_df = pd.read_csv(atlas_txt, sep="\t", header=None)
 print(atlas_df.head())
 
 #############################################################################
-# drop coordinate columns
-# -----------------------
+# drop color coding columns
+# -------------------------
 
 atlas_df.drop([2, 3, 4, 5], axis='columns', inplace=True)
 print(atlas_df.head())
@@ -171,6 +171,7 @@ atlas_mni_file = os.path.join(data_dir,
 cmd = """\
 nibs -c WhiteMatter CSF \
 --participant-label 001 \
+--estimator lss \
 -w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
@@ -239,7 +240,7 @@ plt.tight_layout()
 #############################################################################
 # References
 # ==========
-# .. bibliography:: ../references.bib
+# .. bibliography:: ../../src/nibetaseries/data/references.bib
 #    :style: plain
 #    :labelprefix: notebook-
 #    :keyprefix: n-

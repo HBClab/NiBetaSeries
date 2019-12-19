@@ -17,6 +17,10 @@ generate_docker() {
       activate=true \
     --copy . /src/nibetaseries \
     --user=root \
+    --run """\
+curl -o pandoc-2.2.2.1-1-amd64.deb -sSL 'https://github.com/jgm/pandoc/releases/download/2.2.2.1/pandoc-2.2.2.1-1-amd64.deb' && \
+dpkg -i pandoc-2.2.2.1-1-amd64.deb && \
+rm pandoc-2.2.2.1-1-amd64.deb""" \
     --run 'chown -R neuro:users /src/nibetaseries' \
     --user=neuro \
     --workdir /src/nibetaseries \

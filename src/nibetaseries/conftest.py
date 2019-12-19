@@ -28,6 +28,7 @@ bids_bold_entities = {
     "datatype": "func",
     "task": "waffles",
     "suffix": "bold",
+    "run": 1,
     "extension": "nii.gz",
 }
 bids_bold_fname = build_path(bids_bold_entities, bids_patterns)
@@ -37,6 +38,18 @@ bids_json_entities = {
     "extension": "json",
 }
 bids_json_fname = build_path(bids_json_entities, bids_patterns)
+
+bids_rest_entities = {
+    **bids_bold_entities,
+    "task": "rest",
+}
+bids_rest_fname = build_path(bids_rest_entities, bids_patterns)
+
+bids_rest_json_entities = {
+    **bids_rest_entities,
+    "extension": "json",
+}
+bids_rest_json_fname = build_path(bids_rest_json_entities, bids_patterns)
 
 bids_events_entities = {
     **bids_bold_entities,
@@ -63,6 +76,7 @@ deriv_regressor_entities = {
     **subject_entities,
     "datatype": "func",
     "task": "waffles",
+    "run": 1,
     "description": "confounds",
     "suffix": "regressors",
     "extension": "tsv",
@@ -140,7 +154,6 @@ def sub_fmriprep(deriv_dir, example_file=deriv_bold_fname):
                             dir=True)
 
 
-# layout = BIDSLayout("./", validate=False, derivatives="./derivatives/fmriprep")
 @pytest.fixture(scope='session')
 def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
     sub_json = bids_dir.ensure(bids_json_fname)
@@ -154,8 +167,25 @@ def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
 
 
 @pytest.fixture(scope='session')
+def sub_rest_metadata(bids_dir, bids_json_fname=bids_rest_json_fname):
+    sub_json = bids_dir.ensure(bids_rest_json_fname)
+    tr = 2
+    bold_metadata = {"RepetitionTime": tr, "TaskName": "rest"}
+
+    with open(str(sub_json), 'w') as md:
+        json.dump(bold_metadata, md)
+
+    return sub_json
+
+
+@pytest.fixture(scope='session')
 def bold_file(bids_dir, bids_bold_fname=bids_bold_fname):
     return bids_dir.ensure(bids_bold_fname)
+
+
+@pytest.fixture(scope='session')
+def rest_file(bids_dir, bids_rest_fname=bids_rest_fname):
+    return bids_dir.ensure(bids_rest_fname)
 
 
 @pytest.fixture(scope='session')
@@ -170,7 +200,12 @@ def preproc_file(deriv_dir, sub_metadata, deriv_bold_fname=deriv_bold_fname):
     # create voxel timeseries
     task_onsets = np.zeros(tp)
     # add activations at every 40 time points
+    # waffles
     task_onsets[0::40] = 1
+    # fries
+    task_onsets[3::40] = 1.5
+    # milkshakes
+    task_onsets[6::40] = 2
     signal = np.convolve(task_onsets, spm_hrf(tr))[0:len(task_onsets)]
     # csf
     csf = np.cos(2*np.pi*ix*(50/tp)) * 0.1
@@ -200,12 +235,18 @@ def sub_events(bids_dir, sub_metadata, preproc_file,
     tp = nib.load(str(preproc_file)).shape[-1]
     # create voxel timeseries
     task_onsets = np.zeros(tp)
-    # add activations at every 40 time points
+    # add waffles at every 40 time points
     task_onsets[0::40] = 1
+    # add fries at every 40 time points starting at 3
+    task_onsets[3::40] = 1
+    # add milkshakes at every 40 time points starting at 6
+    task_onsets[6::40] = 1
     # create event tsv
-    onsets = np.multiply(np.where(task_onsets == 1), tr).reshape(5)
-    durations = [1] * onsets.size
-    trial_types = ['testCond'] * onsets.size
+    num_trials = np.where(task_onsets == 1)[0].shape[0]
+    onsets = np.multiply(np.where(task_onsets == 1), tr).reshape(num_trials)
+    durations = [1] * num_trials
+    num_conds = 3
+    trial_types = ['waffle', 'fry', 'milkshake'] * int((num_trials / num_conds))
     events_df = pd.DataFrame.from_dict({'onset': onsets,
                                         'duration': durations,
                                         'trial_type': trial_types})
@@ -256,7 +297,7 @@ def atlas_lut(tmpdir_factory):
     atlas_lut = tmpdir_factory.mktemp("lut").join("lut.tsv")
     # make atlas lookup table
     atlas_lut_df = pd.DataFrame({'index': [1, 2],
-                                 'regions': ['waffle', 'fries']})
+                                 'regions': ['mouth', 'stomach']})
     atlas_lut_df.to_csv(str(atlas_lut), index=False, sep='\t')
 
     return atlas_lut
