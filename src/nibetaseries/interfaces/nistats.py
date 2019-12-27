@@ -308,11 +308,19 @@ def _select_confounds(confounds_file, selected_confounds):
     import pandas as pd
     import numpy as np
     confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
+    for imputable in ('framewise_displacement',
+                      'std_dvars', 'dvars'):
+        if imputable in selected_confounds:
+            vals = confounds_df[imputable].values
+            if not np.isnan(vals[0]):
+                continue
 
-    # fill the first value of FramewiseDisplacement with the mean.
-    if 'FramewiseDisplacement' in selected_confounds:
-        confounds_df['FramewiseDisplacement'] = confounds_df['FramewiseDisplacement'].fillna(
-                                np.mean(confounds_df['FramewiseDisplacement']))
+            # Impute the mean non-zero, non-NaN value
+            confounds_df[imputable][0] = np.nanmean(vals[vals != 0])
 
     desired_confounds = confounds_df[selected_confounds]
+    # check to see if there are any remaining nans
+    if desired_confounds.isna().values.any():
+        msg = "The selected confounds contain nans: {conf}".format(conf=selected_confounds)
+        raise ValueError(msg)
     return desired_confounds

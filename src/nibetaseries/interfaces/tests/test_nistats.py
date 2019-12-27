@@ -2,13 +2,16 @@
 import os
 import json
 
-from ..nistats import LSSBetaSeries, LSABetaSeries
-from ..nistats import _lss_events_iterator, _lsa_events_converter
+import pytest
+
+from ..nistats import (LSSBetaSeries, LSABetaSeries,
+                       _lss_events_iterator, _lsa_events_converter,
+                       _select_confounds)
 
 
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file):
-    selected_confounds = ['WhiteMatter', 'CSF']
+    selected_confounds = ['white_matter', 'csf']
     hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
@@ -31,7 +34,7 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
 
 def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
                         confounds_file, brainmask_file):
-    selected_confounds = ['WhiteMatter', 'CSF']
+    selected_confounds = ['white_matter', 'csf']
     hrf_model = 'fir'
     fir_delays = [0, 1, 2, 3, 4]
     with open(str(sub_metadata), 'r') as md:
@@ -56,7 +59,7 @@ def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
 
 def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file):
-    selected_confounds = ['WhiteMatter', 'CSF']
+    selected_confounds = ['white_matter', 'csf']
     hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
@@ -99,3 +102,35 @@ def test_lsa_events_converter(sub_events):
     out_lst = list(res['trial_type'])
 
     assert t_lst == out_lst
+
+
+def test_select_confounds_error(confounds_file, tmp_path):
+    import pandas as pd
+    import numpy as np
+
+    confounds_df = pd.read_csv(str(confounds_file), sep='\t', na_values='n/a')
+
+    confounds_df['white_matter'][0] = np.nan
+
+    conf_file = tmp_path / "confounds.tsv"
+
+    confounds_df.to_csv(str(conf_file), index=False, sep='\t', na_rep='n/a')
+
+    with pytest.raises(ValueError) as val_err:
+        _select_confounds(str(conf_file), ['white_matter', 'csf'])
+
+    assert "The selected confounds contain nans" in str(val_err.value)
+
+
+def test_select_confounds(confounds_file):
+    import pandas as pd
+    import numpy as np
+
+    confounds_df = pd.read_csv(str(confounds_file), sep='\t', na_values='n/a')
+
+    selected_confounds = ['framewise_displacement']
+    vals = confounds_df['framewise_displacement'].values
+    expected_result = np.nanmean(vals[vals != 0])
+    res_df = _select_confounds(str(confounds_file), selected_confounds)
+
+    assert res_df['framewise_displacement'][0] == expected_result

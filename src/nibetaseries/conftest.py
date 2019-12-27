@@ -279,8 +279,11 @@ def confounds_file(deriv_dir, preproc_file,
     csf = np.cos(2*np.pi*ix*(50/tp)) * 0.1
     # white matter
     wm = np.sin(2*np.pi*ix*(22/tp)) * 0.1
-    confounds_df = pd.DataFrame({'WhiteMatter': wm, 'CSF': csf})
-    confounds_df.to_csv(str(confounds_file), index=False, sep='\t')
+    # framewise_displacement
+    fd = np.random.random_sample(tp)
+    fd[0] = np.nan
+    confounds_df = pd.DataFrame({'white_matter': wm, 'csf': csf, 'framewise_displacement': fd})
+    confounds_df.to_csv(str(confounds_file), index=False, sep='\t', na_rep='n/a')
     return confounds_file
 
 

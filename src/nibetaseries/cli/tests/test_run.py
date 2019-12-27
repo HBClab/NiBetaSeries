@@ -50,7 +50,7 @@ def test_nibs(
     args = ["nibs",
             "-a", str(atlas_file),
             "-l", str(atlas_lut),
-            "-c", "WhiteMatter", "CSF",
+            "-c", "white_matter", "csf",
             "--high-pass", "0.008",
             "--estimator", estimator,
             "-sp", "MNI152NLin2009cAsym",
