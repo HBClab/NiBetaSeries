@@ -167,6 +167,18 @@ def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
 
 
 @pytest.fixture(scope='session')
+def sub_top_metadata(bids_dir, bids_json_fname='task-waffles_bold.json'):
+    sub_json = bids_dir.ensure(bids_json_fname)
+    tr = 2
+    bold_metadata = {"RepetitionTime": tr, "TaskName": "waffles"}
+
+    with open(str(sub_json), 'w') as md:
+        json.dump(bold_metadata, md)
+
+    return sub_json
+
+
+@pytest.fixture(scope='session')
 def sub_rest_metadata(bids_dir, bids_json_fname=bids_rest_json_fname):
     sub_json = bids_dir.ensure(bids_rest_json_fname)
     tr = 2
@@ -301,6 +313,34 @@ def atlas_lut(tmpdir_factory):
     atlas_lut_df.to_csv(str(atlas_lut), index=False, sep='\t')
 
     return atlas_lut
+
+
+@pytest.fixture(scope='session')
+def bids_db_file(
+        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        ):
+    from bids import BIDSLayout
+    from .workflows.utils import BIDSLayoutIndexerPatch
+
+    db_file = bids_dir / ".dbcache"
+
+    layout = BIDSLayout(
+        str(bids_dir),
+        derivatives=str(deriv_dir),
+        index_metadata=False,
+        database_file=str(db_file),
+        reset_database=True)
+
+    # only index bold file metadata
+    indexer = BIDSLayoutIndexerPatch(layout)
+    metadata_filter = {
+        'extension': ['nii', 'nii.gz', 'json'],
+        'suffix': 'bold',
+    }
+    indexer.index_metadata(**metadata_filter)
+
+    return db_file
 
 
 @pytest.fixture(scope='session')
