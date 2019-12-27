@@ -36,14 +36,14 @@ def test_conditional_arguments(monkeypatch):
         get_parser().parse_args(no_img)
 
 
-@pytest.mark.parametrize("estimator,fir_delays,hrf_model",
-                         [('lsa', None, 'spm'),
-                          ('lss', None, 'spm'),
-                          ('lss', [0, 1, 2, 3, 4], 'fir')])
+@pytest.mark.parametrize("estimator,fir_delays,hrf_model,part_label",
+                         [('lsa', None, 'spm', '01'),
+                          ('lss', None, 'spm', 'sub-01'),
+                          ('lss', [0, 1, 2, 3, 4], 'fir', None)])
 def test_nibs(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
-        estimator, fir_delays, hrf_model, monkeypatch):
+        estimator, fir_delays, hrf_model, monkeypatch, part_label):
     import sys
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
@@ -68,6 +68,8 @@ def test_nibs(
     if fir_delays:
         args.append('--fir-delays')
         args.extend([str(d) for d in fir_delays])
+    if part_label:
+        args.extend(["--participant-label", part_label])
 
     monkeypatch.setattr(sys, 'argv', args)
     assert main() is None
