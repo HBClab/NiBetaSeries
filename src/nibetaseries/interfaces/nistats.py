@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec, TraitedSpec,
     OutputMultiPath, File, LibraryBaseInterface,
@@ -114,16 +113,9 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
-            size_check = len(betas)
-            if size_check < 3:
-                logging.warning(
-                    'At least 3 trials are needed '
-                    'for a beta series: {trial_type} has {num}'.format(trial_type=t_type,
-                                                                       num=size_check))
-            else:
-                beta_series = nib.funcs.concat_images(betas)
-                nib.save(beta_series, beta_series_template.format(trial_type=t_type))
-                beta_series_lst.append(beta_series_template.format(trial_type=t_type))
+            beta_series = nib.funcs.concat_images(betas)
+            nib.save(beta_series, beta_series_template.format(trial_type=t_type))
+            beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = design_matrix_collector
@@ -212,16 +204,9 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
-            size_check = len(betas)
-            if size_check < 3:
-                logging.warning(
-                    'At least 3 trials are needed '
-                    'for a beta series: {trial_type} has {num}'.format(trial_type=t_type,
-                                                                       num=size_check))
-            else:
-                beta_series = nib.funcs.concat_images(betas)
-                nib.save(beta_series, beta_series_template.format(trial_type=t_type))
-                beta_series_lst.append(beta_series_template.format(trial_type=t_type))
+            beta_series = nib.funcs.concat_images(betas)
+            nib.save(beta_series, beta_series_template.format(trial_type=t_type))
+            beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = [design_matrix]

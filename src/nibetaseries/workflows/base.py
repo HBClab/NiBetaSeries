@@ -296,9 +296,6 @@ def init_single_subject_wf(
                                     ('bold_metadata', bold_metadata_list)],
                          synchronize=True)
 
-    input_node.inputs.atlas_img = atlas_img
-    input_node.inputs.atlas_lut = atlas_lut
-
     output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix',
                                                         'correlation_fig',
                                                         'betaseries_file']),
@@ -347,9 +344,15 @@ def init_single_subject_wf(
         input_node.inputs.atlas_img = atlas_img
         input_node.inputs.atlas_lut = atlas_lut
 
+        check_beta_series_list = pe.Node(niu.Function(
+                                            function=_check_bs_len,
+                                            output_names=["beta_series_list"]),
+                                         name="check_beta_series_list")
         workflow.connect([
-            (betaseries_wf, correlation_wf,
-                [('output_node.betaseries_files', 'input_node.betaseries_files')]),
+            (betaseries_wf, check_beta_series_list,
+                [('output_node.betaseries_files', 'beta_series_list')]),
+            (check_beta_series_list, correlation_wf,
+                [('beta_series_list', 'input_node.betaseries_files')]),
             (input_node, correlation_wf,
                 [('atlas_img', 'input_node.atlas_file'),
                  ('atlas_lut', 'input_node.atlas_lut')]),
@@ -363,3 +366,40 @@ def init_single_subject_wf(
         ])
 
     return workflow
+
+
+def _check_bs_len(beta_series_list):
+    """make sure each beta series at least 3 betas"""
+    import logging
+    import re
+
+    import nibabel as nib
+
+    min_size = 3
+
+    def check_beta_series(beta_series, min_size):
+        size = nib.load(beta_series).shape[-1]
+        if size < min_size:
+            mtch = re.match(".*desc-(?P<trial_type>[0-9A-Za-z]+)_.*", beta_series)
+            if mtch:
+                trial_type = mtch.groupdict().get('trial_type')
+            else:
+                trial_type = 'UNKNOWN'
+                logging.warning(
+                    "this file: {file} contains an unknown trial_type".format(file=beta_series))
+            logging.warning(
+                'At least {min_size} trials are needed '
+                'for a beta series: {trial_type} has {num}'.format(
+                    trial_type=trial_type,
+                    num=size,
+                    min_size=min_size))
+            return False
+        return True
+
+    beta_series_list[:] = [bs for bs in beta_series_list
+                           if check_beta_series(bs, min_size=min_size)]
+    if not beta_series_list:
+        msg = "None of the beta series have at least {num} betas.".format(num=min_size)
+        raise RuntimeError(msg)
+
+    return beta_series_list

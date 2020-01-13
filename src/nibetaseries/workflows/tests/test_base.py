@@ -1,8 +1,11 @@
 import os.path as op
+
 from nipype import config as ncfg
+import nibabel as nib
+import numpy as np
 import pytest
 
-from ..base import init_nibetaseries_participant_wf
+from ..base import init_nibetaseries_participant_wf, _check_bs_len
 
 
 @pytest.mark.parametrize("estimator,fir_delays,hrf_model",
@@ -92,3 +95,36 @@ def test_filters_init_nibetaseries_participant_wf(
             work_dir=work_dir)
 
     assert "could not find preprocessed outputs:" in str(val_err.value)
+
+
+@pytest.mark.parametrize(
+    "fnames,lengths,expected_out",
+    [
+        (['sub-01_desc-apple_betaseries.nii.gz',
+          'sub-01_desc-orange_betaseries.nii.gz'],
+         [3, 3],
+         ['sub-01_desc-apple_betaseries.nii.gz',
+          'sub-01_desc-orange_betaseries.nii.gz']),
+        (['sub-01_desc-che+ese_betaseries.nii.gz',
+          'sub-01_desc-nugget_betaseries.nii.gz'],
+         [2, 3],
+         ['sub-01_desc-nugget_betaseries.nii.gz']),
+        (['sub-01_desc-but+ter_betaseries.nii.gz',
+          'sub-01_desc-biscuit_betaseries.nii.gz'],
+         [2, 2],
+         None),
+    ])
+def test_check_bs_len(fnames, lengths, expected_out, tmp_path):
+    affine = np.eye(4)
+    fpaths = []
+    for fname, length in zip(fnames, lengths):
+        fpath = tmp_path / fname
+        nib.Nifti2Image(np.zeros((1, 1, 1, length)), affine=affine).to_filename(str(fpath))
+        fpaths.append(str(fpath))
+
+    if all(i < 3 for i in lengths):
+        with pytest.raises(RuntimeError) as rterr:
+            _check_bs_len(fpaths)
+        assert "None of the beta series" in str(rterr.value)
+    else:
+        assert [op.basename(f) for f in _check_bs_len(fpaths)] == expected_out
