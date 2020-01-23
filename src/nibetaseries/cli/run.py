@@ -119,7 +119,6 @@ def get_parser():
     bids_opts.add_argument('--run-label', action='store',
                            default=None, help='select a run to analyze')
     bids_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
-                           choices=['MNI152NLin2009cAsym'],
                            help='select a bold derivative in a specific space to be used')
     bids_opts.add_argument('--description-label', action='store',
                            default=None, help='select a bold file with particular '

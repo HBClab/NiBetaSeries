@@ -228,7 +228,7 @@ def init_single_subject_wf(
         bold_metadata_list : list
             list of bold metadata associated with each preprocessed file
         brainmask_list : list
-            list of brain masks in MNI space
+            list of brain masks
         confound_tsv_list : list
             list of confound tsvs (e.g. from FMRIPREP)
         events_tsv_list : list
@@ -261,7 +261,7 @@ def init_single_subject_wf(
         bold_metadata
             bold metadata associated with the preprocessed file
         brainmask
-            binary mask in MNI space for the participant
+            binary mask for the participant
         confound_tsv
             tsv containing all the generated confounds
         events_tsv
