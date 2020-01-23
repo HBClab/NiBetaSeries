@@ -19,6 +19,8 @@ Example Call(s)
 If you want to see a full example on preparing data and running ``nibs``, see:
 :ref:`sphx_glr_auto_examples_plot_run_nibetaseries.py`.
 
+.. _example-one:
+
 Example 1
 ~~~~~~~~~
 
@@ -34,6 +36,7 @@ Example 1
     -w /home/james/bids/derivatives/betaSeries/work_n17 \
     -c WhiteMatter CSF Cosine01 Cosine02 Cosine03 Cosine04 Cosine05 Cosine06 Cosine07 \
     --nthreads 32 \
+    --estimator lss \
     --description-label AROMAnonaggr \
     --hrf-model 'glover + derivative + dispersion'
 
@@ -66,9 +69,37 @@ the top-level BIDS directory.
   <https://fmriprep.readthedocs.io/en/stable/outputs.html#confounds>`_ on confounds for details.
 - ``--nthreads`` tells us across how many thread to parallelize ``nibs``; in this
   example we use 32 threads!
+- ``--estimator`` tells us we are using ``lss`` or Least Squares Separate for
+  the generation of the betas.
 - If there were multiple types of derivatives output from a preprocessing
   application (like ``fmriprep``), you may only be interested in analyzing
   one variant; in this scenerio, we are only interested in analyzing images denoised
   by ``ICA-AROMA``, denoted by ``--description-label``.
 - The HRF model argument (``--hrf-model``) passes all the available options
   from `nistats <https://nistats.github.io/index.html>`_.
+
+.. _example-two:
+
+Example 2
+~~~~~~~~~
+
+.. code-block:: bash
+
+    nibs \
+    /home/james/bids/ \
+    fmriprep \
+    /home/james/bids/derivatives \
+    participant
+    --participant-label 001 \
+    -w /tmp/work \
+    -c white_matter csf cosine01 cosine02 cosine03 cosine04 cosine05 cosine06 cosine07 \
+    --nthreads 32 \
+    --estimator lsa \
+    --hrf-model 'glover'
+
+In this example, we are not interested in generating correlation matrices, but
+we are interested in the beta maps.
+Since the beta maps are given by default, we need remove the correlation output.
+We can remove the correlation matrix output by removing the ``-l`` and ``-a`` options.
+Another significant difference with :ref:`example-one` is the inclusion of ``--participant-label``.
+This option says we only want to run ``nibs`` on participant ``sub-001`` in the bids dataset.
