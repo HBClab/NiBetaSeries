@@ -272,11 +272,8 @@ def collect_data(layout, participant_label, ses=None,
                                                       'extension': '.tsv'}),
         }
 
-        try:
-            query_res = {modality: [x.path for x in layout.get(**query)][0]
-                         for modality, query in file_queries.items()}
-        except Exception as e:
-            raise type(e)('Could not find required files, check BIDS structure')
+        query_res = {modality: _exec_query(layout, **query)
+                     for modality, query in file_queries.items()}
 
         # add the preprocessed file
         query_res['preproc'] = preproc.path
@@ -295,3 +292,14 @@ def collect_data(layout, participant_label, ses=None,
 
 def _combine_dict(a, b):
     return dict(list(a.items()) + list(b.items()))
+
+
+def _exec_query(layout, **query):
+    """raises error if file is not found for the query"""
+    try:
+        res = layout.get(**query)[0]
+    except Exception as e:
+        msg = "could not find file matching these criteria: {q}".format(q=query)
+        raise Exception(msg) from e
+
+    return res.path
