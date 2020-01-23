@@ -21,6 +21,8 @@ from subprocess import Popen, PIPE, STDOUT  # enable calling commandline
 import matplotlib.pyplot as plt  # manipulate figures
 import seaborn as sns  # display results
 import pandas as pd   # manipulate tabular data
+import nibabel as nib  # load the beta maps in python
+from nilearn import plotting  # plot nifti images
 
 #############################################################################
 # Download relevant data from ds000164 (and Atlas Files)
@@ -160,6 +162,9 @@ atlas_df.to_csv(atlas_tsv, sep="\t", index=False)
 #############################################################################
 # Run nibs
 # ========
+# This demonstration mimics how you would use nibs on the command line
+# If you only wanted the beta maps and not the correlation matrices, do not
+# include the atlas (-a) and lookup table options (-l)
 
 out_dir = os.path.join(data_dir, "ds000164", "derivatives")
 work_dir = os.path.join(out_dir, "work")
@@ -171,7 +176,8 @@ atlas_mni_file = os.path.join(data_dir,
 cmd = """\
 nibs -c WhiteMatter CSF \
 --participant-label 001 \
---estimator lss \
+--estimator lsa \
+--hrf-model glover \
 -w {work_dir} \
 -a {atlas_mni_file} \
 -l {atlas_tsv} \
@@ -206,23 +212,25 @@ while True:
 list_files(data_dir)
 
 #############################################################################
-# Collect results
-# ===============
+# Collect correlation results
+# ===========================
 
-corr_mat_path = os.path.join(out_dir, "nibetaseries", "sub-001", "func")
+output_path = os.path.join(out_dir, "nibetaseries", "sub-001", "func")
 trial_types = ['congruent', 'incongruent', 'neutral']
 filename_template = ('sub-001_task-stroop_space-MNI152NLin2009cAsym_'
-                     'desc-{trial_type}_correlation.tsv')
+                     'desc-{trial_type}_{suffix}.{ext}')
+
 pd_dict = {}
 for trial_type in trial_types:
-    file_path = os.path.join(corr_mat_path, filename_template.format(trial_type=trial_type))
+    fname = filename_template.format(trial_type=trial_type, suffix='correlation', ext='tsv')
+    file_path = os.path.join(output_path, fname)
     pd_dict[trial_type] = pd.read_csv(file_path, sep='\t', na_values="n/a", index_col=0)
 # display example matrix
 print(pd_dict[trial_type].head())
 
 #############################################################################
-# Graph the results
-# =================
+# Graph the correlation results
+# =============================
 
 fig, axes = plt.subplots(nrows=3, ncols=1, sharex=True, sharey=True, figsize=(10, 30),
                          gridspec_kw={'wspace': 0.025, 'hspace': 0.075})
@@ -237,6 +245,36 @@ for trial_type, df in pd_dict.items():
     r += 1
 plt.tight_layout()
 
+#############################################################################
+# Collect beta map results
+# ========================
+
+nii_dict = {}
+for trial_type in trial_types:
+    fname = filename_template.format(trial_type=trial_type, suffix='betaseries', ext='nii.gz')
+    file_path = os.path.join(output_path, fname)
+    nii_dict[trial_type] = nib.load(file_path)
+
+# view incongruent beta_maps
+nib.viewers.OrthoSlicer3D(nii_dict['incongruent'].get_fdata(),
+                          title="Incongruent Betas").set_position(10, 13, 10)
+
+#############################################################################
+# Graph beta map standard deviation
+# =================================
+# We can find where the betas have the highest standard deviation for each trial type.
+# Unsuprisingly, the largest deviations are near the edge of the brain mask and
+# the subcortical regions.
+
+# standard deviations for each trial type
+std_dict = {tt: nib.Nifti1Image(img.get_fdata().std(axis=-1), img.affine, img.header)
+            for tt, img in nii_dict.items()}
+
+fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(10, 20))
+
+for idx, (trial_type, nii) in enumerate(std_dict.items()):
+    plotting.plot_stat_map(nii, title=trial_type, cut_coords=(0, 0, 0),
+                           threshold=5, vmax=20, axes=axes[idx])
 #############################################################################
 # References
 # ==========
