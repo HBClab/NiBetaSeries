@@ -76,6 +76,17 @@ Please check out their pages and support the developers.
 CHANGELOG
 =========
 
+0.4.2 (January 23, 2020)
+------------------------
+Bug fix and maintainance release.
+
+* [DOC] emphasize beta map analysis (#270) @jdkent
+* [FIX] allow other spaces (#269) @jdkent
+* [FIX] less strict beta map generation (#262) @jdkent
+* [ENH] handle all confound NaNs (#255) @jdkent
+* [ENH] improve bids indexing (#253) @jdkent
+* [FIX] allow "sub-" prefix (#256) @jdkent
+
 0.4.1 (December 16, 2019)
 -------------------------
 Bug fix and maintainance release.
