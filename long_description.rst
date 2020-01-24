@@ -78,7 +78,7 @@ CHANGELOG
 
 0.4.2 (January 23, 2020)
 ------------------------
-Bug fix and maintainance release.
+Bug fix and maintenance release.
 
 * [DOC] emphasize beta map analysis (#270) @jdkent
 * [FIX] allow other spaces (#269) @jdkent
@@ -89,7 +89,7 @@ Bug fix and maintainance release.
 
 0.4.1 (December 16, 2019)
 -------------------------
-Bug fix and maintainance release.
+Bug fix and maintenance release.
 
 * [MAINT] refactor and increase tests for run.py (#249) @jdkent
 * [FIX] allow flexible derivatives location (#247) @jdkent
