@@ -283,7 +283,8 @@ def _select_confounds(confounds_file, selected_confounds):
     confounds_file : str
         File that contains all usable confounds
     selected_confounds : list
-        List containing all desired confounds
+        List containing all desired confounds.
+        confounds can be listed as regular expressions (e.g., "motion_outlier.*")
 
     Returns
     -------
@@ -292,20 +293,27 @@ def _select_confounds(confounds_file, selected_confounds):
     """
     import pandas as pd
     import numpy as np
+    import re
+
     confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
-    for imputable in ('framewise_displacement',
-                      'std_dvars', 'dvars'):
-        if imputable in selected_confounds:
-            vals = confounds_df[imputable].values
-            if not np.isnan(vals[0]):
-                continue
+    # regular expression to capture confounds specified at the command line
+    confound_expr = re.compile(r"|".join(selected_confounds))
+    expanded_confounds = list(filter(confound_expr.fullmatch, confounds_df.columns))
+    imputables = ('framewise_displacement', 'std_dvars', 'dvars', '.*derivative1.*')
 
-            # Impute the mean non-zero, non-NaN value
-            confounds_df[imputable][0] = np.nanmean(vals[vals != 0])
+    # regular expression to capture all imputable confounds
+    impute_expr = re.compile(r"|".join(imputables))
+    expanded_imputables = list(filter(impute_expr.fullmatch, expanded_confounds))
+    for imputable in expanded_imputables:
+        vals = confounds_df[imputable].values
+        if not np.isnan(vals[0]):
+            continue
+        # Impute the mean non-zero, non-NaN value
+        confounds_df[imputable][0] = np.nanmean(vals[vals != 0])
 
-    desired_confounds = confounds_df[selected_confounds]
+    desired_confounds = confounds_df[expanded_confounds]
     # check to see if there are any remaining nans
     if desired_confounds.isna().values.any():
-        msg = "The selected confounds contain nans: {conf}".format(conf=selected_confounds)
+        msg = "The selected confounds contain nans: {conf}".format(conf=expanded_confounds)
         raise ValueError(msg)
     return desired_confounds

@@ -122,15 +122,64 @@ def test_select_confounds_error(confounds_file, tmp_path):
     assert "The selected confounds contain nans" in str(val_err.value)
 
 
-def test_select_confounds(confounds_file):
+@pytest.mark.parametrize(
+    "selected_confounds,nan_confounds,expanded_confounds",
+    [
+        (
+            ["framewise_displacement"],
+            ["framewise_displacement"],
+            ["framewise_displacement"],
+        ),
+        (
+            ["white_matter", "motion.*"],
+            None,
+            [
+                "white_matter",
+                "motion_outlier00",
+                "motion_outlier01",
+                "motion_outlier02",
+                "motion_outlier03",
+                "motion_outlier04"
+            ],
+        ),
+        (
+            ["trans.*"],
+            [
+                "trans_x_derivative1",
+                "trans_y_derivative1",
+                "trans_z_derivative1",
+                "trans_x_derivative1_power2",
+                "trans_y_derivative1_power2",
+                "trans_z_derivative1_power2",
+            ],
+            [
+                "trans_x",
+                "trans_y",
+                "trans_z",
+                "trans_x_derivative1",
+                "trans_y_derivative1",
+                "trans_z_derivative1",
+                "trans_x_derivative1_power2",
+                "trans_y_derivative1_power2",
+                "trans_z_derivative1_power2",
+            ],
+        ),
+    ])
+def test_select_confounds(confounds_file, selected_confounds, nan_confounds,
+                          expanded_confounds):
     import pandas as pd
     import numpy as np
 
     confounds_df = pd.read_csv(str(confounds_file), sep='\t', na_values='n/a')
 
-    selected_confounds = ['framewise_displacement']
-    vals = confounds_df['framewise_displacement'].values
-    expected_result = np.nanmean(vals[vals != 0])
     res_df = _select_confounds(str(confounds_file), selected_confounds)
 
-    assert res_df['framewise_displacement'][0] == expected_result
+    # check if the correct columns are selected
+    assert set(expanded_confounds) == set(res_df.columns)
+
+    # check if nans are being imputed when expected
+    if nan_confounds:
+        for nan_c in nan_confounds:
+            vals = confounds_df[nan_c].values
+            expected_result = np.nanmean(vals[vals != 0])
+            assert res_df[nan_c][0] == expected_result
