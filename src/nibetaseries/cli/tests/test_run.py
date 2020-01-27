@@ -64,7 +64,8 @@ def test_nibs(
             bids_dir,
             "fmriprep",
             out_dir,
-            "participant"]
+            "participant",
+            "-c", ".*derivative.*"]
     if fir_delays:
         args.append('--fir-delays')
         args.extend([str(d) for d in fir_delays])
