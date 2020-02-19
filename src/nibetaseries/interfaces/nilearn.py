@@ -6,8 +6,53 @@
 from nipype.interfaces.nilearn import NilearnBaseInterface
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec, TraitedSpec,
-    File, SimpleInterface
+    File, SimpleInterface, traits,
     )
+
+
+class CensorVolumesInputSpec(BaseInterfaceInputSpec):
+    timeseries_file = File(exists=True, mandatory=True,
+                           desc="a 4d nifti file")
+    mask_file = File(exists=True, mandatory=True,
+                     desc='binary mask for the 4d nifti file')
+    threshold = traits.Float(default_value=10.0,
+                             usedefault=True,
+                             desc="the modified z-score to use as a threshold")
+
+
+class CensorVolumesOutputSpec(TraitedSpec):
+    censored_file = File(exists=True,
+                         desc="a 4d nifti file with extreme volumes removed")
+    outliers = traits.Array(desc="boolean array indicating which indices are noise")
+
+
+class CensorVolumes(SimpleInterface):
+    """remove volumes with extremely large outliers"""
+
+    input_spec = CensorVolumesInputSpec
+    output_spec = CensorVolumesOutputSpec
+
+    def _run_interface(self, runtime):
+        import nibabel as nib
+        from nipype.utils.filemanip import fname_presuffix
+
+        bold_img = nib.load(self.inputs.timeseries_file)
+        bold_mask_img = nib.load(self.inputs.mask_file)
+
+        bold_data = bold_img.get_fdata()
+        bold_mask = bold_mask_img.get_fdata().astype(bool)
+
+        outliers = is_outlier(bold_data[bold_mask].T, thresh=self.inputs.threshold)
+
+        out = fname_presuffix(self.inputs.timeseries_file, suffix='_censored')
+
+        bold_img.__class__(bold_data[..., ~outliers],
+                           bold_img.affine, bold_img.header).to_filename(out)
+
+        self._results['censored_file'] = out
+        self._results['outliers'] = outliers
+
+        return runtime
 
 
 class AtlasConnectivityInputSpec(BaseInterfaceInputSpec):
@@ -103,3 +148,43 @@ def _fisher_r_to_z(x):
     x = np.clip(x, -1, 1)
 
     return np.arctanh(x)
+
+
+def is_outlier(points, thresh=3.5):
+    """
+    Returns a boolean array with True if points are outliers and False
+    otherwise.
+
+    modified from nipype:
+    https://github.com/nipy/nipype/blob/b62d80/nipype/algorithms/confounds.py#L1129
+
+    Parameters
+    ----------
+    points: nparray
+        an numobservations by numdimensions numpy array of observations
+    thresh: float
+        the modified z-score to use as a threshold. Observations with
+        a modified z-score (based on the median absolute deviation) greater
+        than this value will be classified as outliers.
+
+    Returns
+    -------
+        A bolean mask, of size numobservations-length array.
+
+    .. note:: References
+        Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
+        Handle Outliers", The ASQC Basic References in Quality Control:
+        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+    """
+    import numpy as np
+
+    if len(points.shape) == 1:
+        points = points[:, None]
+    median = np.median(points, axis=0)
+    diff = np.sum((points - median)**2, axis=-1)
+    diff = np.sqrt(diff)
+    med_abs_deviation = np.median(diff)
+
+    modified_z_score = 0.6745 * diff / med_abs_deviation
+
+    return modified_z_score > thresh

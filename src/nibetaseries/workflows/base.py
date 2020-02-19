@@ -26,6 +26,7 @@ from .utils import collect_data, BIDSLayoutIndexerPatch
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
 from ..interfaces.bids import DerivativesDataSink
+from ..interfaces.nilearn import CensorVolumes
 
 
 def init_nibetaseries_participant_wf(
@@ -189,7 +190,7 @@ It is released under the [CC0]\
 
 def init_single_subject_wf(
     estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
-    confound_tsv_list, events_tsv_list,  fir_delays, hrf_model, high_pass,
+    confound_tsv_list, events_tsv_list, fir_delays, hrf_model, high_pass,
     name, output_dir,
     preproc_img_list, selected_confounds, smoothing_kernel
         ):
@@ -348,9 +349,18 @@ def init_single_subject_wf(
                                             function=_check_bs_len,
                                             output_names=["beta_series_list"]),
                                          name="check_beta_series_list")
+
+        censor_volumes = pe.MapNode(CensorVolumes(),
+                                    iterfield=['timeseries_file'],
+                                    name='censor_volumes')
+
         workflow.connect([
-            (betaseries_wf, check_beta_series_list,
-                [('output_node.betaseries_files', 'beta_series_list')]),
+            (input_node, censor_volumes,
+                [('brainmask', 'mask_file')]),
+            (betaseries_wf, censor_volumes,
+                [('output_node.betaseries_files', 'timeseries_file')]),
+            (censor_volumes, check_beta_series_list,
+                [('censored_file', 'beta_series_list')]),
             (check_beta_series_list, correlation_wf,
                 [('beta_series_list', 'input_node.betaseries_files')]),
             (input_node, correlation_wf,
