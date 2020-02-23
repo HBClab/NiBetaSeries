@@ -230,12 +230,19 @@ def main():
                       'parameterize_dirs': False},
     })
 
+    # check if atlas img or atlas lut exist
+    if opts.atlas_img and opts.atlas_lut:
+        atlas_img = os.path.abspath(opts.atlas_img)
+        atlas_lut = os.path.abspath(opts.atlas_lut)
+    else:
+        atlas_img = atlas_lut = None
+
     # running participant level
     if opts.analysis_level == "participant":
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
             estimator=opts.estimator,
-            atlas_img=os.path.abspath(opts.atlas_img),
-            atlas_lut=os.path.abspath(opts.atlas_lut),
+            atlas_img=atlas_img,
+            atlas_lut=atlas_lut,
             bids_dir=bids_dir,
             database_path=opts.database_path,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
