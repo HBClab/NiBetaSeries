@@ -4,6 +4,16 @@
 CHANGELOG
 =========
 
+0.4.3 (February 22, 2020)
+-------------------------
+Bug fix and enhancement release.
+Made a quick decision to remove volumes that have large unstable beta estimates.
+
+* [FIX] allow atlas arguments to be None (#283) @jdkent
+* [FIX] bump nipype version (#280) @jdkent
+* [ENH] censor invalid volumes (#277) @jdkent
+* [ENH] allow regex for confound specification and impute derivatives (#273) @jdkent
+
 0.4.2 (January 23, 2020)
 ------------------------
 Bug fix and maintenance release.
