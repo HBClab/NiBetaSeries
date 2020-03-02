@@ -59,7 +59,7 @@ Once Singularity is installed, you can pull the NiBetaSeries image via:
 
 ::
 
-  singularity build /path/to/image/nibetaseries-vX.Y.Z.simg docker://HBClab/nibetaseries:vX.Y.Z
+  singularity build /path/to/image/nibetaseries-vX.Y.Z.simg docker://hbclab/nibetaseries:vX.Y.Z
 
 Once the image is completely pulled, the containerized version of
 NiBetaSeries is evoked from the command line:
