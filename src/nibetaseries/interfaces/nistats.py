@@ -7,6 +7,7 @@ from nipype.interfaces.base import (
     OutputMultiPath, File, LibraryBaseInterface,
     SimpleInterface, traits
     )
+import nibabel as nib
 
 
 class NistatsBaseInterface(LibraryBaseInterface):
@@ -14,12 +15,14 @@ class NistatsBaseInterface(LibraryBaseInterface):
 
 
 class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
+    bold_file = traits.Either(File(exists=True, mandatory=True,
+                                   desc="The bold run"),
+                              nib.spatialimages.SpatialImage)
     bold_metadata = traits.Dict(desc='Dictionary containing useful information about'
                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
+    mask_file = traits.Either(File(exists=True, mandatory=True,
+                              desc="Binarized nifti file indicating the brain"),
+                              nib.spatialimages.SpatialImage)
     events_file = File(exists=True, mandatory=True,
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
@@ -46,7 +49,6 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
 
     def _run_interface(self, runtime):
         from nistats import first_level_model
-        import nibabel as nib
         import os
 
         # get t_r from bold_metadata
@@ -123,12 +125,14 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
 
 
 class LSABetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
+    bold_file = traits.Either(File(exists=True, mandatory=True,
+                                   desc="The bold run"),
+                              nib.spatialimages.SpatialImage)
     bold_metadata = traits.Dict(desc='Dictionary containing useful information about'
                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
+    mask_file = traits.Either(File(exists=True, mandatory=True,
+                              desc="Binarized nifti file indicating the brain"),
+                              nib.spatialimages.SpatialImage)
     events_file = File(exists=True, mandatory=True,
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
@@ -153,7 +157,6 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
 
     def _run_interface(self, runtime):
         from nistats import first_level_model
-        import nibabel as nib
         import os
 
         # get t_r from bold_metadata
