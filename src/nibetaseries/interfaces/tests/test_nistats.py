@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+
 from ..nistats import (LSSBetaSeries, LSABetaSeries,
                        _lss_events_iterator, _lsa_events_converter,
                        _select_confounds)
@@ -11,14 +12,17 @@ from ..nistats import (LSSBetaSeries, LSABetaSeries,
 
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file):
+    """Test lss interface with nibabel nifti images
+    """
+    import nibabel as nib
     selected_confounds = ['white_matter', 'csf']
     hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = LSSBetaSeries(bold_file=str(preproc_file),
+    beta_series = LSSBetaSeries(bold_file=nib.load(str(preproc_file)),
                                 bold_metadata=bold_metadata,
-                                mask_file=str(brainmask_file),
+                                mask_file=nib.load(str(brainmask_file)),
                                 events_file=str(sub_events),
                                 confounds_file=str(confounds_file),
                                 selected_confounds=selected_confounds,
