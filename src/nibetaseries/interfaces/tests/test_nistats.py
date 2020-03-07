@@ -4,21 +4,33 @@ import json
 
 import pytest
 
+
 from ..nistats import (LSSBetaSeries, LSABetaSeries,
                        _lss_events_iterator, _lsa_events_converter,
                        _select_confounds)
 
 
+@pytest.mark.parametrize("use_nibabel", [(True), (False)])
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
-                         confounds_file, brainmask_file):
+                         confounds_file, brainmask_file, use_nibabel):
+    """Test lss interface with nibabel nifti images
+    """
+    if use_nibabel:
+        import nibabel as nib
+        bold_file = nib.load(str(preproc_file))
+        mask_file = nib.load(str(brainmask_file))
+    else:
+        bold_file = str(preproc_file)
+        mask_file = str(brainmask_file)
+
     selected_confounds = ['white_matter', 'csf']
     hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = LSSBetaSeries(bold_file=str(preproc_file),
+    beta_series = LSSBetaSeries(bold_file=bold_file,
                                 bold_metadata=bold_metadata,
-                                mask_file=str(brainmask_file),
+                                mask_file=mask_file,
                                 events_file=str(sub_events),
                                 confounds_file=str(confounds_file),
                                 selected_confounds=selected_confounds,
@@ -32,17 +44,26 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
         os.remove(beta_map)
 
 
+@pytest.mark.parametrize("use_nibabel", [(True), (False)])
 def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
-                        confounds_file, brainmask_file):
+                        confounds_file, brainmask_file, use_nibabel):
+    if use_nibabel:
+        import nibabel as nib
+        bold_file = nib.load(str(preproc_file))
+        mask_file = nib.load(str(brainmask_file))
+    else:
+        bold_file = str(preproc_file)
+        mask_file = str(brainmask_file)
+
     selected_confounds = ['white_matter', 'csf']
     hrf_model = 'fir'
     fir_delays = [0, 1, 2, 3, 4]
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = LSSBetaSeries(bold_file=str(preproc_file),
+    beta_series = LSSBetaSeries(bold_file=bold_file,
                                 bold_metadata=bold_metadata,
-                                mask_file=str(brainmask_file),
+                                mask_file=mask_file,
                                 events_file=str(sub_events),
                                 confounds_file=str(confounds_file),
                                 selected_confounds=selected_confounds,
@@ -57,16 +78,25 @@ def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
         os.remove(beta_map)
 
 
+@pytest.mark.parametrize("use_nibabel", [(True), (False)])
 def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
-                         confounds_file, brainmask_file):
+                         confounds_file, brainmask_file, use_nibabel):
+    if use_nibabel:
+        import nibabel as nib
+        bold_file = nib.load(str(preproc_file))
+        mask_file = nib.load(str(brainmask_file))
+    else:
+        bold_file = str(preproc_file)
+        mask_file = str(brainmask_file)
+
     selected_confounds = ['white_matter', 'csf']
     hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
-    beta_series = LSABetaSeries(bold_file=str(preproc_file),
+    beta_series = LSABetaSeries(bold_file=bold_file,
                                 bold_metadata=bold_metadata,
-                                mask_file=str(brainmask_file),
+                                mask_file=mask_file,
                                 events_file=str(sub_events),
                                 confounds_file=str(confounds_file),
                                 selected_confounds=selected_confounds,
