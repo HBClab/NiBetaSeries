@@ -34,12 +34,14 @@ class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
     fir_delays = traits.Either(None, traits.List(traits.Int),
-                               desc="FIR delays (in scans)")
+                               desc="FIR delays (in scans)",
+                               default=None, usedefault=True)
 
 
 class LSSBetaSeriesOutputSpec(TraitedSpec):
     beta_maps = OutputMultiPath(File)
     design_matrices = traits.Dict()
+    residual = traits.File(exists=True)
 
 
 class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
@@ -73,10 +75,12 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
             drift_model='cosine',
             verbose=1,
             fir_delays=self.inputs.fir_delays,
+            minimize_memory=False,
         )
 
         # initialize dictionary to contain trial estimates (betas)
         beta_maps = {}
+        residuals = None
         design_matrix_collector = {}
         for target_trial_df, trial_type, trial_idx in \
                 _lss_events_iterator(self.inputs.events_file):
@@ -108,6 +112,21 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                 else:
                     beta_maps[trial_type] = [beta_map]
 
+            # add up all the residuals (to be divided later)
+            if residuals is None:
+                residuals = model.residuals[0].get_fdata()
+            else:
+                residuals += model.residuals[0].get_fdata()
+
+        # make an average residual
+        ave_residual = residuals / (trial_idx + 1)
+        # make residual nifti image
+        residual_file = os.path.join(runtime.cwd, 'desc-residuals_bold.nii.gz')
+        nib.Nifti1Image(
+            ave_residual,
+            model.residuals[0].affine,
+            model.residuals[0].header,
+        ).to_filename(residual_file)
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
                                             'desc-{trial_type}_betaseries.nii.gz')
@@ -120,6 +139,7 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = design_matrix_collector
+        self._results['residual'] = residual_file
         return runtime
 
 
@@ -147,6 +167,7 @@ class LSABetaSeriesInputSpec(BaseInterfaceInputSpec):
 class LSABetaSeriesOutputSpec(TraitedSpec):
     beta_maps = OutputMultiPath(File)
     design_matrices = traits.List()
+    residual = traits.File(exists=True)
 
 
 class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
@@ -178,7 +199,8 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             signal_scaling=0,
             high_pass=self.inputs.high_pass,
             drift_model='cosine',
-            verbose=1
+            verbose=1,
+            minimize_memory=False,
         )
 
         # initialize dictionary to contain trial estimates (betas)
@@ -199,6 +221,9 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             else:
                 beta_maps[t_type] = [beta_map]
 
+        # calculate the residual
+        residual_file = os.path.join(runtime.cwd, 'desc-residuals_bold.nii.gz')
+        model.residuals[0].to_filename(residual_file)
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
                                             'desc-{trial_type}_betaseries.nii.gz')
@@ -211,6 +236,7 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = [design_matrix]
+        self._results['residual'] = residual_file
         return runtime
 
 
