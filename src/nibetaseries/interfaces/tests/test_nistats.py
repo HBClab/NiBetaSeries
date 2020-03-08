@@ -1,7 +1,11 @@
 ''' Testing module for nibetaseries.interfaces.nistats '''
 import os
 import json
+import re
 
+import nibabel as nib
+from nilearn.image import load_img
+import pandas as pd
 import pytest
 
 
@@ -16,7 +20,6 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
     """Test lss interface with nibabel nifti images
     """
     if use_nibabel:
-        import nibabel as nib
         bold_file = nib.load(str(preproc_file))
         mask_file = nib.load(str(brainmask_file))
     else:
@@ -39,16 +42,35 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
                                 high_pass=0.008)
     res = beta_series.run()
 
+    events_df = pd.read_csv(str(sub_events), sep='\t')
+    trial_types = events_df['trial_type'].unique()
+
+    # check for the correct number of beta maps
+    assert len(trial_types) == len(res.outputs.beta_maps)
+
+    input_img_dim = load_img(bold_file).shape[:3]
     for beta_map in res.outputs.beta_maps:
+        trial_type = re.search(r'desc-([A-Za-z0-9]+)_', beta_map).groups()[0]
+        # check if correct trial type is made
+        assert trial_type in trial_types
+        # check if output is actually a file
         assert os.path.isfile(beta_map)
+        # check if image dimensions are correct
+        assert input_img_dim == load_img(beta_map).shape[:3]
+        # check if number of trials are correct
+        assert (events_df['trial_type'] == trial_type).sum() == load_img(beta_map).shape[-1]
+        # clean up
         os.remove(beta_map)
+
+    # check residual image
+    assert load_img(bold_file).shape == load_img(res.outputs.residual).shape
+    os.remove(res.outputs.residual)
 
 
 @pytest.mark.parametrize("use_nibabel", [(True), (False)])
 def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
                         confounds_file, brainmask_file, use_nibabel):
     if use_nibabel:
-        import nibabel as nib
         bold_file = nib.load(str(preproc_file))
         mask_file = nib.load(str(brainmask_file))
     else:
@@ -73,16 +95,35 @@ def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
                                 high_pass=0.008)
     res = beta_series.run()
 
+    events_df = pd.read_csv(str(sub_events), sep='\t')
+    trial_types = events_df['trial_type'].unique()
+
+    # check for the correct number of beta maps
+    assert len(trial_types) * len(fir_delays) == len(res.outputs.beta_maps)
+
+    input_img_dim = load_img(bold_file).shape[:3]
     for beta_map in res.outputs.beta_maps:
+        trial_type = re.search(r'desc-([A-Za-z0-9]+)Delay[0-9]+Vol_', beta_map).groups()[0]
+        # check if correct trial type is made
+        assert trial_type in trial_types
+        # check if output is actually a file
         assert os.path.isfile(beta_map)
+        # check if image dimensions are correct
+        assert input_img_dim == load_img(beta_map).shape[:3]
+        # check if number of trials are correct
+        assert (events_df['trial_type'] == trial_type).sum() == load_img(beta_map).shape[-1]
+        # clean up
         os.remove(beta_map)
+
+    # check residual image
+    assert load_img(bold_file).shape == load_img(res.outputs.residual).shape
+    os.remove(res.outputs.residual)
 
 
 @pytest.mark.parametrize("use_nibabel", [(True), (False)])
 def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file, use_nibabel):
     if use_nibabel:
-        import nibabel as nib
         bold_file = nib.load(str(preproc_file))
         mask_file = nib.load(str(brainmask_file))
     else:
@@ -105,9 +146,29 @@ def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
                                 high_pass=0.008)
     res = beta_series.run()
 
+    events_df = pd.read_csv(str(sub_events), sep='\t')
+    trial_types = events_df['trial_type'].unique()
+
+    # check for the correct number of beta maps
+    assert len(trial_types) == len(res.outputs.beta_maps)
+
+    input_img_dim = load_img(bold_file).shape[:3]
     for beta_map in res.outputs.beta_maps:
+        trial_type = re.search(r'desc-([A-Za-z0-9]+)_', beta_map).groups()[0]
+        # check if correct trial type is made
+        assert trial_type in trial_types
+        # check if output is actually a file
         assert os.path.isfile(beta_map)
+        # check if image dimensions are correct
+        assert input_img_dim == load_img(beta_map).shape[:3]
+        # check if number of trials are correct
+        assert (events_df['trial_type'] == trial_type).sum() == load_img(beta_map).shape[-1]
+        # clean up
         os.remove(beta_map)
+
+    # check residual image
+    assert load_img(bold_file).shape == load_img(res.outputs.residual).shape
+    os.remove(res.outputs.residual)
 
 
 def test_lss_events_iterator(sub_events):
