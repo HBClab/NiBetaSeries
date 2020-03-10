@@ -36,14 +36,15 @@ def test_conditional_arguments(monkeypatch):
         get_parser().parse_args(no_img)
 
 
-@pytest.mark.parametrize("use_atlas,estimator,fir_delays,hrf_model,part_label",
-                         [(True, 'lsa', None, 'spm', '01'),
-                          (False, 'lss', None, 'spm', 'sub-01'),
-                          (True, 'lss', [0, 1, 2, 3, 4], 'fir', None)])
+@pytest.mark.parametrize("use_atlas,estimator,fir_delays,hrf_model,part_label,use_signal_scaling",
+                         [(True, 'lsa', None, 'spm', '01', True),
+                          (False, 'lss', None, 'spm', 'sub-01', False),
+                          (True, 'lss', [0, 1, 2, 3, 4], 'fir', None, False)])
 def test_nibs(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
-        estimator, fir_delays, hrf_model, monkeypatch, part_label, use_atlas):
+        estimator, fir_delays, hrf_model, monkeypatch, part_label, use_atlas,
+        use_signal_scaling):
     import sys
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
@@ -64,6 +65,8 @@ def test_nibs(
             out_dir,
             "participant",
             "-c", ".*derivative.*"]
+    if use_signal_scaling:
+        args.extend(["--no-signal-scaling"])
     if use_atlas:
         args.extend(["-a", str(atlas_file), "-l", str(atlas_lut)])
     if fir_delays:

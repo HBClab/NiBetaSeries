@@ -32,8 +32,8 @@ from ..interfaces.nilearn import CensorVolumes
 def init_nibetaseries_participant_wf(
     estimator, atlas_img, atlas_lut, bids_dir,
     database_path, derivatives_pipeline_dir, exclude_description_label,
-    fir_delays, hrf_model, high_pass,
-    output_dir, run_label, selected_confounds, session_label, smoothing_kernel,
+    fir_delays, hrf_model, high_pass, output_dir, run_label,
+    selected_confounds, session_label, signal_scaling, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
 
@@ -69,6 +69,8 @@ def init_nibetaseries_participant_wf(
             Include bold series containing this run label
         selected_confounds : list
             List of confounds to be included in regression
+        signal_scaling : False or 0
+            Whether (0) or not (False) to scale each voxel's timeseries
         session_label : str or None
             Include bold series containing this session label
         smoothing_kernel : float or None
@@ -173,6 +175,7 @@ It is released under the [CC0]\
             output_dir=output_dir,
             preproc_img_list=preproc_img_list,
             selected_confounds=selected_confounds,
+            signal_scaling=signal_scaling,
             smoothing_kernel=smoothing_kernel,
         )
 
@@ -191,8 +194,8 @@ It is released under the [CC0]\
 def init_single_subject_wf(
     estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
     confound_tsv_list, events_tsv_list, fir_delays, hrf_model, high_pass,
-    name, output_dir,
-    preproc_img_list, selected_confounds, smoothing_kernel
+    name, output_dir, preproc_img_list, selected_confounds,
+    signal_scaling, smoothing_kernel,
         ):
     """
     This workflow completes the generation of the betaseries files
@@ -217,6 +220,7 @@ def init_single_subject_wf(
             output_dir='.',
             preproc_img_list=[''],
             selected_confounds=[''],
+            signal_scaling=0,
             smoothing_kernel=0.0)
 
     Parameters
@@ -249,6 +253,8 @@ def init_single_subject_wf(
             list of preprocessed bold files
         selected_confounds : list or None
             the list of confounds to be included in regression
+        signal_scaling : False or 0
+            Whether (0) or not (False) to scale each voxel's timeseries
         smoothing_kernel : float or None
             the size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
 
@@ -308,6 +314,7 @@ def init_single_subject_wf(
                                        hrf_model=hrf_model,
                                        high_pass=high_pass,
                                        selected_confounds=selected_confounds,
+                                       signal_scaling=signal_scaling,
                                        smoothing_kernel=smoothing_kernel)
 
     # initialize the analysis workflow
