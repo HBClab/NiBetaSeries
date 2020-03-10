@@ -23,6 +23,7 @@ Participant Workflow
         hrf_model='glover',
         high_pass=0.008,
         name='subtest',
+        norm_betas=False,
         output_dir='.',
         preproc_img_list=[''],
         selected_confounds=[''],
@@ -54,6 +55,7 @@ Least Squares- Separate (LSS)
         fir_delays=None,
         hrf_model='glover',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
         signal_scaling=0,
         selected_confounds=[''])
@@ -76,6 +78,7 @@ Finite BOLD Response- Separate (FS)
         fir_delays=[0, 1, 2, 3, 4],
         hrf_model='fir',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
         signal_scaling=0,
         selected_confounds=[''])
@@ -99,6 +102,7 @@ Least Squares- All (LSA)
         fir_delays=None,
         hrf_model='glover',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
         signal_scaling=0,
         selected_confounds=[''])

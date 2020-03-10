@@ -32,7 +32,7 @@ from ..interfaces.nilearn import CensorVolumes
 def init_nibetaseries_participant_wf(
     estimator, atlas_img, atlas_lut, bids_dir,
     database_path, derivatives_pipeline_dir, exclude_description_label,
-    fir_delays, hrf_model, high_pass, output_dir, run_label,
+    fir_delays, hrf_model, high_pass, norm_betas, output_dir, run_label,
     selected_confounds, session_label, signal_scaling, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
@@ -63,6 +63,8 @@ def init_nibetaseries_participant_wf(
         high_pass : float
             High pass filter to apply to bold (in Hertz).
             Reminder - frequencies _higher_ than this number are kept.
+        norm_betas : Bool
+            If True, beta estimates are divided by the square root of their variance
         output_dir : str
             Directory where derivatives are saved
         run_label : str or None
@@ -172,6 +174,7 @@ It is released under the [CC0]\
             hrf_model=hrf_model,
             high_pass=high_pass,
             name='single_subject' + subject_label + '_wf',
+            norm_betas=norm_betas,
             output_dir=output_dir,
             preproc_img_list=preproc_img_list,
             selected_confounds=selected_confounds,
@@ -194,7 +197,7 @@ It is released under the [CC0]\
 def init_single_subject_wf(
     estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
     confound_tsv_list, events_tsv_list, fir_delays, hrf_model, high_pass,
-    name, output_dir, preproc_img_list, selected_confounds,
+    name, norm_betas, output_dir, preproc_img_list, selected_confounds,
     signal_scaling, smoothing_kernel,
         ):
     """
@@ -217,6 +220,7 @@ def init_single_subject_wf(
             hrf_model='',
             high_pass='',
             name='subtest',
+            norm_betas=False,
             output_dir='.',
             preproc_img_list=[''],
             selected_confounds=[''],
@@ -245,6 +249,8 @@ def init_single_subject_wf(
         high_pass : float
             High pass filter to apply to bold (in Hertz).
             Reminder - frequencies _higher_ than this number are kept.
+        norm_betas : Bool
+            If True, beta estimates are divided by the square root of their variance
         name : str
             name of the workflow (e.g. ``subject-01_wf``)
         output_dir : str
@@ -313,6 +319,7 @@ def init_single_subject_wf(
                                        fir_delays=fir_delays,
                                        hrf_model=hrf_model,
                                        high_pass=high_pass,
+                                       norm_betas=norm_betas,
                                        selected_confounds=selected_confounds,
                                        signal_scaling=signal_scaling,
                                        smoothing_kernel=smoothing_kernel)

@@ -23,6 +23,7 @@ def init_betaseries_wf(name="betaseries_wf",
                        fir_delays=None,
                        hrf_model='glover',
                        high_pass=0.0078125,
+                       norm_betas=False,
                        signal_scaling=0,
                        selected_confounds=None,
                        smoothing_kernel=None,
@@ -55,6 +56,8 @@ def init_betaseries_wf(name="betaseries_wf",
     high_pass : float
         high pass filter to apply to bold (in Hertz).
         Reminder - frequencies _lower_ than this number are kept.
+    norm_betas : Bool
+        If True, beta estimates are divided by the square root of their variance
     selected_confounds : list or None
         the list of confounds to be included in regression.
     signal_scaling : False or 0
@@ -91,6 +94,7 @@ def init_betaseries_wf(name="betaseries_wf",
         fwhm=smoothing_kernel,
         hrf=hrf_model,
         hpf=high_pass,
+        norm_betas=norm_betas,
         selected_confounds=selected_confounds,
         signal_scaling=signal_scaling,
         estimator=estimator,
@@ -111,6 +115,7 @@ def init_betaseries_wf(name="betaseries_wf",
                 selected_confounds=selected_confounds,
                 signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
+                return_tstat=norm_betas,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
             name='betaseries_node')
@@ -119,6 +124,7 @@ def init_betaseries_wf(name="betaseries_wf",
                 selected_confounds=selected_confounds,
                 signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
+                return_tstat=norm_betas,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
             name='betaseries_node')
@@ -141,7 +147,7 @@ def init_betaseries_wf(name="betaseries_wf",
 
 def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
                        selected_confounds, signal_scaling,
-                       estimator, fir_delays=None):
+                       estimator, norm_betas, fir_delays=None):
     from textwrap import dedent
 
     smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
@@ -153,7 +159,7 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
                    .format(smooth_str=smooth_str, signal_scale_str=signal_scale_str))
 
     beta_series_tmp = dedent("""
-        After fitting {n_models} model, the parameter estimate (i.e., beta) map
+        After fitting {n_models} model, the{normed} parameter estimate (i.e., beta) map
         associated with the target trial's regressor was retained and concatenated
         into a 4D image with all other trials from the same condition, resulting
         in a set of N 4D images where N refers to the number of conditions in the task.
@@ -182,14 +188,15 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             """.format(fir_delays=[str(d) for d in fir_delays]))
 
         beta_series_str = dedent("""\
-            After fitting each model, the parameter estimate (i.e., beta) map associated
+            After fitting each model, the{normed} parameter estimate (i.e., beta) map associated
             with each of the target trial's {n_delays} delay-specific FIR regressors
             was retained and concatenated into delay-specific 4D images with all other
             trials from the same condition, resulting in a set of N * {n_delays} 4D
             images where N refers to the number of conditions in the task.
             The number of volumes in each 4D image represents the number of trials in that
             condition.\
-            """.format(n_delays=len(fir_delays)))
+            """.format(n_delays=len(fir_delays),
+                       normed=' normalized' if norm_betas else ''))
 
     elif estimator == "lss" and hrf != "fir":
         estimator_intro = dedent("""\
@@ -204,7 +211,8 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             modeled in their own regressors.\
             """)
 
-        beta_series_str = beta_series_tmp.format(n_models='each')
+        beta_series_str = beta_series_tmp.format(n_models='each',
+                                                 normed=' normalized' if norm_betas else '')
 
     elif estimator == "lsa":
         estimator_intro = dedent("""\
@@ -217,7 +225,8 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             was modeled in its own regressor.\
             """)
 
-        beta_series_str = beta_series_tmp.format(n_models='the')
+        beta_series_str = beta_series_tmp.format(n_models='the',
+                                                 normed=' normalized' if norm_betas else '')
 
     else:
         raise ValueError("{est} not a supported estimator".format(est=estimator))

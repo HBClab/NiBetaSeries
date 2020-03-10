@@ -106,6 +106,9 @@ def get_parser():
                            help='do not scale every voxel with respect to time meaning'
                                 ' beta estimates will be in the same units as the bold'
                                 ' signal')
+    proc_opts.add_argument('--normalize-betas', action='store_true', default=False,
+                           help='beta estimates will be divided by the square root '
+                                'of their variance')
 
     # Image Selection options
     bids_opts = parser.add_argument_group('Options for selecting images')
@@ -260,6 +263,7 @@ def main():
             fir_delays=opts.fir_delays,
             hrf_model=opts.hrf_model,
             high_pass=opts.high_pass,
+            norm_betas=opts.normalize_betas,
             output_dir=output_dir,
             run_label=opts.run_label,
             signal_scaling=signal_scaling,
