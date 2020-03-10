@@ -6,17 +6,27 @@ import re
 import nibabel as nib
 from nilearn.image import load_img
 import pandas as pd
+from nistats import first_level_model
 import pytest
 
 
 from ..nistats import (LSSBetaSeries, LSABetaSeries,
                        _lss_events_iterator, _lsa_events_converter,
-                       _select_confounds)
+                       _select_confounds,
+                       _calc_beta_map)
 
 
-@pytest.mark.parametrize("use_nibabel", [(True), (False)])
+@pytest.mark.parametrize(
+    "use_nibabel,hrf_model",
+    [
+        (True, 'spm'),
+        (False, 'spm + derivative'),
+        (False, 'spm + derivative + dispersion')
+    ]
+)
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
-                         confounds_file, brainmask_file, use_nibabel):
+                         confounds_file, brainmask_file, use_nibabel,
+                         hrf_model):
     """Test lss interface with nibabel nifti images
     """
     if use_nibabel:
@@ -27,7 +37,6 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
         mask_file = str(brainmask_file)
 
     selected_confounds = ['white_matter', 'csf']
-    hrf_model = 'spm'
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
@@ -274,3 +283,39 @@ def test_select_confounds(confounds_file, selected_confounds, nan_confounds,
             vals = confounds_df[nan_c].values
             expected_result = np.nanmean(vals[vals != 0])
             assert res_df[nan_c][0] == expected_result
+
+
+@pytest.mark.parametrize(
+    "hrf_model",
+    [
+        ("glover"),
+        ("glover + derivative"),
+        ("glover + derivative + dispersion"),
+    ],
+)
+def test_calc_beta_map(sub_metadata, preproc_file, sub_events,
+                       confounds_file, brainmask_file, hrf_model):
+
+    model = first_level_model.FirstLevelModel(
+            t_r=2,
+            slice_time_ref=0,
+            hrf_model=hrf_model,
+            mask=str(brainmask_file),
+            smoothing_fwhm=0,
+            signal_scaling=False,
+            high_pass=0.008,
+            drift_model='cosine',
+            verbose=1,
+            minimize_memory=False,
+        )
+
+    lsa_df = _lsa_events_converter(str(sub_events))
+
+    model.fit(str(preproc_file), events=lsa_df)
+
+    i_trial = lsa_df.index[0]
+    t_name = lsa_df.loc[i_trial, 'trial_type']
+
+    beta_map = _calc_beta_map(model, t_name, hrf_model)
+
+    assert beta_map.shape == nib.load(str(brainmask_file)).shape
