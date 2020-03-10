@@ -104,7 +104,7 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                         beta_maps[new_delay_ttype] = [beta_map]
             else:
                 # calculate the beta map
-                beta_map = model.compute_contrast(trial_type, output_type='effect_size')
+                beta_map = _calc_beta_map(model, trial_type, self.inputs.hrf_model)
                 design_matrix_collector[trial_idx] = model.design_matrices_[0]
                 # assign beta map to appropriate list
                 if trial_type in beta_maps:
@@ -122,7 +122,7 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
         ave_residual = residuals / (trial_idx + 1)
         # make residual nifti image
         residual_file = os.path.join(runtime.cwd, 'desc-residuals_bold.nii.gz')
-        nib.Nifti1Image(
+        nib.Nifti2Image(
             ave_residual,
             model.residuals[0].affine,
             model.residuals[0].header,
@@ -213,7 +213,7 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             t_type = lsa_df.loc[i_trial, 'original_trial_type']
 
             # calculate the beta map
-            beta_map = model.compute_contrast(t_name, output_type='effect_size')
+            beta_map = _calc_beta_map(model, t_name, self.inputs.hrf_model)
 
             # assign beta map to appropriate list
             if t_type in beta_maps:
@@ -344,3 +344,51 @@ def _select_confounds(confounds_file, selected_confounds):
         msg = "The selected confounds contain nans: {conf}".format(conf=expanded_confounds)
         raise ValueError(msg)
     return desired_confounds
+
+
+def _calc_beta_map(model, trial_type, hrf_model):
+    """
+    Calculates the beta estimates for every voxel from
+    a nistats model
+
+    Parameters
+    ----------
+    model : nistats.first_level_model.FirstLevelModel
+        a fit model of the first level results
+
+    Returns
+    -------
+    beta_map : nibabel.nifti2.Nifti2Image
+        nifti image containing voxelwise beta estimates
+    """
+    import numpy as np
+
+    # calculate the beta map
+    beta_map_list = []
+    beta_map_base = model.compute_contrast(trial_type, output_type='effect_size')
+    beta_map_list.append(beta_map_base.get_fdata())
+    beta_sign = np.where(beta_map_list[0] < 0, -1, 1)
+    if 'derivative' in hrf_model:
+        td_contrast = '_'.join([trial_type, 'derivative'])
+        beta_map_list.append(
+            model.compute_contrast(
+                td_contrast, output_type='effect_size').get_fdata())
+    if 'dispersion' in hrf_model:
+        dd_contrast = '_'.join([trial_type, 'dispersion'])
+        beta_map_list.append(
+            model.compute_contrast(
+                dd_contrast, output_type='effect_size').get_fdata())
+
+    if len(beta_map_list) == 1:
+        beta_map = beta_map_base
+    else:
+        beta_map_array = beta_sign * \
+            np.sqrt(
+                np.sum(
+                    np.array([np.power(c, 2) for c in beta_map_list]), axis=0))
+        beta_map = nib.Nifti2Image(
+            beta_map_array,
+            beta_map_base.affine,
+            beta_map_base.header)
+
+    return beta_map
