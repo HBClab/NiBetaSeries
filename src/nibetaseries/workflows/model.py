@@ -23,8 +23,9 @@ def init_betaseries_wf(name="betaseries_wf",
                        fir_delays=None,
                        hrf_model='glover',
                        high_pass=0.0078125,
-                       smoothing_kernel=None,
+                       signal_scaling=0,
                        selected_confounds=None,
+                       smoothing_kernel=None,
                        ):
     """Derives Beta Series Maps
     This workflow derives beta series maps from a bold file.
@@ -54,10 +55,12 @@ def init_betaseries_wf(name="betaseries_wf",
     high_pass : float
         high pass filter to apply to bold (in Hertz).
         Reminder - frequencies _lower_ than this number are kept.
-    smoothing_kernel : float or None
-        The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
     selected_confounds : list or None
         the list of confounds to be included in regression.
+    signal_scaling : False or 0
+        Whether (0) or not (False) to scale each voxel's timeseries
+    smoothing_kernel : float or None
+        The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
 
     Inputs
     ------
@@ -89,6 +92,7 @@ def init_betaseries_wf(name="betaseries_wf",
         hrf=hrf_model,
         hpf=high_pass,
         selected_confounds=selected_confounds,
+        signal_scaling=signal_scaling,
         estimator=estimator,
         fir_delays=fir_delays,
     )
@@ -105,6 +109,7 @@ def init_betaseries_wf(name="betaseries_wf",
         betaseries_node = pe.Node(LSSBetaSeries(
                 fir_delays=fir_delays,
                 selected_confounds=selected_confounds,
+                signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
@@ -112,6 +117,7 @@ def init_betaseries_wf(name="betaseries_wf",
     elif estimator == 'lsa':
         betaseries_node = pe.Node(LSABetaSeries(
                 selected_confounds=selected_confounds,
+                signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
@@ -134,16 +140,17 @@ def init_betaseries_wf(name="betaseries_wf",
 
 
 def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
-                       selected_confounds, estimator,
-                       fir_delays=None):
+                       selected_confounds, signal_scaling,
+                       estimator, fir_delays=None):
     from textwrap import dedent
 
     smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
                   ' '.format(fwhm=fwhm)
                   if fwhm != 0. else '')
+    signal_scale_str = ', and mean-scaled over time.' if signal_scaling == 0 else '.'
 
-    preproc_str = ('Prior to modeling, preprocessed data were {smooth_str}masked,'
-                   'and mean-scaled over time.'.format(smooth_str=smooth_str))
+    preproc_str = ('Prior to modeling, preprocessed data were {smooth_str}masked{signal_scale_str}'
+                   .format(smooth_str=smooth_str, signal_scale_str=signal_scale_str))
 
     beta_series_tmp = dedent("""
         After fitting {n_models} model, the parameter estimate (i.e., beta) map

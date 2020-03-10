@@ -102,6 +102,10 @@ def get_parser():
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
                            'certain nibs finished as expected.')
+    proc_opts.add_argument('--no-signal-scaling', action='store_true', default=False,
+                           help='do not scale every voxel with respect to time meaning'
+                                ' beta estimates will be in the same units as the bold'
+                                ' signal')
 
     # Image Selection options
     bids_opts = parser.add_argument_group('Options for selecting images')
@@ -237,6 +241,12 @@ def main():
     else:
         atlas_img = atlas_lut = None
 
+    # check if --no-signal-scaling is set
+    if opts.no_signal_scaling:
+        signal_scaling = False
+    else:
+        signal_scaling = 0
+
     # running participant level
     if opts.analysis_level == "participant":
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
@@ -252,6 +262,7 @@ def main():
             high_pass=opts.high_pass,
             output_dir=output_dir,
             run_label=opts.run_label,
+            signal_scaling=signal_scaling,
             selected_confounds=opts.confounds,
             session_label=opts.session_label,
             smoothing_kernel=opts.smoothing_kernel,

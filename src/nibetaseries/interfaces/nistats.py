@@ -27,6 +27,9 @@ class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
                                    desc="File that contains all usable confounds")
+    signal_scaling = traits.Enum(False, 0,
+                                 desc="Whether (0) or not (False) to scale each"
+                                      " voxel's timeseries")
     selected_confounds = traits.Either(None, traits.List(),
                                        desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
@@ -70,7 +73,7 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
             hrf_model=self.inputs.hrf_model,
             mask=self.inputs.mask_file,
             smoothing_fwhm=self.inputs.smoothing_kernel,
-            signal_scaling=0,
+            signal_scaling=self.inputs.signal_scaling,
             high_pass=self.inputs.high_pass,
             drift_model='cosine',
             verbose=1,
@@ -156,6 +159,9 @@ class LSABetaSeriesInputSpec(BaseInterfaceInputSpec):
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
                                    desc="File that contains all usable confounds")
+    signal_scaling = traits.Enum(False, 0,
+                                 desc="Whether (0) or not (False) to scale each"
+                                      " voxel's timeseries")
     selected_confounds = traits.Either(None, traits.List(),
                                        desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
@@ -196,7 +202,7 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             hrf_model=self.inputs.hrf_model,
             mask=self.inputs.mask_file,
             smoothing_fwhm=self.inputs.smoothing_kernel,
-            signal_scaling=0,
+            signal_scaling=self.inputs.signal_scaling,
             high_pass=self.inputs.high_pass,
             drift_model='cosine',
             verbose=1,

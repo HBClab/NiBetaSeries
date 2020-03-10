@@ -8,14 +8,14 @@ import pytest
 from ..base import init_nibetaseries_participant_wf, _check_bs_len
 
 
-@pytest.mark.parametrize("estimator,fir_delays,hrf_model",
-                         [('lsa', None, 'spm'),
-                          ('lss', None, 'spm'),
-                          ('lss', [0, 1, 2, 3, 4], 'fir')])
+@pytest.mark.parametrize("estimator,fir_delays,hrf_model,signal_scaling",
+                         [('lsa', None, 'spm', 0),
+                          ('lss', None, 'spm', False),
+                          ('lss', [0, 1, 2, 3, 4], 'fir', False)])
 def test_valid_init_nibetaseries_participant_wf(
         bids_dir, deriv_dir, sub_fmriprep, sub_top_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut, bids_db_file,
-        estimator, fir_delays, hrf_model):
+        estimator, fir_delays, hrf_model, signal_scaling):
 
     output_dir = op.join(str(bids_dir), 'derivatives', 'atlasCorr')
     work_dir = op.join(str(bids_dir), 'derivatives', 'work')
@@ -43,6 +43,7 @@ def test_valid_init_nibetaseries_participant_wf(
         run_label=None,
         selected_confounds=['white_matter', 'csf'],
         session_label=None,
+        signal_scaling=signal_scaling,
         smoothing_kernel=None,
         space_label=None,
         subject_list=["01"],
@@ -87,6 +88,7 @@ def test_filters_init_nibetaseries_participant_wf(
             run_label=run_label,
             selected_confounds=['white_matter', 'csf'],
             session_label=session_label,
+            signal_scaling=False,
             smoothing_kernel=None,
             space_label=space_label,
             subject_list=["01"],
