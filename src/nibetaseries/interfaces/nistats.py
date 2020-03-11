@@ -39,6 +39,7 @@ class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
     fir_delays = traits.Either(None, traits.List(traits.Int),
                                desc="FIR delays (in scans)",
                                default=None, usedefault=True)
+    return_tstat = traits.Bool(desc="use the T-statistic instead of the raw beta estimates")
 
 
 class LSSBetaSeriesOutputSpec(TraitedSpec):
@@ -99,15 +100,20 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                     delay_ttype = trial_type+'_delay_{}'.format(delay)
                     new_delay_ttype = delay_ttype.replace('_delay_{}'.format(delay),
                                                           'Delay{}Vol'.format(delay))
-                    beta_map = model.compute_contrast(
-                        delay_ttype, output_type='effect_size')
+                    beta_map = _calc_beta_map(model,
+                                              delay_ttype,
+                                              self.inputs.hrf_model,
+                                              self.inputs.return_tstat)
                     if new_delay_ttype in beta_maps:
                         beta_maps[new_delay_ttype].append(beta_map)
                     else:
                         beta_maps[new_delay_ttype] = [beta_map]
             else:
                 # calculate the beta map
-                beta_map = _calc_beta_map(model, trial_type, self.inputs.hrf_model)
+                beta_map = _calc_beta_map(model,
+                                          trial_type,
+                                          self.inputs.hrf_model,
+                                          self.inputs.return_tstat)
                 design_matrix_collector[trial_idx] = model.design_matrices_[0]
                 # assign beta map to appropriate list
                 if trial_type in beta_maps:
@@ -168,6 +174,7 @@ class LSABetaSeriesInputSpec(BaseInterfaceInputSpec):
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
+    return_tstat = traits.Bool(desc="use the T-statistic instead of the raw beta estimates")
 
 
 class LSABetaSeriesOutputSpec(TraitedSpec):
@@ -219,7 +226,10 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             t_type = lsa_df.loc[i_trial, 'original_trial_type']
 
             # calculate the beta map
-            beta_map = _calc_beta_map(model, t_name, self.inputs.hrf_model)
+            beta_map = _calc_beta_map(model,
+                                      t_name,
+                                      self.inputs.hrf_model,
+                                      self.inputs.return_tstat)
 
             # assign beta map to appropriate list
             if t_type in beta_maps:
@@ -352,7 +362,7 @@ def _select_confounds(confounds_file, selected_confounds):
     return desired_confounds
 
 
-def _calc_beta_map(model, trial_type, hrf_model):
+def _calc_beta_map(model, trial_type, hrf_model, tstat):
     """
     Calculates the beta estimates for every voxel from
     a nistats model
@@ -361,6 +371,12 @@ def _calc_beta_map(model, trial_type, hrf_model):
     ----------
     model : nistats.first_level_model.FirstLevelModel
         a fit model of the first level results
+    trial_type : str
+        the trial to create the beta estimate
+    hrf_model : str
+        the hemondynamic response function used to fit the model
+    tstat : bool
+        return the t-statistic for the betas instead of the raw estimates
 
     Returns
     -------
@@ -369,32 +385,68 @@ def _calc_beta_map(model, trial_type, hrf_model):
     """
     import numpy as np
 
+    # make it so we do not divide by zero
+    TINY = 1e-50
+    raw_beta_map = _estimate_map(model, trial_type, hrf_model, 'effect_size')
+    if tstat:
+        var_map = _estimate_map(model, trial_type, hrf_model, 'effect_variance')
+        tstat_array = raw_beta_map.get_fdata() / np.sqrt(np.maximum(var_map.get_fdata(), TINY))
+        return nib.Nifti2Image(tstat_array, raw_beta_map.affine, raw_beta_map.header)
+    else:
+        return raw_beta_map
+
+
+def _estimate_map(model, trial_type, hrf_model, output_type):
+    """
+    Calculates model output for every voxel from
+    a nistats model
+
+    Parameters
+    ----------
+    model : nistats.first_level_model.FirstLevelModel
+        a fit model of the first level results
+    trial_type : str
+        the trial to create the beta estimate
+    hrf_model : str
+        the hemondynamic response function used to fit the model
+    output_type : str
+        Type of the output map.
+        Can be ‘z_score’, ‘stat’, ‘p_value’, ‘effect_size’, or ‘effect_variance’
+
+    Returns
+    -------
+    map_img : nibabel.nifti2.Nifti2Image
+        nifti image containing voxelwise output_type estimates
+    """
+    import numpy as np
+
     # calculate the beta map
-    beta_map_list = []
-    beta_map_base = model.compute_contrast(trial_type, output_type='effect_size')
-    beta_map_list.append(beta_map_base.get_fdata())
-    beta_sign = np.where(beta_map_list[0] < 0, -1, 1)
+    map_list = []
+    map_base = model.compute_contrast(trial_type, output_type=output_type)
+    map_list.append(map_base.get_fdata())
+    sign = np.where(map_list[0] < 0, -1, 1)
     if 'derivative' in hrf_model:
         td_contrast = '_'.join([trial_type, 'derivative'])
-        beta_map_list.append(
+        map_list.append(
             model.compute_contrast(
-                td_contrast, output_type='effect_size').get_fdata())
+                td_contrast, output_type=output_type).get_fdata())
     if 'dispersion' in hrf_model:
         dd_contrast = '_'.join([trial_type, 'dispersion'])
-        beta_map_list.append(
+        map_list.append(
             model.compute_contrast(
-                dd_contrast, output_type='effect_size').get_fdata())
+                dd_contrast, output_type=output_type).get_fdata())
 
-    if len(beta_map_list) == 1:
-        beta_map = beta_map_base
+    if len(map_list) == 1:
+        map_img = map_base
     else:
-        beta_map_array = beta_sign * \
+        map_array = sign * \
             np.sqrt(
                 np.sum(
-                    np.array([np.power(c, 2) for c in beta_map_list]), axis=0))
-        beta_map = nib.Nifti2Image(
-            beta_map_array,
-            beta_map_base.affine,
-            beta_map_base.header)
+                    np.array([np.power(c, 2) for c in map_list]), axis=0))
 
-    return beta_map
+        map_img = nib.Nifti2Image(
+            map_array,
+            map_base.affine,
+            map_base.header)
+
+    return map_img

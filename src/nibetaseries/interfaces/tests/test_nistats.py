@@ -17,16 +17,16 @@ from ..nistats import (LSSBetaSeries, LSABetaSeries,
 
 
 @pytest.mark.parametrize(
-    "use_nibabel,hrf_model",
+    "use_nibabel,hrf_model,return_tstat",
     [
-        (True, 'spm'),
-        (False, 'spm + derivative'),
-        (False, 'spm + derivative + dispersion')
+        (True, 'spm', True),
+        (False, 'spm + derivative', False),
+        (False, 'spm + derivative + dispersion', True)
     ]
 )
 def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
                          confounds_file, brainmask_file, use_nibabel,
-                         hrf_model):
+                         hrf_model, return_tstat):
     """Test lss interface with nibabel nifti images
     """
     if use_nibabel:
@@ -48,6 +48,7 @@ def test_lss_beta_series(sub_metadata, preproc_file, sub_events,
                                 selected_confounds=selected_confounds,
                                 signal_scaling=0,
                                 hrf_model=hrf_model,
+                                return_tstat=return_tstat,
                                 smoothing_kernel=None,
                                 high_pass=0.008)
     res = beta_series.run()
@@ -102,6 +103,7 @@ def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
                                 signal_scaling=0,
                                 hrf_model=hrf_model,
                                 fir_delays=fir_delays,
+                                return_tstat=False,
                                 smoothing_kernel=None,
                                 high_pass=0.008)
     res = beta_series.run()
@@ -131,9 +133,17 @@ def test_fs_beta_series(sub_metadata, preproc_file, sub_events,
     os.remove(res.outputs.residual)
 
 
-@pytest.mark.parametrize("use_nibabel", [(True), (False)])
+@pytest.mark.parametrize(
+    "use_nibabel,hrf_model,return_tstat",
+    [
+        (True, 'spm', True),
+        (False, 'spm + derivative', False),
+        (False, 'spm + derivative + dispersion', True)
+    ]
+)
 def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
-                         confounds_file, brainmask_file, use_nibabel):
+                         confounds_file, brainmask_file, use_nibabel,
+                         hrf_model, return_tstat):
     if use_nibabel:
         bold_file = nib.load(str(preproc_file))
         mask_file = nib.load(str(brainmask_file))
@@ -142,7 +152,7 @@ def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
         mask_file = str(brainmask_file)
 
     selected_confounds = ['white_matter', 'csf']
-    hrf_model = 'spm'
+
     with open(str(sub_metadata), 'r') as md:
         bold_metadata = json.load(md)
 
@@ -154,6 +164,7 @@ def test_lsa_beta_series(sub_metadata, preproc_file, sub_events,
                                 signal_scaling=0,
                                 selected_confounds=selected_confounds,
                                 hrf_model=hrf_model,
+                                return_tstat=return_tstat,
                                 smoothing_kernel=None,
                                 high_pass=0.008)
     res = beta_series.run()
@@ -289,15 +300,16 @@ def test_select_confounds(confounds_file, selected_confounds, nan_confounds,
 
 
 @pytest.mark.parametrize(
-    "hrf_model",
+    "hrf_model,return_tstat",
     [
-        ("glover"),
-        ("glover + derivative"),
-        ("glover + derivative + dispersion"),
+        ("glover", True),
+        ("glover + derivative", False),
+        ("glover + derivative + dispersion", True),
     ],
 )
 def test_calc_beta_map(sub_metadata, preproc_file, sub_events,
-                       confounds_file, brainmask_file, hrf_model):
+                       confounds_file, brainmask_file, hrf_model,
+                       return_tstat):
 
     model = first_level_model.FirstLevelModel(
             t_r=2,
@@ -319,6 +331,6 @@ def test_calc_beta_map(sub_metadata, preproc_file, sub_events,
     i_trial = lsa_df.index[0]
     t_name = lsa_df.loc[i_trial, 'trial_type']
 
-    beta_map = _calc_beta_map(model, t_name, hrf_model)
+    beta_map = _calc_beta_map(model, t_name, hrf_model, return_tstat)
 
     assert beta_map.shape == nib.load(str(brainmask_file)).shape
