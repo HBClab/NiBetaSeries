@@ -1,6 +1,6 @@
+os: linux
 dist: xenial
 language: python
-sudo: false
 cache: pip
 env:
   global:
@@ -71,8 +71,7 @@ jobs:
       deploy:
         provider: pypi
         user: jdkent
-        password:
-          secure: $PYPI_PASS
+        password: $PYPI_PASS
         distributions: sdist bdist_wheel
         on:
           tags: true
