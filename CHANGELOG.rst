@@ -4,6 +4,35 @@
 CHANGELOG
 =========
 
+0.5.0 (March 20, 2020)
+----------------------
+This release adds two EXPERIMENTAL flags:
+--normalize-betas and --no-signal-scaling.
+I'm especially unsure about the behavior of
+--normalize-betas in combination with any hrf that contains
+"derivatives" or "derivatives + dispersion", since I'm unsure
+when to divide the the beta estimates with the variances of
+the beta estimates to derive the t-statistic
+(i.e., normalizing the beta estimates).
+This release also has given access to residuals from the LSA and LSS
+interfaces.
+
+Another WARNING: residuals for the LSS interface are not quite as meaningful
+since I'm averaging the residuals over all the models being generated.
+This project is not version 1.x.x yet, so be aware aspects of the API
+may change rapidly.
+
+Thanks to @michaelmack for opening an issue to suggest new features and
+@PeerHerholz for their contributions!
+
+* [ENH] add --normalize-betas option (#299) @jdkent
+* [ENH] add --no-signal-scaling option (#298) @jdkent
+* [ENH,FIX] optimally combine temporal + dispersion derivatives for beta estimation (#296) @jdkent
+* [ENH] add residuals to LSS/LSA interfaces (#294) @jdkent
+* [FIX] remove standardize parameter (#292) @jdkent
+* [ENH] Allow niftiimage input (#289) @jdkent
+* fix singularity install instructions in docs (#288) @PeerHerholz
+
 0.4.3 (February 22, 2020)
 -------------------------
 Bug fix and enhancement release.
