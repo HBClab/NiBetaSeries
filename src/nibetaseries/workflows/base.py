@@ -32,8 +32,8 @@ from ..interfaces.nilearn import CensorVolumes
 def init_nibetaseries_participant_wf(
     estimator, atlas_img, atlas_lut, bids_dir,
     database_path, derivatives_pipeline_dir, exclude_description_label,
-    fir_delays, hrf_model, high_pass, norm_betas, output_dir, run_label,
-    selected_confounds, session_label, signal_scaling, smoothing_kernel,
+    fir_delays, hrf_model, high_pass, norm_betas, output_dir, return_residuals,
+    run_label, selected_confounds, session_label, signal_scaling, smoothing_kernel,
     space_label, subject_list, task_label, description_label, work_dir,
         ):
 
@@ -67,6 +67,9 @@ def init_nibetaseries_participant_wf(
             If True, beta estimates are divided by the square root of their variance
         output_dir : str
             Directory where derivatives are saved
+        return_residuals : bool
+            Output the residuals from the betaseries model into the
+            derivatives directory
         run_label : str or None
             Include bold series containing this run label
         selected_confounds : list
@@ -177,6 +180,7 @@ It is released under the [CC0]\
             norm_betas=norm_betas,
             output_dir=output_dir,
             preproc_img_list=preproc_img_list,
+            return_residuals=return_residuals,
             selected_confounds=selected_confounds,
             signal_scaling=signal_scaling,
             smoothing_kernel=smoothing_kernel,
@@ -197,8 +201,8 @@ It is released under the [CC0]\
 def init_single_subject_wf(
     estimator, atlas_img, atlas_lut, bold_metadata_list, brainmask_list,
     confound_tsv_list, events_tsv_list, fir_delays, hrf_model, high_pass,
-    name, norm_betas, output_dir, preproc_img_list, selected_confounds,
-    signal_scaling, smoothing_kernel,
+    name, norm_betas, output_dir, preproc_img_list, return_residuals,
+    selected_confounds, signal_scaling, smoothing_kernel,
         ):
     """
     This workflow completes the generation of the betaseries files
@@ -257,6 +261,9 @@ def init_single_subject_wf(
             Directory where derivatives are saved
         preproc_img_list : list
             list of preprocessed bold files
+        return_residuals : bool
+            Output the residuals from the betaseries model into the
+            derivatives directory
         selected_confounds : list or None
             the list of confounds to be included in regression
         signal_scaling : False or 0
@@ -311,7 +318,8 @@ def init_single_subject_wf(
 
     output_node = pe.Node(niu.IdentityInterface(fields=['correlation_matrix',
                                                         'correlation_fig',
-                                                        'betaseries_file']),
+                                                        'betaseries_file',
+                                                        'residual_file']),
                           name='output_node')
 
     # initialize the betaseries workflow
@@ -387,6 +395,20 @@ def init_single_subject_wf(
             (output_node, ds_correlation_matrix, [('correlation_matrix', 'in_file')]),
             (input_node, ds_correlation_fig, [('preproc_img', 'source_file')]),
             (output_node, ds_correlation_fig, [('correlation_fig', 'in_file')]),
+        ])
+
+    if return_residuals:
+        ds_residual_file = pe.MapNode(DerivativesDataSink(base_directory=output_dir),
+                                      iterfield=['in_file'],
+                                      name='ds_residual_file')
+
+        workflow.connect([
+            (betaseries_wf, output_node,
+                [('output_node.residual_file', 'residual_file')]),
+            (output_node, ds_residual_file,
+                [('residual_file', 'in_file')]),
+            (input_node, ds_residual_file,
+                [('preproc_img', 'source_file')]),
         ])
 
     return workflow

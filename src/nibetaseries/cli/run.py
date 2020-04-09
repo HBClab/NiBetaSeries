@@ -61,18 +61,22 @@ def get_parser():
     parser.add_argument('-v', '--version', action='version',
                         version=verstr)
 
-    # Atlas Arguments (Required Options)
-    atlas_args = parser.add_argument_group('Required Atlas Arguments')
-    atlas_args.add_argument('-a', '--atlas-img', action='store',
-                            required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
-                            help='input atlas nifti where each voxel within a "region" '
-                                 'is labeled with the same integer and there is a unique '
-                                 'integer associated with each region of interest.')
-    atlas_args.add_argument('-l', '--atlas-lut', action='store',
-                            required=('-a' in sys.argv or '--atlas-img' in sys.argv),
-                            help='atlas look up table (tsv) formatted with the columns: '
-                                  'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img.')
+    # Workflow Arguments
+    wf_args = parser.add_argument_group('Workflow Arguments')
+    wf_args.add_argument('-a', '--atlas-img', action='store',
+                         required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
+                         help='input atlas nifti where each voxel within a "region" '
+                              'is labeled with the same integer and there is a unique '
+                              'integer associated with each region of interest.')
+    wf_args.add_argument('-l', '--atlas-lut', action='store',
+                         required=('-a' in sys.argv or '--atlas-img' in sys.argv),
+                         help='atlas look up table (tsv) formatted with the columns: '
+                              'index, regions which correspond to the regions in the '
+                              'nifti file specified by --atlas-img.')
+    wf_args.add_argument('--return-residuals', action='store_true', default=False,
+                         help='setting this option returns the residuals from the model'
+                              'while straightforward for LSA, for any other methods, take'
+                              'the residuals with a grain of salt.')
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
@@ -265,6 +269,7 @@ def main():
             high_pass=opts.high_pass,
             norm_betas=opts.normalize_betas,
             output_dir=output_dir,
+            return_residuals=opts.return_residuals,
             run_label=opts.run_label,
             signal_scaling=signal_scaling,
             selected_confounds=opts.confounds,

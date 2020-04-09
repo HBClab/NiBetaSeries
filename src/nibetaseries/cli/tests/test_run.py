@@ -37,17 +37,18 @@ def test_conditional_arguments(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    "use_atlas,estimator,fir_delays,hrf_model,part_label,use_signal_scaling,norm_betas",
+    ("use_atlas,estimator,fir_delays,hrf_model,part_label,"
+     "use_signal_scaling,norm_betas,return_residuals"),
     [
-        (True, 'lsa', None, 'spm', '01', True, True),
-        (False, 'lss', None, 'spm', 'sub-01', False, False),
-        (True, 'lss', [0, 1, 2, 3, 4], 'fir', None, False, True)
+        (True, 'lsa', None, 'spm', '01', True, True, True),
+        (False, 'lss', None, 'spm', 'sub-01', False, False, False),
+        (True, 'lss', [0, 1, 2, 3, 4], 'fir', None, False, True, True),
     ])
 def test_nibs(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
         estimator, fir_delays, hrf_model, monkeypatch, part_label, use_atlas,
-        use_signal_scaling, norm_betas):
+        use_signal_scaling, norm_betas, return_residuals):
     import sys
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
@@ -79,6 +80,8 @@ def test_nibs(
         args.extend([str(d) for d in fir_delays])
     if part_label:
         args.extend(["--participant-label", part_label])
+    if return_residuals:
+        args.append('--return-residuals')
 
     monkeypatch.setattr(sys, 'argv', args)
     assert main() is None
