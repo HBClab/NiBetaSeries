@@ -77,7 +77,7 @@ CHANGELOG
 =========
 
 0.6.0 (April 9, 2020)
-----------------------
+---------------------
 Adding one feature that will make my thesis work easier,
 outputting the residual timeseries after beta series estimation.
 This release also contains changes to update links to the "new"
