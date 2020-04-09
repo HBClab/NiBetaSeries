@@ -85,7 +85,10 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries_files
         One file per trial type, with each file being
         as long as the number of events for that trial type.
-        (assuming the number of trials for any trial type is above 2)
+    residual_file
+        The residual time series after running beta series.
+        For LSA this is straight forward, but be cautious when
+        interpreting residuals from LSS.
 
     """
     workflow = Workflow(name=name)
@@ -129,7 +132,8 @@ def init_betaseries_wf(name="betaseries_wf",
                 high_pass=high_pass),
             name='betaseries_node')
 
-    output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
+    output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files',
+                                                        'residual_file']),
                           name='output_node')
 
     # main workflow
@@ -139,7 +143,8 @@ def init_betaseries_wf(name="betaseries_wf",
                                        ('bold_mask_file', 'mask_file'),
                                        ('bold_metadata', 'bold_metadata'),
                                        ('confounds_file', 'confounds_file')]),
-        (betaseries_node, output_node, [('beta_maps', 'betaseries_files')]),
+        (betaseries_node, output_node, [('beta_maps', 'betaseries_files'),
+                                        ('residual', 'residual_file')]),
     ])
 
     return workflow
