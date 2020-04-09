@@ -4,6 +4,17 @@
 CHANGELOG
 =========
 
+0.6.0 (April 9, 2020)
+---------------------
+Adding one feature that will make my thesis work easier,
+outputting the residual timeseries after beta series estimation.
+This release also contains changes to update links to the "new"
+default travis ci .com and makes sure I'm using sphinx 2.x.x,
+and not the new 3.x.x.
+
+* [ENH] add --return-residuals (#304) @jdkent
+* [MAINT] update travis badge and pin sphinx (#305) @jdkent
+
 0.5.0 (March 20, 2020)
 ----------------------
 This release adds two EXPERIMENTAL flags:
