@@ -34,9 +34,9 @@ for links to render properly.
 .. |joss| image:: https://joss.theoj.org/papers/10.21105/joss.01295/status.svg
    :target: https://doi.org/10.21105/joss.01295
 
-.. |travis| image:: https://travis-ci.org/HBClab/NiBetaSeries.svg?branch=master
+.. |travis| image:: https://travis-ci.com/HBClab/NiBetaSeries.svg?branch=master
     :alt: Travis-CI Build Status
-    :target: https://travis-ci.org/HBClab/NiBetaSeries
+    :target: https://travis-ci.com/HBClab/NiBetaSeries
 
 .. |codecov| image:: https://codecov.io/github/HBClab/NiBetaSeries/coverage.svg?branch=master
     :alt: Coverage Status
