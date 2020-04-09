@@ -26,6 +26,7 @@ Participant Workflow
         norm_betas=False,
         output_dir='.',
         preproc_img_list=[''],
+        return_residuals=False,
         selected_confounds=[''],
         signal_scaling=0,
         smoothing_kernel=None)
