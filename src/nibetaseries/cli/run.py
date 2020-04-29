@@ -83,7 +83,7 @@ def get_parser():
     proc_opts.add_argument('--estimator', default='lss',
                            choices=['lss', 'lsa'],
                            help='beta series modeling method')
-    proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=6.0,
+    proc_opts.add_argument('-sm', '--smoothing-kernel', action='store', type=float, default=None,
                            help='select a smoothing kernel (mm)')
     proc_opts.add_argument('-hp', '--high-pass', action='store', type=float,
                            default=0.0078125, help='high pass filter (Hz)')
