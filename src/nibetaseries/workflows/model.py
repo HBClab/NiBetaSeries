@@ -23,8 +23,10 @@ def init_betaseries_wf(name="betaseries_wf",
                        fir_delays=None,
                        hrf_model='glover',
                        high_pass=0.0078125,
-                       smoothing_kernel=None,
+                       norm_betas=False,
+                       signal_scaling=0,
                        selected_confounds=None,
+                       smoothing_kernel=None,
                        ):
     """Derives Beta Series Maps
     This workflow derives beta series maps from a bold file.
@@ -54,10 +56,14 @@ def init_betaseries_wf(name="betaseries_wf",
     high_pass : float
         high pass filter to apply to bold (in Hertz).
         Reminder - frequencies _lower_ than this number are kept.
-    smoothing_kernel : float or None
-        The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
+    norm_betas : Bool
+        If True, beta estimates are divided by the square root of their variance
     selected_confounds : list or None
         the list of confounds to be included in regression.
+    signal_scaling : False or 0
+        Whether (0) or not (False) to scale each voxel's timeseries
+    smoothing_kernel : float or None
+        The size of the smoothing kernel (full width/half max) applied to the bold file (in mm)
 
     Inputs
     ------
@@ -79,7 +85,10 @@ def init_betaseries_wf(name="betaseries_wf",
     betaseries_files
         One file per trial type, with each file being
         as long as the number of events for that trial type.
-        (assuming the number of trials for any trial type is above 2)
+    residual_file
+        The residual time series after running beta series.
+        For LSA this is straight forward, but be cautious when
+        interpreting residuals from LSS.
 
     """
     workflow = Workflow(name=name)
@@ -88,7 +97,9 @@ def init_betaseries_wf(name="betaseries_wf",
         fwhm=smoothing_kernel,
         hrf=hrf_model,
         hpf=high_pass,
+        norm_betas=norm_betas,
         selected_confounds=selected_confounds,
+        signal_scaling=signal_scaling,
         estimator=estimator,
         fir_delays=fir_delays,
     )
@@ -105,19 +116,24 @@ def init_betaseries_wf(name="betaseries_wf",
         betaseries_node = pe.Node(LSSBetaSeries(
                 fir_delays=fir_delays,
                 selected_confounds=selected_confounds,
+                signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
+                return_tstat=norm_betas,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
             name='betaseries_node')
     elif estimator == 'lsa':
         betaseries_node = pe.Node(LSABetaSeries(
                 selected_confounds=selected_confounds,
+                signal_scaling=signal_scaling,
                 hrf_model=hrf_model,
+                return_tstat=norm_betas,
                 smoothing_kernel=smoothing_kernel,
                 high_pass=high_pass),
             name='betaseries_node')
 
-    output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files']),
+    output_node = pe.Node(niu.IdentityInterface(fields=['betaseries_files',
+                                                        'residual_file']),
                           name='output_node')
 
     # main workflow
@@ -127,26 +143,28 @@ def init_betaseries_wf(name="betaseries_wf",
                                        ('bold_mask_file', 'mask_file'),
                                        ('bold_metadata', 'bold_metadata'),
                                        ('confounds_file', 'confounds_file')]),
-        (betaseries_node, output_node, [('beta_maps', 'betaseries_files')]),
+        (betaseries_node, output_node, [('beta_maps', 'betaseries_files'),
+                                        ('residual', 'residual_file')]),
     ])
 
     return workflow
 
 
 def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
-                       selected_confounds, estimator,
-                       fir_delays=None):
+                       selected_confounds, signal_scaling,
+                       estimator, norm_betas, fir_delays=None):
     from textwrap import dedent
 
     smooth_str = ('smoothed with a Gaussian kernel with a FWHM of {fwhm} mm,'
                   ' '.format(fwhm=fwhm)
                   if fwhm != 0. else '')
+    signal_scale_str = ', and mean-scaled over time.' if signal_scaling == 0 else '.'
 
-    preproc_str = ('Prior to modeling, preprocessed data were {smooth_str}masked,'
-                   'and mean-scaled over time.'.format(smooth_str=smooth_str))
+    preproc_str = ('Prior to modeling, preprocessed data were {smooth_str}masked{signal_scale_str}'
+                   .format(smooth_str=smooth_str, signal_scale_str=signal_scale_str))
 
     beta_series_tmp = dedent("""
-        After fitting {n_models} model, the parameter estimate (i.e., beta) map
+        After fitting {n_models} model, the{normed} parameter estimate (i.e., beta) map
         associated with the target trial's regressor was retained and concatenated
         into a 4D image with all other trials from the same condition, resulting
         in a set of N 4D images where N refers to the number of conditions in the task.
@@ -175,14 +193,15 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             """.format(fir_delays=[str(d) for d in fir_delays]))
 
         beta_series_str = dedent("""\
-            After fitting each model, the parameter estimate (i.e., beta) map associated
+            After fitting each model, the{normed} parameter estimate (i.e., beta) map associated
             with each of the target trial's {n_delays} delay-specific FIR regressors
             was retained and concatenated into delay-specific 4D images with all other
             trials from the same condition, resulting in a set of N * {n_delays} 4D
             images where N refers to the number of conditions in the task.
             The number of volumes in each 4D image represents the number of trials in that
             condition.\
-            """.format(n_delays=len(fir_delays)))
+            """.format(n_delays=len(fir_delays),
+                       normed=' normalized' if norm_betas else ''))
 
     elif estimator == "lss" and hrf != "fir":
         estimator_intro = dedent("""\
@@ -197,7 +216,8 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             modeled in their own regressors.\
             """)
 
-        beta_series_str = beta_series_tmp.format(n_models='each')
+        beta_series_str = beta_series_tmp.format(n_models='each',
+                                                 normed=' normalized' if norm_betas else '')
 
     elif estimator == "lsa":
         estimator_intro = dedent("""\
@@ -210,7 +230,8 @@ def gen_wf_description(nistats_ver, fwhm, hrf, hpf,
             was modeled in its own regressor.\
             """)
 
-        beta_series_str = beta_series_tmp.format(n_models='the')
+        beta_series_str = beta_series_tmp.format(n_models='the',
+                                                 normed=' normalized' if norm_betas else '')
 
     else:
         raise ValueError("{est} not a supported estimator".format(est=estimator))

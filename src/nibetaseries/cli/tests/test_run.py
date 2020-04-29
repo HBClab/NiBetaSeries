@@ -36,21 +36,24 @@ def test_conditional_arguments(monkeypatch):
         get_parser().parse_args(no_img)
 
 
-@pytest.mark.parametrize("estimator,fir_delays,hrf_model",
-                         [('lsa', None, 'spm'),
-                          ('lss', None, 'spm'),
-                          ('lss', [0, 1, 2, 3, 4], 'fir')])
+@pytest.mark.parametrize(
+    ("use_atlas,estimator,fir_delays,hrf_model,part_label,"
+     "use_signal_scaling,norm_betas,return_residuals"),
+    [
+        (True, 'lsa', None, 'spm', '01', True, True, True),
+        (False, 'lss', None, 'spm', 'sub-01', False, False, False),
+        (True, 'lss', [0, 1, 2, 3, 4], 'fir', None, False, True, True),
+    ])
 def test_nibs(
         bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
         sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
-        estimator, fir_delays, hrf_model, monkeypatch):
+        estimator, fir_delays, hrf_model, monkeypatch, part_label, use_atlas,
+        use_signal_scaling, norm_betas, return_residuals):
     import sys
     bids_dir = str(bids_dir)
     out_dir = os.path.join(bids_dir, 'derivatives')
     args = ["nibs",
-            "-a", str(atlas_file),
-            "-l", str(atlas_lut),
-            "-c", "WhiteMatter", "CSF",
+            "-c", "white_matter", "csf",
             "--high-pass", "0.008",
             "--estimator", estimator,
             "-sp", "MNI152NLin2009cAsym",
@@ -64,10 +67,21 @@ def test_nibs(
             bids_dir,
             "fmriprep",
             out_dir,
-            "participant"]
+            "participant",
+            "-c", ".*derivative.*"]
+    if norm_betas:
+        args.extend(['--normalize-betas'])
+    if use_signal_scaling:
+        args.extend(["--no-signal-scaling"])
+    if use_atlas:
+        args.extend(["-a", str(atlas_file), "-l", str(atlas_lut)])
     if fir_delays:
         args.append('--fir-delays')
         args.extend([str(d) for d in fir_delays])
+    if part_label:
+        args.extend(["--participant-label", part_label])
+    if return_residuals:
+        args.append('--return-residuals')
 
     monkeypatch.setattr(sys, 'argv', args)
     assert main() is None

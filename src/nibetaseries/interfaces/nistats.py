@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec, TraitedSpec,
     OutputMultiPath, File, LibraryBaseInterface,
     SimpleInterface, traits
     )
+import nibabel as nib
 
 
 class NistatsBaseInterface(LibraryBaseInterface):
@@ -15,16 +15,21 @@ class NistatsBaseInterface(LibraryBaseInterface):
 
 
 class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
+    bold_file = traits.Either(File(exists=True, mandatory=True,
+                                   desc="The bold run"),
+                              nib.spatialimages.SpatialImage)
     bold_metadata = traits.Dict(desc='Dictionary containing useful information about'
                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
+    mask_file = traits.Either(File(exists=True, mandatory=True,
+                              desc="Binarized nifti file indicating the brain"),
+                              nib.spatialimages.SpatialImage)
     events_file = File(exists=True, mandatory=True,
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
                                    desc="File that contains all usable confounds")
+    signal_scaling = traits.Enum(False, 0,
+                                 desc="Whether (0) or not (False) to scale each"
+                                      " voxel's timeseries")
     selected_confounds = traits.Either(None, traits.List(),
                                        desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
@@ -32,12 +37,15 @@ class LSSBetaSeriesInputSpec(BaseInterfaceInputSpec):
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
     fir_delays = traits.Either(None, traits.List(traits.Int),
-                               desc="FIR delays (in scans)")
+                               desc="FIR delays (in scans)",
+                               default=None, usedefault=True)
+    return_tstat = traits.Bool(desc="use the T-statistic instead of the raw beta estimates")
 
 
 class LSSBetaSeriesOutputSpec(TraitedSpec):
     beta_maps = OutputMultiPath(File)
     design_matrices = traits.Dict()
+    residual = traits.File(exists=True)
 
 
 class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
@@ -47,7 +55,6 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
 
     def _run_interface(self, runtime):
         from nistats import first_level_model
-        import nibabel as nib
         import os
 
         # get t_r from bold_metadata
@@ -67,16 +74,17 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
             hrf_model=self.inputs.hrf_model,
             mask=self.inputs.mask_file,
             smoothing_fwhm=self.inputs.smoothing_kernel,
-            standardize=True,
-            signal_scaling=0,
+            signal_scaling=self.inputs.signal_scaling,
             high_pass=self.inputs.high_pass,
             drift_model='cosine',
             verbose=1,
             fir_delays=self.inputs.fir_delays,
+            minimize_memory=False,
         )
 
         # initialize dictionary to contain trial estimates (betas)
         beta_maps = {}
+        residuals = None
         design_matrix_collector = {}
         for target_trial_df, trial_type, trial_idx in \
                 _lss_events_iterator(self.inputs.events_file):
@@ -92,15 +100,20 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                     delay_ttype = trial_type+'_delay_{}'.format(delay)
                     new_delay_ttype = delay_ttype.replace('_delay_{}'.format(delay),
                                                           'Delay{}Vol'.format(delay))
-                    beta_map = model.compute_contrast(
-                        delay_ttype, output_type='effect_size')
+                    beta_map = _calc_beta_map(model,
+                                              delay_ttype,
+                                              self.inputs.hrf_model,
+                                              self.inputs.return_tstat)
                     if new_delay_ttype in beta_maps:
                         beta_maps[new_delay_ttype].append(beta_map)
                     else:
                         beta_maps[new_delay_ttype] = [beta_map]
             else:
                 # calculate the beta map
-                beta_map = model.compute_contrast(trial_type, output_type='effect_size')
+                beta_map = _calc_beta_map(model,
+                                          trial_type,
+                                          self.inputs.hrf_model,
+                                          self.inputs.return_tstat)
                 design_matrix_collector[trial_idx] = model.design_matrices_[0]
                 # assign beta map to appropriate list
                 if trial_type in beta_maps:
@@ -108,50 +121,66 @@ class LSSBetaSeries(NistatsBaseInterface, SimpleInterface):
                 else:
                     beta_maps[trial_type] = [beta_map]
 
+            # add up all the residuals (to be divided later)
+            if residuals is None:
+                residuals = model.residuals[0].get_fdata()
+            else:
+                residuals += model.residuals[0].get_fdata()
+
+        # make an average residual
+        ave_residual = residuals / (trial_idx + 1)
+        # make residual nifti image
+        residual_file = os.path.join(runtime.cwd, 'desc-residuals_bold.nii.gz')
+        nib.Nifti2Image(
+            ave_residual,
+            model.residuals[0].affine,
+            model.residuals[0].header,
+        ).to_filename(residual_file)
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
                                             'desc-{trial_type}_betaseries.nii.gz')
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
-            size_check = len(betas)
-            if size_check < 3:
-                logging.warning(
-                    'At least 3 trials are needed '
-                    'for a beta series: {trial_type} has {num}'.format(trial_type=t_type,
-                                                                       num=size_check))
-            else:
-                beta_series = nib.funcs.concat_images(betas)
-                nib.save(beta_series, beta_series_template.format(trial_type=t_type))
-                beta_series_lst.append(beta_series_template.format(trial_type=t_type))
+            beta_series = nib.funcs.concat_images(betas)
+            nib.save(beta_series, beta_series_template.format(trial_type=t_type))
+            beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = design_matrix_collector
+        self._results['residual'] = residual_file
         return runtime
 
 
 class LSABetaSeriesInputSpec(BaseInterfaceInputSpec):
-    bold_file = File(exists=True, mandatory=True,
-                     desc="The bold run")
+    bold_file = traits.Either(File(exists=True, mandatory=True,
+                                   desc="The bold run"),
+                              nib.spatialimages.SpatialImage)
     bold_metadata = traits.Dict(desc='Dictionary containing useful information about'
                                 ' the bold_file')
-    mask_file = File(exists=True, mandatory=True,
-                     desc="Binarized nifti file indicating the brain")
+    mask_file = traits.Either(File(exists=True, mandatory=True,
+                              desc="Binarized nifti file indicating the brain"),
+                              nib.spatialimages.SpatialImage)
     events_file = File(exists=True, mandatory=True,
                        desc="File that contains all events from the bold run")
     confounds_file = traits.Either(None, File(exists=True),
                                    desc="File that contains all usable confounds")
+    signal_scaling = traits.Enum(False, 0,
+                                 desc="Whether (0) or not (False) to scale each"
+                                      " voxel's timeseries")
     selected_confounds = traits.Either(None, traits.List(),
                                        desc="Column names of the regressors to include")
     hrf_model = traits.String(desc="hemodynamic response model")
     smoothing_kernel = traits.Either(None, traits.Float(),
                                      desc="full wide half max smoothing kernel")
     high_pass = traits.Float(0.0078125, desc="the high pass filter (Hz)")
+    return_tstat = traits.Bool(desc="use the T-statistic instead of the raw beta estimates")
 
 
 class LSABetaSeriesOutputSpec(TraitedSpec):
     beta_maps = OutputMultiPath(File)
     design_matrices = traits.List()
+    residual = traits.File(exists=True)
 
 
 class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
@@ -161,7 +190,6 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
 
     def _run_interface(self, runtime):
         from nistats import first_level_model
-        import nibabel as nib
         import os
 
         # get t_r from bold_metadata
@@ -181,11 +209,11 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             hrf_model=self.inputs.hrf_model,
             mask=self.inputs.mask_file,
             smoothing_fwhm=self.inputs.smoothing_kernel,
-            standardize=True,
-            signal_scaling=0,
+            signal_scaling=self.inputs.signal_scaling,
             high_pass=self.inputs.high_pass,
             drift_model='cosine',
-            verbose=1
+            verbose=1,
+            minimize_memory=False,
         )
 
         # initialize dictionary to contain trial estimates (betas)
@@ -198,7 +226,10 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             t_type = lsa_df.loc[i_trial, 'original_trial_type']
 
             # calculate the beta map
-            beta_map = model.compute_contrast(t_name, output_type='effect_size')
+            beta_map = _calc_beta_map(model,
+                                      t_name,
+                                      self.inputs.hrf_model,
+                                      self.inputs.return_tstat)
 
             # assign beta map to appropriate list
             if t_type in beta_maps:
@@ -206,25 +237,22 @@ class LSABetaSeries(NistatsBaseInterface, SimpleInterface):
             else:
                 beta_maps[t_type] = [beta_map]
 
+        # calculate the residual
+        residual_file = os.path.join(runtime.cwd, 'desc-residuals_bold.nii.gz')
+        model.residuals[0].to_filename(residual_file)
         # make a beta series from each beta map list
         beta_series_template = os.path.join(runtime.cwd,
                                             'desc-{trial_type}_betaseries.nii.gz')
         # collector for the betaseries files
         beta_series_lst = []
         for t_type, betas in beta_maps.items():
-            size_check = len(betas)
-            if size_check < 3:
-                logging.warning(
-                    'At least 3 trials are needed '
-                    'for a beta series: {trial_type} has {num}'.format(trial_type=t_type,
-                                                                       num=size_check))
-            else:
-                beta_series = nib.funcs.concat_images(betas)
-                nib.save(beta_series, beta_series_template.format(trial_type=t_type))
-                beta_series_lst.append(beta_series_template.format(trial_type=t_type))
+            beta_series = nib.funcs.concat_images(betas)
+            nib.save(beta_series, beta_series_template.format(trial_type=t_type))
+            beta_series_lst.append(beta_series_template.format(trial_type=t_type))
 
         self._results['beta_maps'] = beta_series_lst
         self._results['design_matrices'] = [design_matrix]
+        self._results['residual'] = residual_file
         return runtime
 
 
@@ -298,7 +326,8 @@ def _select_confounds(confounds_file, selected_confounds):
     confounds_file : str
         File that contains all usable confounds
     selected_confounds : list
-        List containing all desired confounds
+        List containing all desired confounds.
+        confounds can be listed as regular expressions (e.g., "motion_outlier.*")
 
     Returns
     -------
@@ -307,12 +336,117 @@ def _select_confounds(confounds_file, selected_confounds):
     """
     import pandas as pd
     import numpy as np
+    import re
+
     confounds_df = pd.read_csv(confounds_file, sep='\t', na_values='n/a')
+    # regular expression to capture confounds specified at the command line
+    confound_expr = re.compile(r"|".join(selected_confounds))
+    expanded_confounds = list(filter(confound_expr.fullmatch, confounds_df.columns))
+    imputables = ('framewise_displacement', 'std_dvars', 'dvars', '.*derivative1.*')
 
-    # fill the first value of FramewiseDisplacement with the mean.
-    if 'FramewiseDisplacement' in selected_confounds:
-        confounds_df['FramewiseDisplacement'] = confounds_df['FramewiseDisplacement'].fillna(
-                                np.mean(confounds_df['FramewiseDisplacement']))
+    # regular expression to capture all imputable confounds
+    impute_expr = re.compile(r"|".join(imputables))
+    expanded_imputables = list(filter(impute_expr.fullmatch, expanded_confounds))
+    for imputable in expanded_imputables:
+        vals = confounds_df[imputable].values
+        if not np.isnan(vals[0]):
+            continue
+        # Impute the mean non-zero, non-NaN value
+        confounds_df[imputable][0] = np.nanmean(vals[vals != 0])
 
-    desired_confounds = confounds_df[selected_confounds]
+    desired_confounds = confounds_df[expanded_confounds]
+    # check to see if there are any remaining nans
+    if desired_confounds.isna().values.any():
+        msg = "The selected confounds contain nans: {conf}".format(conf=expanded_confounds)
+        raise ValueError(msg)
     return desired_confounds
+
+
+def _calc_beta_map(model, trial_type, hrf_model, tstat):
+    """
+    Calculates the beta estimates for every voxel from
+    a nistats model
+
+    Parameters
+    ----------
+    model : nistats.first_level_model.FirstLevelModel
+        a fit model of the first level results
+    trial_type : str
+        the trial to create the beta estimate
+    hrf_model : str
+        the hemondynamic response function used to fit the model
+    tstat : bool
+        return the t-statistic for the betas instead of the raw estimates
+
+    Returns
+    -------
+    beta_map : nibabel.nifti2.Nifti2Image
+        nifti image containing voxelwise beta estimates
+    """
+    import numpy as np
+
+    # make it so we do not divide by zero
+    TINY = 1e-50
+    raw_beta_map = _estimate_map(model, trial_type, hrf_model, 'effect_size')
+    if tstat:
+        var_map = _estimate_map(model, trial_type, hrf_model, 'effect_variance')
+        tstat_array = raw_beta_map.get_fdata() / np.sqrt(np.maximum(var_map.get_fdata(), TINY))
+        return nib.Nifti2Image(tstat_array, raw_beta_map.affine, raw_beta_map.header)
+    else:
+        return raw_beta_map
+
+
+def _estimate_map(model, trial_type, hrf_model, output_type):
+    """
+    Calculates model output for every voxel from
+    a nistats model
+
+    Parameters
+    ----------
+    model : nistats.first_level_model.FirstLevelModel
+        a fit model of the first level results
+    trial_type : str
+        the trial to create the beta estimate
+    hrf_model : str
+        the hemondynamic response function used to fit the model
+    output_type : str
+        Type of the output map.
+        Can be ‘z_score’, ‘stat’, ‘p_value’, ‘effect_size’, or ‘effect_variance’
+
+    Returns
+    -------
+    map_img : nibabel.nifti2.Nifti2Image
+        nifti image containing voxelwise output_type estimates
+    """
+    import numpy as np
+
+    # calculate the beta map
+    map_list = []
+    map_base = model.compute_contrast(trial_type, output_type=output_type)
+    map_list.append(map_base.get_fdata())
+    sign = np.where(map_list[0] < 0, -1, 1)
+    if 'derivative' in hrf_model:
+        td_contrast = '_'.join([trial_type, 'derivative'])
+        map_list.append(
+            model.compute_contrast(
+                td_contrast, output_type=output_type).get_fdata())
+    if 'dispersion' in hrf_model:
+        dd_contrast = '_'.join([trial_type, 'dispersion'])
+        map_list.append(
+            model.compute_contrast(
+                dd_contrast, output_type=output_type).get_fdata())
+
+    if len(map_list) == 1:
+        map_img = map_base
+    else:
+        map_array = sign * \
+            np.sqrt(
+                np.sum(
+                    np.array([np.power(c, 2) for c in map_list]), axis=0))
+
+        map_img = nib.Nifti2Image(
+            map_array,
+            map_base.affine,
+            map_base.header)
+
+    return map_img

@@ -61,18 +61,22 @@ def get_parser():
     parser.add_argument('-v', '--version', action='version',
                         version=verstr)
 
-    # Atlas Arguments (Required Options)
-    atlas_args = parser.add_argument_group('Required Atlas Arguments')
-    atlas_args.add_argument('-a', '--atlas-img', action='store',
-                            required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
-                            help='input atlas nifti where each voxel within a "region" '
-                                 'is labeled with the same integer and there is a unique '
-                                 'integer associated with each region of interest.')
-    atlas_args.add_argument('-l', '--atlas-lut', action='store',
-                            required=('-a' in sys.argv or '--atlas-img' in sys.argv),
-                            help='atlas look up table (tsv) formatted with the columns: '
-                                  'index, regions which correspond to the regions in the '
-                                  'nifti file specified by --atlas-img.')
+    # Workflow Arguments
+    wf_args = parser.add_argument_group('Workflow Arguments')
+    wf_args.add_argument('-a', '--atlas-img', action='store',
+                         required=('-l' in sys.argv or '--atlas-lut' in sys.argv),
+                         help='input atlas nifti where each voxel within a "region" '
+                              'is labeled with the same integer and there is a unique '
+                              'integer associated with each region of interest.')
+    wf_args.add_argument('-l', '--atlas-lut', action='store',
+                         required=('-a' in sys.argv or '--atlas-img' in sys.argv),
+                         help='atlas look up table (tsv) formatted with the columns: '
+                              'index, regions which correspond to the regions in the '
+                              'nifti file specified by --atlas-img.')
+    wf_args.add_argument('--return-residuals', action='store_true', default=False,
+                         help='setting this option returns the residuals from the model'
+                              'while straightforward for LSA, for any other methods, take'
+                              'the residuals with a grain of salt.')
 
     # preprocessing options
     proc_opts = parser.add_argument_group('Options for processing')
@@ -102,30 +106,41 @@ def get_parser():
                            'are stored (i.e. non-essential files). '
                            'This directory can be deleted once you are reasonably '
                            'certain nibs finished as expected.')
+    proc_opts.add_argument('--no-signal-scaling', action='store_true', default=False,
+                           help='do not scale every voxel with respect to time meaning'
+                                ' beta estimates will be in the same units as the bold'
+                                ' signal')
+    proc_opts.add_argument('--normalize-betas', action='store_true', default=False,
+                           help='beta estimates will be divided by the square root '
+                                'of their variance')
 
     # Image Selection options
-    image_opts = parser.add_argument_group('Options for selecting images')
-    parser.add_argument('--participant-label', nargs="+",
-                        help='The label(s) of the participant(s) '
-                             'that should be analyzed. The label '
-                             'corresponds to sub-<participant_label> from the BIDS spec '
-                             '(so it does not include "sub-"). If this parameter is not '
-                             'provided all subjects should be analyzed. Multiple '
-                             'participants can be specified with a space separated list.')
-    image_opts.add_argument('--session-label', action='store',
-                            default=None, help='select a session to analyze')
-    image_opts.add_argument('-t', '--task-label', action='store',
-                            default=None, help='select a specific task to be processed')
-    image_opts.add_argument('--run-label', action='store',
-                            default=None, help='select a run to analyze')
-    image_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
-                            choices=['MNI152NLin2009cAsym'],
-                            help='select a bold derivative in a specific space to be used')
-    image_opts.add_argument('--description-label', action='store',
-                            default=None, help='select a bold file with particular '
-                                               '`desc` label to process')
-    image_opts.add_argument('--exclude-description-label', action='store_true',
-                            default=False, help='exclude this `desc` label from nibetaseries')
+    bids_opts = parser.add_argument_group('Options for selecting images')
+    bids_opts.add_argument('--participant-label', nargs="+",
+                           help='The label(s) of the participant(s) '
+                                'that should be analyzed. The label '
+                                'corresponds to sub-<participant_label> from the BIDS spec '
+                                '(so it does not include "sub-"). If this parameter is not '
+                                'provided all subjects should be analyzed. Multiple '
+                                'participants can be specified with a space separated list.')
+    bids_opts.add_argument('--session-label', action='store',
+                           default=None, help='select a session to analyze')
+    bids_opts.add_argument('-t', '--task-label', action='store',
+                           default=None, help='select a specific task to be processed')
+    bids_opts.add_argument('--run-label', action='store',
+                           default=None, help='select a run to analyze')
+    bids_opts.add_argument('-sp', '--space-label', action='store', default='MNI152NLin2009cAsym',
+                           help='select a bold derivative in a specific space to be used')
+    bids_opts.add_argument('--description-label', action='store',
+                           default=None, help='select a bold file with particular '
+                                              '`desc` label to process')
+    bids_opts.add_argument('--exclude-description-label', action='store_true',
+                           default=False, help='exclude this `desc` label from nibetaseries')
+    bids_opts.add_argument('--database-path', action='store', default=None,
+                           help="Path to directory containing SQLite database indicies "
+                                "for this BIDS dataset. "
+                                "If a value is passed and the file already exists, "
+                                "indexing is skipped.")
 
     # performance options
     g_perfm = parser.add_argument_group('Options to handle performance')
@@ -182,7 +197,8 @@ def main():
 
     # only for a subset of subjects
     if opts.participant_label:
-        subject_list = opts.participant_label
+        subject_list = [s[4:] if s.startswith('sub-') else s
+                        for s in opts.participant_label]
     # for all subjects
     else:
         subject_dirs = glob(os.path.join(bids_dir, "sub-*"))
@@ -225,20 +241,37 @@ def main():
                       'parameterize_dirs': False},
     })
 
+    # check if atlas img or atlas lut exist
+    if opts.atlas_img and opts.atlas_lut:
+        atlas_img = os.path.abspath(opts.atlas_img)
+        atlas_lut = os.path.abspath(opts.atlas_lut)
+    else:
+        atlas_img = atlas_lut = None
+
+    # check if --no-signal-scaling is set
+    if opts.no_signal_scaling:
+        signal_scaling = False
+    else:
+        signal_scaling = 0
+
     # running participant level
     if opts.analysis_level == "participant":
         nibetaseries_participant_wf = init_nibetaseries_participant_wf(
             estimator=opts.estimator,
-            atlas_img=os.path.abspath(opts.atlas_img),
-            atlas_lut=os.path.abspath(opts.atlas_lut),
+            atlas_img=atlas_img,
+            atlas_lut=atlas_lut,
             bids_dir=bids_dir,
+            database_path=opts.database_path,
             derivatives_pipeline_dir=derivatives_pipeline_dir,
             exclude_description_label=opts.exclude_description_label,
             fir_delays=opts.fir_delays,
             hrf_model=opts.hrf_model,
             high_pass=opts.high_pass,
+            norm_betas=opts.normalize_betas,
             output_dir=output_dir,
+            return_residuals=opts.return_residuals,
             run_label=opts.run_label,
+            signal_scaling=signal_scaling,
             selected_confounds=opts.confounds,
             session_label=opts.session_label,
             smoothing_kernel=opts.smoothing_kernel,

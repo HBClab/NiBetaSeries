@@ -23,9 +23,12 @@ Participant Workflow
         hrf_model='glover',
         high_pass=0.008,
         name='subtest',
+        norm_betas=False,
         output_dir='.',
         preproc_img_list=[''],
+        return_residuals=False,
         selected_confounds=[''],
+        signal_scaling=0,
         smoothing_kernel=None)
 
 The general workflow for a participant models the beta series
@@ -53,7 +56,9 @@ Least Squares- Separate (LSS)
         fir_delays=None,
         hrf_model='glover',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
+        signal_scaling=0,
         selected_confounds=[''])
 
 nistats is used for modeling using the
@@ -74,7 +79,9 @@ Finite BOLD Response- Separate (FS)
         fir_delays=[0, 1, 2, 3, 4],
         hrf_model='fir',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
+        signal_scaling=0,
         selected_confounds=[''])
 
 Additionally, NiBetaSeries can be used to perform
@@ -96,7 +103,9 @@ Least Squares- All (LSA)
         fir_delays=None,
         hrf_model='glover',
         high_pass=0.008,
+        norm_betas=False,
         smoothing_kernel=0.0,
+        signal_scaling=0,
         selected_confounds=[''])
 
 For completeness, NiBetaSeries also implements least squares- all (LSA),

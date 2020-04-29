@@ -4,9 +4,70 @@
 CHANGELOG
 =========
 
+0.6.0 (April 9, 2020)
+---------------------
+Adding one feature that will make my thesis work easier,
+outputting the residual timeseries after beta series estimation.
+This release also contains changes to update links to the "new"
+default travis ci .com and makes sure I'm using sphinx 2.x.x,
+and not the new 3.x.x.
+
+* [ENH] add --return-residuals (#304) @jdkent
+* [MAINT] update travis badge and pin sphinx (#305) @jdkent
+
+0.5.0 (March 20, 2020)
+----------------------
+This release adds two EXPERIMENTAL flags:
+--normalize-betas and --no-signal-scaling.
+I'm especially unsure about the behavior of
+--normalize-betas in combination with any hrf that contains
+"derivatives" or "derivatives + dispersion", since I'm unsure
+when to divide the the beta estimates with the variances of
+the beta estimates to derive the t-statistic
+(i.e., normalizing the beta estimates).
+This release also has given access to residuals from the LSA and LSS
+interfaces.
+
+Another WARNING: residuals for the LSS interface are not quite as meaningful
+since I'm averaging the residuals over all the models being generated.
+This project is not version 1.x.x yet, so be aware aspects of the API
+may change rapidly.
+
+Thanks to @michaelmack for opening an issue to suggest new features and
+@PeerHerholz for their contributions!
+
+* [ENH] add --normalize-betas option (#299) @jdkent
+* [ENH] add --no-signal-scaling option (#298) @jdkent
+* [ENH,FIX] optimally combine temporal + dispersion derivatives for beta estimation (#296) @jdkent
+* [ENH] add residuals to LSS/LSA interfaces (#294) @jdkent
+* [FIX] remove standardize parameter (#292) @jdkent
+* [ENH] Allow niftiimage input (#289) @jdkent
+* fix singularity install instructions in docs (#288) @PeerHerholz
+
+0.4.3 (February 22, 2020)
+-------------------------
+Bug fix and enhancement release.
+Made a quick decision to remove volumes that have large unstable beta estimates.
+
+* [FIX] allow atlas arguments to be None (#283) @jdkent
+* [FIX] bump nipype version (#280) @jdkent
+* [ENH] censor invalid volumes (#277) @jdkent
+* [ENH] allow regex for confound specification and impute derivatives (#273) @jdkent
+
+0.4.2 (January 23, 2020)
+------------------------
+Bug fix and maintenance release.
+
+* [DOC] emphasize beta map analysis (#270) @jdkent
+* [FIX] allow other spaces (#269) @jdkent
+* [FIX] less strict beta map generation (#262) @jdkent
+* [ENH] handle all confound NaNs (#255) @jdkent
+* [ENH] improve bids indexing (#253) @jdkent
+* [FIX] allow "sub-" prefix (#256) @jdkent
+
 0.4.1 (December 16, 2019)
 -------------------------
-Bug fix and maintainance release.
+Bug fix and maintenance release.
 
 * [MAINT] refactor and increase tests for run.py (#249) @jdkent
 * [FIX] allow flexible derivatives location (#247) @jdkent

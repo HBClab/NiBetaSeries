@@ -167,6 +167,18 @@ def sub_metadata(bids_dir, bids_json_fname=bids_json_fname):
 
 
 @pytest.fixture(scope='session')
+def sub_top_metadata(bids_dir, bids_json_fname='task-waffles_bold.json'):
+    sub_json = bids_dir.ensure(bids_json_fname)
+    tr = 2
+    bold_metadata = {"RepetitionTime": tr, "TaskName": "waffles"}
+
+    with open(str(sub_json), 'w') as md:
+        json.dump(bold_metadata, md)
+
+    return sub_json
+
+
+@pytest.fixture(scope='session')
 def sub_rest_metadata(bids_dir, bids_json_fname=bids_rest_json_fname):
     sub_json = bids_dir.ensure(bids_rest_json_fname)
     tr = 2
@@ -261,14 +273,43 @@ def sub_events(bids_dir, sub_metadata, preproc_file,
 def confounds_file(deriv_dir, preproc_file,
                    deriv_regressor_fname=deriv_regressor_fname):
     confounds_file = deriv_dir.ensure(deriv_regressor_fname)
+    confound_dict = {}
     tp = nib.load(str(preproc_file)).shape[-1]
     ix = np.arange(tp)
     # csf
-    csf = np.cos(2*np.pi*ix*(50/tp)) * 0.1
+    confound_dict['csf'] = np.cos(2*np.pi*ix*(50/tp)) * 0.1
     # white matter
-    wm = np.sin(2*np.pi*ix*(22/tp)) * 0.1
-    confounds_df = pd.DataFrame({'WhiteMatter': wm, 'CSF': csf})
-    confounds_df.to_csv(str(confounds_file), index=False, sep='\t')
+    confound_dict['white_matter'] = np.sin(2*np.pi*ix*(22/tp)) * 0.1
+    # framewise_displacement
+    confound_dict['framewise_displacement'] = np.random.random_sample(tp)
+    confound_dict['framewise_displacement'][0] = np.nan
+    # motion outliers
+    for motion_outlier in range(0, 5):
+        mo_name = 'motion_outlier0{}'.format(motion_outlier)
+        confound_dict[mo_name] = np.zeros(tp)
+        confound_dict[mo_name][motion_outlier] = 1
+    # derivatives
+    derive1 = [
+        'csf_derivative1',
+        'csf_derivative1_power2',
+        'global_signal_derivative1_power2',
+        'trans_x_derivative1',
+        'trans_y_derivative1',
+        'trans_z_derivative1',
+        'trans_x_derivative1_power2',
+        'trans_y_derivative1_power2',
+        'trans_z_derivative1_power2',
+    ]
+    for d in derive1:
+        confound_dict[d] = np.random.random_sample(tp)
+        confound_dict[d][0] = np.nan
+
+    # transformations
+    for dir in ["trans_x", "trans_y", "trans_z"]:
+        confound_dict[dir] = np.random.random_sample(tp)
+
+    confounds_df = pd.DataFrame(confound_dict)
+    confounds_df.to_csv(str(confounds_file), index=False, sep='\t', na_rep='n/a')
     return confounds_file
 
 
@@ -301,6 +342,34 @@ def atlas_lut(tmpdir_factory):
     atlas_lut_df.to_csv(str(atlas_lut), index=False, sep='\t')
 
     return atlas_lut
+
+
+@pytest.fixture(scope='session')
+def bids_db_file(
+        bids_dir, deriv_dir, sub_fmriprep, sub_metadata, bold_file, preproc_file,
+        sub_events, confounds_file, brainmask_file, atlas_file, atlas_lut,
+        ):
+    from bids import BIDSLayout
+    from .workflows.utils import BIDSLayoutIndexerPatch
+
+    db_file = bids_dir / ".dbcache"
+
+    layout = BIDSLayout(
+        str(bids_dir),
+        derivatives=str(deriv_dir),
+        index_metadata=False,
+        database_file=str(db_file),
+        reset_database=True)
+
+    # only index bold file metadata
+    indexer = BIDSLayoutIndexerPatch(layout)
+    metadata_filter = {
+        'extension': ['nii', 'nii.gz', 'json'],
+        'suffix': 'bold',
+    }
+    indexer.index_metadata(**metadata_filter)
+
+    return db_file
 
 
 @pytest.fixture(scope='session')
