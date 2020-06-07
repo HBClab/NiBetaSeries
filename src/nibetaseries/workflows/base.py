@@ -186,8 +186,9 @@ It is released under the [CC0]\
             smoothing_kernel=smoothing_kernel,
         )
 
+        # add nibetaseries to the output directory because of DerivativesDataSink class
         single_subject_wf.config['execution']['crashdump_dir'] = (
-            os.path.join(output_dir, "sub-" + subject_label, 'log')
+            os.path.join(output_dir, "nibetaseries", "sub-" + subject_label, 'log')
         )
 
         for node in single_subject_wf._get_all_nodes():
