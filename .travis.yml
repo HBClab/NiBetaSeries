@@ -43,7 +43,7 @@ jobs:
         - lsb_release -a
       env:
         - TOXENV=docs
-      python: '3.5'  # match version from readthedocs
+      python: '3.6'  # match version from readthedocs
     - stage: test
       before_install:
         - sudo apt-get update
