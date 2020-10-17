@@ -22,7 +22,7 @@ from nibabel import __version__ as nibabel_ver
 from niworkflows import __version__ as niworkflows_ver
 
 from .._version import get_versions
-from .utils import collect_data, BIDSLayoutIndexerPatch
+from .utils import collect_data
 from .model import init_betaseries_wf
 from .analysis import init_correlation_wf
 from ..interfaces.bids import DerivativesDataSink
@@ -136,18 +136,9 @@ It is released under the [CC0]\
     # reading in derivatives and bids inputs as queryable database like objects
     layout = BIDSLayout(bids_dir,
                         derivatives=derivatives_pipeline_dir,
-                        index_metadata=False,
-                        database_file=database_path,
+                        index_metadata=True,
+                        database_path=database_path,
                         reset_database=reset_database)
-
-    # only index bold file metadata
-    if reset_database:
-        indexer = BIDSLayoutIndexerPatch(layout)
-        metadata_filter = {
-            'extension': ['nii', 'nii.gz', 'json'],
-            'suffix': 'bold',
-        }
-        indexer.index_metadata(**metadata_filter)
 
     for subject_label in subject_list:
         # collect the necessary inputs for both collect data
