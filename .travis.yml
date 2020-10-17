@@ -65,13 +65,6 @@ jobs:
       python: '3.8'
       env:
         - TOXENV=py38,report,codecov
-    - stage: test
-      before_install:
-        - sudo apt-get update
-        - sudo apt-get install -y graphviz
-      python: '3.9'
-      env:
-        - TOXENV=py39,report,codecov
     - stage: deploy
       install: skip
       script: skip
