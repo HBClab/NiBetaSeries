@@ -91,7 +91,7 @@ USER neuro
 
 WORKDIR /src/nibetaseries
 
-RUN pip install --no-cache-dir .
+RUN conda run -n neuro_py36 pip install --no-cache-dir -e .
 
 RUN mkdir -p ~/.jupyter && echo c.NotebookApp.ip = \"0.0.0.0\" > ~/.jupyter/jupyter_notebook_config.py
 

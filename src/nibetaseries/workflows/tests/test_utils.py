@@ -3,7 +3,7 @@ import json
 from bids import BIDSLayout
 import pytest
 
-from ..utils import collect_data, BIDSLayoutIndexerPatch, _exec_query
+from ..utils import collect_data, _exec_query
 
 
 @pytest.fixture(scope='session')
@@ -14,15 +14,7 @@ def bids_layout(bids_dir, deriv_dir, sub_fmriprep,
     layout = BIDSLayout(
         str(bids_dir),
         derivatives=str(deriv_dir),
-        index_metadata=False)
-
-    # only index bold file metadata
-    indexer = BIDSLayoutIndexerPatch(layout)
-    metadata_filter = {
-        'extension': ['nii', 'nii.gz', 'json'],
-        'suffix': 'bold',
-    }
-    indexer.index_metadata(**metadata_filter)
+        index_metadata=True)
 
     return layout
 

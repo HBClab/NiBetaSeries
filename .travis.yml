@@ -43,14 +43,7 @@ jobs:
         - lsb_release -a
       env:
         - TOXENV=docs
-      python: '3.5'  # match version from readthedocs
-    - stage: test
-      before_install:
-        - sudo apt-get update
-        - sudo apt-get install -y graphviz
-      python: '3.5'
-      env:
-        - TOXENV=py35
+      python: '3.6'  # match version from readthedocs
     - stage: test
       before_install:
         - sudo apt-get update
@@ -64,7 +57,14 @@ jobs:
         - sudo apt-get install -y graphviz
       python: '3.7'
       env:
-        - TOXENV=py37,report,codecov
+        - TOXENV=py37
+    - stage: test
+      before_install:
+        - sudo apt-get update
+        - sudo apt-get install -y graphviz
+      python: '3.8'
+      env:
+        - TOXENV=py38,report,codecov
     - stage: deploy
       install: skip
       script: skip
