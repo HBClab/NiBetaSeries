@@ -403,7 +403,7 @@ If you want your git configurations inside the container, so you do not need to 
 your email or username, you can add the following option to your Docker command: 
 ``-v ${HOME}/.gitconfig:/home/neuro/.gitconfig``.
 
-Furthermore, if you do not want to type your password everytime you push changes to
+Furthermore, if you do not want to type your password every time you push changes to
 Github, you can store your credentials in a file named ``.git-credentials``.
 Github has wonderful `instructions to create a personal access token
 <https://help.github.com/en/articles/creating-a-personal-access-token-for-the-command-line>`_ to store

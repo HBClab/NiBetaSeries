@@ -137,7 +137,7 @@ def get_parser():
     bids_opts.add_argument('--exclude-description-label', action='store_true',
                            default=False, help='exclude this `desc` label from nibetaseries')
     bids_opts.add_argument('--database-path', action='store', default=None,
-                           help="Path to directory containing SQLite database indicies "
+                           help="Path to directory containing SQLite database indices "
                                 "for this BIDS dataset. "
                                 "If a value is passed and the file already exists, "
                                 "indexing is skipped.")

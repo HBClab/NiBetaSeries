@@ -169,7 +169,7 @@ def is_outlier(points, thresh=3.5):
 
     Returns
     -------
-        A bolean mask, of size numobservations-length array.
+        A boolean mask, of size numobservations-length array.
 
     .. note:: References
         Boris Iglewicz and David Hoaglin (1993), "Volume 16: How to Detect and
