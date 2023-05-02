@@ -4,7 +4,7 @@ Code of Conduct
 ===============
 
 We value the participation of every member of our community and want to
-ensure an that every contributer has an enjoyable and fulfilling
+ensure an that every contributor has an enjoyable and fulfilling
 experience. Accordingly, everyone who participates in the NiBetaSeries
 project is expected to show respect and courtesy to other community
 members at all time.
@@ -86,7 +86,7 @@ Enforcement
 Members of the community who violate these rules - no matter how much
 they have contributed to the NiBetaSeries, or how specialised their
 skill set - will be approached by Peer or Rita. If inappropriate
-behaviour persists after this discussion, the contributer will be asked
+behaviour persists after this discussion, the contributor will be asked
 to discontinue their participation in the project.
 
 **To report an issue you have with community interactions** please

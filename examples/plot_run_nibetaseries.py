@@ -32,7 +32,7 @@ from nilearn import plotting  # plot nifti images
 # :cite:`n-Verstynen2014`.
 # The atlas data came from a `recently published parcellation
 # <https://www.ncbi.nlm.nih.gov/pubmed/28981612>`_
-# in a publically accessible github repository.
+# in a publicly accessible github repository.
 
 # atlas github repo for reference:
 """https://github.com/ThomasYeoLab/CBIG/raw/master/stable_projects/\
@@ -76,7 +76,7 @@ def list_files(startpath):
 list_files(data_dir)
 
 #############################################################################
-# Manipulate events file so it satifies assumptions
+# Manipulate events file so it satisfies assumptions
 # =================================================
 # 1. the correct column has 1's and 0's corresponding to correct and incorrect,
 # respectively.
@@ -263,7 +263,7 @@ nib.viewers.OrthoSlicer3D(nii_dict['incongruent'].get_fdata(),
 # Graph beta map standard deviation
 # =================================
 # We can find where the betas have the highest standard deviation for each trial type.
-# Unsuprisingly, the largest deviations are near the edge of the brain mask and
+# Unsurprisingly, the largest deviations are near the edge of the brain mask and
 # the subcortical regions.
 
 # standard deviations for each trial type

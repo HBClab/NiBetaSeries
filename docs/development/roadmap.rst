@@ -11,7 +11,7 @@ Goals
 
 1. Flexibly generate beta series maps for the user.
 2. Provide analyses of beta series maps for the user.
-3. Keep code test coverage at least at 70% because this allows for decent expections
+3. Keep code test coverage at least at 70% because this allows for decent exceptions
    towards what the software claims to do, while maintaining enough wiggle room for code
    that cannot reasonably be tested at that time.
    Please read `testivus <https://www.artima.com/weblogs/viewpost.jsp?thread=204677>`_
